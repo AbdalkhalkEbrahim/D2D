@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace D2D.Controllers
+namespace Presentation.Controllers
 {
     [ApiController]
     [Route("[controller]")]

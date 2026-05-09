@@ -1,4 +1,4 @@
-namespace D2D
+namespace Presentation
 {
     public class WeatherForecast
     {
