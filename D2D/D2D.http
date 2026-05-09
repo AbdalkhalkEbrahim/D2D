@@ -1,0 +1,6 @@
+@D2D_HostAddress = http://localhost:5268
+
+GET {{D2D_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
