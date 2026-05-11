@@ -10,6 +10,7 @@
     <Folder Include="DTOs\" />
     <Folder Include="Commands\" />
     <Folder Include="Mapping\" />
+    <Folder Include="Temp\" />
     <Folder Include="Queries\" />
     <Folder Include="Validators\" />
     <Folder Include="Services\" />
