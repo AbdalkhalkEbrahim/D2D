@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.Producer
+namespace Domain.Enums
 {
-    internal class LicenseVerification
+    public enum OfferStatus
     {
+        published,
+        onHold,
+        accepted
     }
 }

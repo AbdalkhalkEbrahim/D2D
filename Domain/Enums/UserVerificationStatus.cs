@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.Shared
+namespace Domain.Enums
 {
-    internal interface IUserIdentification
+    public enum UserVerificationStatus
     {
+        Pending,
+        Approved,
+        Rejected
     }
 }

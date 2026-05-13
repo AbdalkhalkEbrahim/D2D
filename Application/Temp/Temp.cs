@@ -8,5 +8,6 @@ namespace Application.Temp
 {
     internal class Temp
     {
+
     }
 }
