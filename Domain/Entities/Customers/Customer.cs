@@ -1,5 +1,7 @@
-﻿using Domain.Entities.Designs;
+﻿using Domain.Entities.Chats;
+using Domain.Entities.Designs;
 using Domain.Entities.Offers;
+using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Microsoft.AspNet.Identity.EntityFramework;
 using System;
@@ -20,9 +22,12 @@ namespace Domain.Entities.Customers
     {
         public DateTime BD { get; set; }
         
-        public virtual required HashSet<Address> Addresses { get; set; }
+        public virtual HashSet<Address> Addresses { get; set; }
         public virtual ICollection<CustomerDesign> CustomerDesigns { get; set; }
         public ICollection<CustomerOffers> CustomerOffers { get; set; }
+        public ICollection<Review> Reviews { get; set; }
+        public virtual ICollection<Chat> Chats { get; set; }
+
 
         public bool IsAllowed { get; }
 
@@ -32,6 +37,8 @@ namespace Domain.Entities.Customers
             Addresses = new HashSet<Address>();
             CustomerDesigns = new List<CustomerDesign>();
             CustomerOffers = new List<CustomerOffers>();
+            Reviews = new List<Review>();
+            Chats = new List<Chat>();
         }
         public void SelectSpecificAddress(Address address)
         {

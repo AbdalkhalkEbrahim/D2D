@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Temp
+namespace Domain.Entities
 {
-    internal class Temp
+    public class Notification
     {
 
     }

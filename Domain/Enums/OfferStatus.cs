@@ -8,8 +8,8 @@ namespace Domain.Enums
 {
     public enum OfferStatus
     {
-        published,
-        onHold,
-        accepted
+        Published,
+        OnHold,
+        Accepted
     }
 }

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.Producer
+namespace Domain.Entities.Producers
 {
     public class LicenseVerification
     {

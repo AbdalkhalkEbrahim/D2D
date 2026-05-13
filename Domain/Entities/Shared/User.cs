@@ -10,16 +10,17 @@ namespace Domain.Entities.Shared
 {
     public class User : IdentityUser
     {
-        public required string FirstName { get; set; }
-        public required string LastName { get; set; }
-        public required string FrontImageID { get; set; }
-        public required string BackImageID { get; set; }
-        public required string PersonalImage { get; set; }
+        public /*required */string FirstName { get; set; }
+        public /*required */string LastName { get; set; }
+        public /*required */string AnnonName { get; set; }
+        public /*required */string FrontImageID { get; set; }
+        public /*required */string BackImageID { get; set; }
+        public /*required */string PersonalImage { get; set; }
         public UserVerificationStatus IdentityStatus { get; set; } = UserVerificationStatus.Pending;
 
-        public required string CreditHoledrName { get; set; }
-        public required string CreditNumber{ get; set;}
-        public required string CreditExpirationDate { get; set; }
+        public /*required*/ string CreditHoledrName { get; set; }
+        public /*required*/ string CreditNumber{ get; set;}
+        public /*required*/ string CreditExpirationDate { get; set; }
 
     }
 }
