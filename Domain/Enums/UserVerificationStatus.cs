@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.Customer
+namespace Domain.Enums
 {
-    internal class Address
+    public enum UserVerificationStatus
     {
+        Pending,
+        Approved,
+        Rejected
     }
 }

@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.Producer
+namespace Application.Temp
 {
-    internal class LicenseVerification
+    internal class Temp
     {
+
     }
 }

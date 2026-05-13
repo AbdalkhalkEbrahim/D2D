@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities.Shared
 {
-    internal class DesignImage
+    public class Audits
     {
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }
