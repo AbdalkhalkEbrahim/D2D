@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace Domain.Enums
 {
-    public enum UserVerificationStatus
+    public enum TransactionType
     {
-        Pending,
-        Approved,
-        Rejected
+        Deposit,
+        Profit,
+        Remaining,
+        TotalPrice,
+        Refund
     }
 }

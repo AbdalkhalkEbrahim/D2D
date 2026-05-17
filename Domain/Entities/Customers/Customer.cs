@@ -19,26 +19,18 @@ namespace Domain.Entities.Customers
     /// PasswordHash
     /// </summary>
     public class Customer:User
-    {
-        public DateTime BD { get; set; }
-        
+    {        
         public virtual HashSet<Address> Addresses { get; set; }
-        public virtual ICollection<CustomerDesign> CustomerDesigns { get; set; }
-        public ICollection<CustomerOffers> CustomerOffers { get; set; }
-        public ICollection<Review> Reviews { get; set; }
+        public virtual ICollection<CustomerOffer> Offers { get; set; }
+        public virtual ICollection<Review> Reviews { get; set; }
         public virtual ICollection<Chat> Chats { get; set; }
 
-
-        public bool IsAllowed { get; }
-
-        public Customer()
+        public Customer():base()
         {
-            IsAllowed = DateTime.Now.Year - BD.Year >= 18;
             Addresses = new HashSet<Address>();
-            CustomerDesigns = new List<CustomerDesign>();
-            CustomerOffers = new List<CustomerOffers>();
             Reviews = new List<Review>();
             Chats = new List<Chat>();
+            Offers = new List<CustomerOffer>();
         }
         public void SelectSpecificAddress(Address address)
         {

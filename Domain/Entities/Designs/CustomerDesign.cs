@@ -1,23 +1,21 @@
 ﻿using Domain.Entities.Offers;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Domain.Entities.Designs
 {
-    public class CustomerDesign
+    public class CustomerDesign:Design
     {
         //multiple designs in the same design images table from different users types
-        public Guid ID { get; set; }
-        public required string Name { get; set; }
-        public virtual ICollection<DesignImage> DesignImages { get; set; }
-        public virtual ICollection<CustomerOffers> CustomerOffers { get; set; }
-        public CustomerDesign()
+        public virtual CustomerPublishedOffers? CustomerPublishedOffers { get; set; }
+        [ForeignKey(nameof(CustomerPublishedOffers))]
+        public int? CustomerPublishedOffersID { get; set; }
+        public CustomerDesign():base()
         {
-            DesignImages = new List<DesignImage>();
-            CustomerOffers = new List<CustomerOffers>();
         }
     }
 }

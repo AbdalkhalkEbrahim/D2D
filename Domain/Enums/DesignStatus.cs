@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Domain.Enums
 {
-    public enum OfferStatus
+    public enum DesignStatus
     {
-        OnHold,
-        Accepted,
-        Declined
+        Drafted,
+        Published
     }
 }
