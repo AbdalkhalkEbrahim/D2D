@@ -10,17 +10,27 @@ namespace Domain.Entities.Shared
 {
     public class User : IdentityUser
     {
-        public /*required */string FirstName { get; set; }
-        public /*required */string LastName { get; set; }
-        public /*required */string AnnonName { get; set; }
-        public /*required */string FrontImageID { get; set; }
-        public /*required */string BackImageID { get; set; }
-        public /*required */string PersonalImage { get; set; }
-        public UserVerificationStatus IdentityStatus { get; set; } = UserVerificationStatus.Pending;
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public DateTime BD { get; private set; }
+        public bool IsAllowed { get; }
+        public required string AnnonName { get; set; }
+        #region IdentityVerification
+        public required string FrontImageID { get; set; }
+        public required string BackImageID { get; set; }
+        public required string PersonalImage { get; set; }
+        public VerificationStatus IdentityStatus { get; set; } = VerificationStatus.Pending;
+        #endregion
+        #region CreditInformation
+        public required string CreditHoledrName { get; set; }
+        public required string CreditNumber{ get; set;}
+        public required string CreditExpirationDate { get; set; }
+        #endregion
 
-        public /*required*/ string CreditHoledrName { get; set; }
-        public /*required*/ string CreditNumber{ get; set;}
-        public /*required*/ string CreditExpirationDate { get; set; }
+        public User()
+        {
+            IsAllowed = DateTime.Now.Year - BD.Year >= 18;
+        }
 
     }
 }

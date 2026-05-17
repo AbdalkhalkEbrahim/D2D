@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Domain.Enums
 {
-    public enum OfferStatus
+    public enum VerificationStatus
     {
-        OnHold,
-        Accepted,
-        Declined
+        Pending,
+        Approved,
+        Rejected
     }
 }
