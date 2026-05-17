@@ -1,4 +1,6 @@
-﻿using Domain.Entities.Customers;
+﻿using Domain.Entities.Chats;
+using Domain.Entities.Customers;
+using Domain.Entities.Producers;
 namespace TestConsole
 {
 
@@ -9,6 +11,8 @@ namespace TestConsole
             Address address = new Address() { AppartmentNo = "df", Street = "sdsds", City = "euyrue", Goverate = "kjwidwid"};
             Address address2 = new Address() { AppartmentNo = "df", Street = "sdsds", City = "euyrue", Goverate = "kjwidwid" };
             Console.WriteLine(address.Equals(address2));
+
+           
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,9 @@ namespace Domain.Entities.Customers
         public required string Goverate { get; set; }
         public bool Selected { get; set; }
 
-        public Customer Customer { get; set; }
+        public required Customer Customer { get; set; }
+        [ForeignKey("Customer")]
+        public required string CustomerID { get; set; }
 
 
         public override bool Equals(object? obj)
