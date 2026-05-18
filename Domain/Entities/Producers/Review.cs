@@ -16,9 +16,9 @@ namespace Domain.Entities.Producers
         public virtual required Customer Customer { get; set; }
 
         [ForeignKey(nameof(Customer))]
-        public required string CustomerID { get; set; }
+        public required Guid CustomerID { get; set; }
         public required virtual Producer Producer { get; set; }
         [ForeignKey("Producer")]
-        public required string ProducerID { get; set; }
+        public required Guid ProducerID { get; set; }
     }
 }

@@ -12,7 +12,7 @@ namespace Domain.Entities.Offers
     {
         public required virtual ProducerDesign ProducerDesign { get; set; }
         [ForeignKey("ProducerDesign")]
-        public required string ProducerDesignID { get; set; }
+        public required int ProducerDesignID { get; set; }
         public virtual ProducerCustomerOffer? ProducerCustomerOffer { get; set; } //offer from producer to customer (custome)
         [ForeignKey(nameof(ProducerCustomerOffer))]
         public int? ProducerCustomerOfferID { get; set; }

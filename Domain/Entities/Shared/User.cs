@@ -26,10 +26,12 @@ namespace Domain.Entities.Shared
         public required string CreditNumber{ get; set;}
         public required string CreditExpirationDate { get; set; }
         #endregion
+        public virtual ICollection<Notification>? Notifications { get; set; }
 
         public User()
         {
             IsAllowed = DateTime.Now.Year - BD.Year >= 18;
+            Notifications = new List<Notification>();
         }
 
     }

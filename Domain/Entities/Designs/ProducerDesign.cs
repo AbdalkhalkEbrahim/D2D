@@ -17,7 +17,7 @@ namespace Domain.Entities.Designs
         public int? CustomerCustomOfferID { get; set; }
         public required virtual Producer Producer { get; set; }
         [ForeignKey("Producer")]
-        public required string ProducerID { get; set; }
+        public required Guid ProducerID { get; set; }
         public ProducerDesign():base()
         {
             Status = DesignStatus.Published;

@@ -10,7 +10,7 @@ namespace Domain.Entities.Designs
         public DesignStatus Status { get; set; }
         public required virtual Designer Designer { get; set; }
         [ForeignKey("Designer")]
-        public required string DesignerID { get; set; }
+        public required Guid DesignerID { get; set; }
 
         public virtual ICollection<DesignImage> DesignImages { get; set; }
         public Design()
