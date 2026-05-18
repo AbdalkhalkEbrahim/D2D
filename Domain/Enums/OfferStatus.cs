@@ -9,7 +9,7 @@ namespace Domain.Enums
     public enum OfferStatus
     {
         OnHold,
-        Accepted,
+        Accepted,//pay deposite
         Declined
     }
 }

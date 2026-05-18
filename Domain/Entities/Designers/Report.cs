@@ -14,10 +14,10 @@ namespace Domain.Entities.Designers
 
         public required Producer Producer { get; set; }
         [ForeignKey("Producer")]
-        public required string ProducerID { get; set; }
+        public required Guid ProducerID { get; set; }
         public required Designer Designer { get; set; }
         [ForeignKey("Designer")]
-        public required string DesignerID { get; set; }
+        public required Guid DesignerID { get; set; }
         public required string Content { get; set; }
 
 

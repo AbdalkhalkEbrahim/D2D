@@ -15,8 +15,9 @@ namespace Domain.Entities.Payment
         public required string Currency { get; set; }
         public virtual required ICollection<Escrow> Escrows { get; set; }
         public virtual required User User { get; set; }
+
         [ForeignKey("User")]
-        public string UserID { get; set; }
+        public Guid UserID { get; set; }
 
 
         public Transaction()

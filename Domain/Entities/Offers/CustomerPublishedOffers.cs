@@ -10,7 +10,7 @@ namespace Domain.Entities.Offers
 
         public required virtual CustomerDesign CustomerDesign { get; set; }
         [ForeignKey("CustomerDesign")]
-         public required string CustomerDesignID { get; set; }
+         public required int CustomerDesignID { get; set; }
         public virtual ICollection<ProducerCustomerOffer>? ProducerOffers { get; set; } //request from producer to customer(published)
 
         public CustomerPublishedOffers()

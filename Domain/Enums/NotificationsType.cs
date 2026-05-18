@@ -10,13 +10,15 @@ namespace Domain.Enums
     {
         DesignVerified,
         DesignUnVerified,
-        OTP,
         RecieveOffer,
         Deposite,
+        ActveOfferStatuesChanged,
+        EditOffer,
         RecieveMessage,
         ChatLimit,
         RemainingPrice,
-
-
+        TotalPrice,
+        ReviewAdded,
+        SystemAlert
     }
 }

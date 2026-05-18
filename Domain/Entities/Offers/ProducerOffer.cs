@@ -17,6 +17,6 @@ namespace Domain.Entities.Offers
         public OfferStatus OfferStatus { get; set; }
         public required virtual Producer Producer { get; set; }
         [ForeignKey("Producer")]
-        public required string ProducerID { get; set; }
+        public required Guid ProducerID { get; set; }
     }
 }

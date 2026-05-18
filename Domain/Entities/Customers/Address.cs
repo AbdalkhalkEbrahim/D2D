@@ -17,7 +17,7 @@ namespace Domain.Entities.Customers
 
         public required Customer Customer { get; set; }
         [ForeignKey("Customer")]
-        public required string CustomerID { get; set; }
+        public required Guid CustomerID { get; set; }
 
 
         public override bool Equals(object? obj)
