@@ -1,4 +1,4 @@
-using Domain.Entities.Designs;
+﻿using Domain.Entities.Designs;
 using Domain.Entities.Shared;
 
 namespace Domain.Entities.Designers
