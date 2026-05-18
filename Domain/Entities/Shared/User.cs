@@ -10,21 +10,22 @@ namespace Domain.Entities.Shared
 {
     public class User : IdentityUser
     {
-        public required string FirstName { get; set; }
-        public required string LastName { get; set; }
+        public   string FirstName { get; set; }
+        public   string LastName { get; set; }
         public DateTime BD { get; private set; }
         public bool IsAllowed { get; }
-        public required string AnnonName { get; set; }
+        public   string AnnonName { get; set; }
+        public int ReportsCounter { get; set; } 
         #region IdentityVerification
-        public required string FrontImageID { get; set; }
-        public required string BackImageID { get; set; }
-        public required string PersonalImage { get; set; }
+        public   string FrontImageID { get; set; }
+        public   string BackImageID { get; set; }
+        public   string PersonalImage { get; set; }
         public VerificationStatus IdentityStatus { get; set; } = VerificationStatus.Pending;
         #endregion
         #region CreditInformation
-        public required string CreditHoledrName { get; set; }
-        public required string CreditNumber{ get; set;}
-        public required string CreditExpirationDate { get; set; }
+        public   string CreditHoledrName { get; set; }
+        public   string CreditNumber{ get; set;}
+        public   string CreditExpirationDate { get; set; }
         #endregion
         public virtual ICollection<Notification>? Notifications { get; set; }
 

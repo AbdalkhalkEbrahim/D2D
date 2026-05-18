@@ -9,7 +9,7 @@ namespace Domain.Entities.Chats
         public int ID { get; set; }
         public string? Content { get; set; }
         public MessageSender Sender { get; set; }
-        public required Chat Chat { get; set; }
+        public Chat Chat { get; set; }
         [ForeignKey("Chat")]
         public int ChatID { get; set; }
 

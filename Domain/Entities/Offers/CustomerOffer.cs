@@ -14,18 +14,20 @@ namespace Domain.Entities.Offers
     public class CustomerOffer:Audits
     {
         public int ID { get; set; }
-        public required string Material { get; set; }
+        public   string Material { get; set; }
         public int Duration { get; set; }
         public int Amount { get; set; }
         public decimal MaxPrice { get; set; }
         public bool IsActive { get; set; } 
         public virtual ICollection<ActiveOfferLogs>? ActiveOfferLogs { get; set; }
        
-        public required virtual Customer Customer { get; set; }
+        public   virtual Customer Customer { get; set; }
         [ForeignKey("Customer")]
-        public required Guid CustomerID { get; set; }
+        public   Guid CustomerID { get; set; }
         
         public virtual Escrow? Escrow { get; set; }
+        [ForeignKey("Escrow")]
+        public Guid EscrowID { get; set; }
         public CustomerOffer()
         {
             ActiveOfferLogs = new List<ActiveOfferLogs>();

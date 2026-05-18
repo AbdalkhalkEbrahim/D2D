@@ -6,11 +6,11 @@ namespace Domain.Entities.Designs
     public class Design
     {
         public int ID { get; set; }
-        public required string Name { get; set; }
+        public   string Name { get; set; }
         public DesignStatus Status { get; set; }
-        public required virtual Designer Designer { get; set; }
+        public   virtual Designer Designer { get; set; }
         [ForeignKey("Designer")]
-        public required Guid DesignerID { get; set; }
+        public   Guid DesignerID { get; set; }
 
         public virtual ICollection<DesignImage> DesignImages { get; set; }
         public Design()

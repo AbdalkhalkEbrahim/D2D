@@ -13,19 +13,19 @@ namespace Domain.Entities.Chats
     public class Chat : Audits
     {
         public int ID { get; set; }
-        public required string Name { get;  set; }
-        public virtual required Producer Producer { get; set; }
-        public virtual required Customer Customer { get; set; }
+        public string Name { get;  set; }
+        public virtual Producer Producer { get; set; }
+        public virtual Customer Customer { get; set; }
         public int ProdicerLimit { get; private set; } = 100;
         public int CustomerLimit { get; private set; } = 50;
         public int ProducerCount { get; set; }
         public int CustomerCount { get; set; }
        
         [ForeignKey(nameof(Customer))]
-        public required Guid CustomerID { get; set; }
+        public Guid CustomerID { get; set; }
 
         [ForeignKey(nameof(Producer))]
-        public required Guid ProducerID { get; set; }
+        public Guid ProducerID { get; set; }
 
         public List<Message> Messages { get; set; }
         public Chat()

@@ -12,13 +12,13 @@ namespace Domain.Entities.Producers
     public class Review:Audits
     {
         public int ID { get; set; }
-        public required string Content { get; set; }
-        public virtual required Customer Customer { get; set; }
+        public string Content { get; set; }
+        public virtual Customer Customer { get; set; }
 
         [ForeignKey(nameof(Customer))]
-        public required Guid CustomerID { get; set; }
-        public required virtual Producer Producer { get; set; }
+        public Guid CustomerID { get; set; }
+        public   virtual Producer Producer { get; set; }
         [ForeignKey("Producer")]
-        public required Guid ProducerID { get; set; }
+        public Guid ProducerID { get; set; }
     }
 }

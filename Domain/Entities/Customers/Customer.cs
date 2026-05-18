@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Chats;
+using Domain.Entities.Chats.AiModel;
 using Domain.Entities.Designs;
 using Domain.Entities.Offers;
 using Domain.Entities.Producers;
@@ -7,6 +8,7 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +26,9 @@ namespace Domain.Entities.Customers
         public virtual ICollection<CustomerOffer> Offers { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }
         public virtual ICollection<Chat> Chats { get; set; }
+        public virtual ModelChat? ModelChat { get; set; }
+        [ForeignKey(nameof(ModelChat))]
+        public int? ModelChatID { get; set; }
 
         public Customer():base()
         {

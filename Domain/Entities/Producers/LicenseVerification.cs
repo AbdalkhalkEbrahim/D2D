@@ -12,10 +12,10 @@ namespace Domain.Entities.Producers
     public class LicenseVerification
     {
         public int ID { get; set; }
-        public required string LicenseUrl { get; set; }
+        public   string LicenseUrl { get; set; }
         public VerificationStatus LicenseStatus { get; set; }
-        public required virtual Producer Producer { get; set; }
+        public   virtual Producer Producer { get; set; }
         [ForeignKey("Producer")]
-        public required Guid ProducerID { get; set; }
+        public   Guid ProducerID { get; set; }
     }
 }

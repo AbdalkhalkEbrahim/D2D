@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="D2DContext\" />
     <Folder Include="Configurations\" />
     <Folder Include="Reposatories\" />
   </ItemGroup>

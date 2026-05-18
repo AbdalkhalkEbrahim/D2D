@@ -15,9 +15,9 @@ namespace Domain.Entities.Designs
         public virtual CustomerCustomOffer? CustomerCustomOffer { get; set; }
         [ForeignKey(nameof(CustomerCustomOffer))]
         public int? CustomerCustomOfferID { get; set; }
-        public required virtual Producer Producer { get; set; }
+        public   virtual Producer Producer { get; set; }
         [ForeignKey("Producer")]
-        public required Guid ProducerID { get; set; }
+        public   Guid ProducerID { get; set; }
         public ProducerDesign():base()
         {
             Status = DesignStatus.Published;
