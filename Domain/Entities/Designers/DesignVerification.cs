@@ -17,6 +17,6 @@ namespace Domain.Entities.Designers
         public VerificationStatus Status { get; set; }
         public required virtual Designer Designer { get; set; }
         [ForeignKey("Designer")]
-        public required Guid DesignerID { get; set; }
+        public string DesignerID { get; set; }
     }
 }

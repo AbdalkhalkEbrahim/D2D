@@ -3,9 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Domain.Entities.Offers
 {
     public class ActiveOfferLogs
@@ -15,7 +12,7 @@ namespace Domain.Entities.Offers
         public DateTime? EndDate { get;private set; }
         public string? Notes { get; set; }
        
-        public int OfferID { get; set; }
+        public Guid OfferID { get; set; }
         public bool IsOfferActive { get; set; }
 
 
@@ -23,12 +20,11 @@ namespace Domain.Entities.Offers
         // mapping data from the DB to the obj properties so we need to have a parameterless constructor for ef core to work properly
         private ActiveOfferLogs() { }
 
-        public ActiveOfferLogs(int _offerID,ActiveOfferStatus _status)
+        public ActiveOfferLogs(Guid _offerID,ActiveOfferStatus _status)
         {
             Status = _status;
             OfferID = _offerID;
             StartDate = DateTime.Now;
-            IsOfferActive = true;
             EndDate = null;
         }
         public void CloseState() =>

@@ -11,14 +11,15 @@ namespace Domain.Entities.Designers
 {
     public class Report:Audits
     {
-
-        public required Producer Producer { get; set; }
+        public int ID { get; set; }
+        public string Content { get; set; }
+        public bool IsProducer { get; set; }
+        public Producer Producer { get; set; }
         [ForeignKey("Producer")]
-        public required Guid ProducerID { get; set; }
-        public required Designer Designer { get; set; }
+        public string ProducerID { get; set; }
+        public Designer Designer { get; set; }
         [ForeignKey("Designer")]
-        public required Guid DesignerID { get; set; }
-        public required string Content { get; set; }
+        public string DesignerID { get; set; }
 
 
     }

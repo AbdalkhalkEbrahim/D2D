@@ -22,10 +22,10 @@ namespace Domain.Entities.Chats
         public int CustomerCount { get; set; }
        
         [ForeignKey(nameof(Customer))]
-        public required Guid CustomerID { get; set; }
+        public string CustomerID { get; set; }
 
         [ForeignKey(nameof(Producer))]
-        public required Guid ProducerID { get; set; }
+        public string ProducerID { get; set; }
 
         public List<Message> Messages { get; set; }
         public Chat()

@@ -8,10 +8,10 @@ namespace Domain.Entities.Offers
     {
         public virtual CustomerCustomOffer? CustomerCustomOffer { get; set; }
         [ForeignKey(nameof(CustomerCustomOffer))]
-        public int? CustomerCustomOfferID { get; set; }
-        public virtual CustomerPublishedOffers? CustomerPublishedOffers { get; set; }
-        [ForeignKey(nameof(CustomerPublishedOffers))]
-        public int CustomerPublishedOffersID { get; set; }
+        public Guid? CustomerCustomOfferID { get; set; }
+        public virtual CustomerPublishedOffer? CustomerPublishedOffer { get; set; }
+        [ForeignKey(nameof(CustomerPublishedOffer))]
+        public Guid CustomerPublishedOfferID { get; set; }
 
     }
 }

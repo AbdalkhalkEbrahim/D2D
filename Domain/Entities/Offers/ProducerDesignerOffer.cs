@@ -10,8 +10,8 @@ namespace Domain.Entities.Offers
 {
     public class ProducerDesignerOffer:ProducerOffer
     {
-        public required virtual DesignerDesign DesignerDesign { get; set; }
-        [ForeignKey(nameof(DesignerDesign))]
-        public int DesignerDesignID { get; set; }
+        public virtual DesignerDesign DesignerDesign { get; set; }
+        public Guid DesignerDesignID { get; set; }
+
     }
 }

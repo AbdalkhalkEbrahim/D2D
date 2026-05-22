@@ -10,13 +10,12 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities.Offers
 {
-    public class ProducerOffer:Audits
+    public abstract class ProducerOffer:Audits
     {
-        public int ID { get; set; }
+        public Guid ID { get; set; }
         public decimal Price { get; set; }
         public OfferStatus OfferStatus { get; set; }
-        public required virtual Producer Producer { get; set; }
-        [ForeignKey("Producer")]
-        public required Guid ProducerID { get; set; }
+        public virtual Producer Producer { get; set; }
+        public string ProducerID { get; set; }
     }
 }

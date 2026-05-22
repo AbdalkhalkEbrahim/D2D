@@ -1,35 +1,23 @@
-﻿using Domain.Entities.Customers;
-using Domain.Entities.Payment;
+﻿using Domain.Entities.Designs;
 using Domain.Entities.Shared;
 using Domain.Enums;
-using System;
-using System.Collections.Generic;
+using Domain.Entities.Customers;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities.Offers
 {
-    public class CustomerOffer:Audits
+    public abstract class CustomerOffer: Offer
     {
-        public int ID { get; set; }
-        public required string Material { get; set; }
-        public int Duration { get; set; }
-        public int Amount { get; set; }
-        public decimal MaxPrice { get; set; }
-        public bool IsActive { get; set; } 
-        public virtual ICollection<ActiveOfferLogs>? ActiveOfferLogs { get; set; }
-       
+        public OfferStatus CustomerOfferStatus { get; set; }
         public required virtual Customer Customer { get; set; }
         [ForeignKey("Customer")]
-        public required Guid CustomerID { get; set; }
-        
-        public virtual Escrow? Escrow { get; set; }
-        public CustomerOffer()
+        public required string CustomerID { get; set; }
+/*        public virtual ICollection<ProducerCustomerOffer> ProducerCustomerOffer { get; set; }
+*/        /*public CustomerOffer()
         {
-            ActiveOfferLogs = new List<ActiveOfferLogs>();
-        }
+            ProducerCustomerOffer = new List<ProducerCustomerOffer>();
+        }*/
+
 
     }
 }

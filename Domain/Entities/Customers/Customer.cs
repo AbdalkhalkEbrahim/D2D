@@ -3,7 +3,6 @@ using Domain.Entities.Designs;
 using Domain.Entities.Offers;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
-using Microsoft.AspNet.Identity.EntityFramework;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,13 +23,16 @@ namespace Domain.Entities.Customers
         public virtual ICollection<CustomerOffer> Offers { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }
         public virtual ICollection<Chat> Chats { get; set; }
+        public virtual ModelChat? ModelChat { get; set; }
 
-        public Customer():base()
+
+        public Customer()
         {
             Addresses = new HashSet<Address>();
             Reviews = new List<Review>();
             Chats = new List<Chat>();
             Offers = new List<CustomerOffer>();
+
         }
         public void SelectSpecificAddress(Address address)
         {

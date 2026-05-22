@@ -3,17 +3,18 @@ using Domain.Entities.Shared;
 
 namespace Domain.Entities.Designers
 {
-    public class Designer : User
+    public class Designer:User
     {
-        public virtual ICollection<Design> Designs { get; set; }
+        public virtual ICollection<DesignerDesign> DesignerDesigns { get; set; }
         public virtual ICollection<Report> Reports { get; set; }
         public virtual ICollection<DesignVerification> DesignVerifications { get; set; }
 
-        public Designer() : base()
+        public Designer()
         {
-            Designs = new List<Design>();
+            DesignerDesigns = new List<DesignerDesign>();
             Reports = new List<Report>();
             DesignVerifications = new List<DesignVerification>();
+
         }
     }
 }

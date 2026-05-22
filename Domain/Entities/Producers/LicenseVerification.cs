@@ -16,6 +16,6 @@ namespace Domain.Entities.Producers
         public VerificationStatus LicenseStatus { get; set; }
         public required virtual Producer Producer { get; set; }
         [ForeignKey("Producer")]
-        public required Guid ProducerID { get; set; }
+        public string ProducerID { get; set; }
     }
 }

@@ -9,15 +9,16 @@ namespace Domain.Entities.Customers
 {
     public class Address
     {
-        public required string AppartmentNo { get; set; }
-        public required string Street { get; set; }
-        public required string City { get; set; }
-        public required string Goverate { get; set; }
+        public int ID { get; set; }
+        public string AppartmentNo { get; set; }
+        public string Street { get; set; }
+        public string City { get; set; }
+        public string Goverate { get; set; }
         public bool Selected { get; set; }
 
-        public required Customer Customer { get; set; }
+        public  virtual Customer Customer { get; set; }
         [ForeignKey("Customer")]
-        public required Guid CustomerID { get; set; }
+        public string CustomerID { get; set; }
 
 
         public override bool Equals(object? obj)
@@ -31,6 +32,6 @@ namespace Domain.Entities.Customers
         {
             return HashCode.Combine(AppartmentNo, Street, City, Goverate);
         }
-        
+                                                                                     
     }
 }
