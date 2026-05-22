@@ -16,7 +16,7 @@ namespace Domain.Entities.Payment
         public DateTime HeldAt { get; set; }
         public DateTime ReleasedAt { get; set; }
         public EscrowStatus EscrowStatus { get; set; }
-        public virtual required Transaction Transaction { get; set; }
+        public virtual ICollection< Transaction> Transactions { get; set; } = new List< Transaction >();
         [ForeignKey("Transaction")]
         public Guid TransactionID { get; set; }
         public virtual ProducerOffer? ProducerOffer { get; set; } 

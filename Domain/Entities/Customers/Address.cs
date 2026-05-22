@@ -32,6 +32,6 @@ namespace Domain.Entities.Customers
         {
             return HashCode.Combine(AppartmentNo, Street, City, Goverate);
         }
-                                                                                     
+        
     }
 }

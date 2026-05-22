@@ -12,8 +12,8 @@ namespace Domain.Entities.Producers
     public class Review:Audits
     {
         public int ID { get; set; }
-        public required string Content { get; set; }
-        public virtual required Customer Customer { get; set; }
+        public string Content { get; set; }
+        public virtual Customer Customer { get; set; }
 
         [ForeignKey(nameof(Customer))]
         public string CustomerID { get; set; }

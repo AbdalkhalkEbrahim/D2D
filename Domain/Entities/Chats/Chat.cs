@@ -13,9 +13,9 @@ namespace Domain.Entities.Chats
     public class Chat : Audits
     {
         public int ID { get; set; }
-        public required string Name { get;  set; }
-        public virtual required Producer Producer { get; set; }
-        public virtual required Customer Customer { get; set; }
+        public string Name { get;  set; }
+        public virtual Producer Producer { get; set; }
+        public virtual Customer Customer { get; set; }
         public int ProdicerLimit { get; private set; } = 100;
         public int CustomerLimit { get; private set; } = 50;
         public int ProducerCount { get; set; }

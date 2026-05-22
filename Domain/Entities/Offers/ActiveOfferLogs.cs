@@ -1,12 +1,14 @@
 ﻿using Domain.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 namespace Domain.Entities.Offers
 {
     public class ActiveOfferLogs
     {
+        public Guid ID { get; set; }
         public ActiveOfferStatus Status { get; set; }
         public DateTime? StartDate { get;private set; }
         public DateTime? EndDate { get;private set; }
