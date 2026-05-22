@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Chats;
+using Domain.Entities.Chats.AiModel;
 using Domain.Entities.Designs;
 using Domain.Entities.Offers;
 using Domain.Entities.Producers;

@@ -1,4 +1,6 @@
 ﻿using Domain.Entities.Shared;
+using Domain.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities.Chats
 {
@@ -6,18 +8,10 @@ namespace Domain.Entities.Chats
     {
         public int ID { get; set; }
         public string? Content { get; set; }
-        public required Guid SenderID { get; set; }
-        public required Guid RecieverID { get; set; }
-        public required Chat Chat { get; set; }
-
-        public void CreatedBy(Guid SenderID)
-        {
-            this.SenderID = SenderID;
-            if (SenderID == Chat.ProducerID)
-                RecieverID = Chat.CustomerID;
-            else
-                RecieverID = Chat.ProducerID;
-        }
+        public MessageSender Sender { get; set; }
+        public Chat Chat { get; set; }
+        [ForeignKey("Chat")]
+        public int ChatID { get; set; }
 
     }
 }
