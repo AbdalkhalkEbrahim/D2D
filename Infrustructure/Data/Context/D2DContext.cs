@@ -40,6 +40,7 @@ namespace Infrastructure.Data.Context
         public DbSet<Message> Messages { get; set; }
         public DbSet<ModelChat> ModelChats { get; set; }
         public DbSet<ModelChatMessage> ModelChatMessages { get; set; }
+        public DbSet<Otp> Otps { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
