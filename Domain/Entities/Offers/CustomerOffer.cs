@@ -8,13 +8,7 @@ namespace Domain.Entities.Offers
 {
     public class CustomerOffer:Audits
     {
-        public Guid ID { get; set; }
-        public required string Material { get; set; }
-        public int Duration { get; set; }
-        public int Amount { get; set; }
-        public decimal MaxPrice { get; set; }
-        public bool IsActive { get; set; }
-        public CustomerOfferDiscrimenator Discrimerator { get; set; } 
+        public bool Discriminator { get; set; } 
         public OfferStatus CustomerOfferStatus { get; set; }
         public required virtual Customer Customer { get; set; }
         [ForeignKey("Customer")]
