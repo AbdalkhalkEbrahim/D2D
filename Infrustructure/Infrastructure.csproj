@@ -7,15 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Configurations\**" />
-    <Compile Remove="D2DContext\**" />
-    <EmbeddedResource Remove="Configurations\**" />
-    <EmbeddedResource Remove="D2DContext\**" />
-    <None Remove="Configurations\**" />
-    <None Remove="D2DContext\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.27" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.27" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.27">

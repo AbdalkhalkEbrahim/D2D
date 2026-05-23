@@ -1,7 +1,9 @@
-using Microsoft.EntityFrameworkCore.SqlServer;
-using Microsoft.EntityFrameworkCore;
+using Application.Services;
 using Domain.Entities.Shared;
+using Domain.Interfaces;
 using Infrastructure.Data.Context;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer;
 namespace Presentation
 {
     public class Program
@@ -20,7 +22,13 @@ namespace Presentation
 
             builder.Services.AddIdentityCore<User>()
                 .AddEntityFrameworkStores<D2DContext>();
-
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<IOtpService, OtpService>();
+            builder.Services.AddMediatR(cfg =>
+            {
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                cfg.RegisterServicesFromAssemblies(assemblies);
+            });
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

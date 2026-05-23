@@ -8,11 +8,14 @@
 
   <ItemGroup>
     <Folder Include="DTOs\" />
-    <Folder Include="Commands\" />
     <Folder Include="Mapping\" />
     <Folder Include="Queries\" />
     <Folder Include="Validators\" />
-    <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.16.0" />
+    <PackageReference Include="MediatR" Version="14.1.0" />
   </ItemGroup>
 
   <ItemGroup>

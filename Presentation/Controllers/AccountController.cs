@@ -1,6 +1,8 @@
-﻿using Domain.Entities.Customers;
+﻿using Application.Commands;
+using Domain.Entities.Customers;
 using Domain.Entities.Shared;
 using Infrastructure.Data.Context;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,13 +11,15 @@ namespace Presentation.Controllers
     public class AccountController : Controller
     {
         private readonly UserManager<User> userManager;
-        D2DContext c;
+        private readonly D2DContext c;
+        private readonly IMediator _mediator;
 
 
-        public AccountController(UserManager<User> userManager, D2DContext d2DContext)
+        public AccountController(UserManager<User> userManager, D2DContext d2DContext, IMediator mediator)
         {
             this.userManager = userManager;
             this.c = d2DContext;
+            this._mediator = mediator;
         }
 /*        [HttpPost("Register")]
         public async Task<ActionResult<GeneralResponse>> Register(RegisterDTO registerUser)
@@ -53,6 +57,12 @@ namespace Presentation.Controllers
             c.Customers.Add(customer);
             c.SaveChanges();
             return Ok();
+        }
+        [HttpPost("send-otp")]
+        public async Task<IActionResult> SendOtp(SendOtpCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return Ok(result);
         }
     }
 }
