@@ -3,7 +3,7 @@ using Domain.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace Domain.Entities.Designs
 {
-    public abstract class Design
+    public class Design
     {
         public Guid ID { get; set; }
         public   string Name { get; set; }

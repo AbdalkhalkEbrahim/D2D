@@ -20,10 +20,11 @@ namespace Infrastructure.Data.Configurations.Offers
                       .IsUnique()
                       .HasFilter("[IsActive] = 1");
 
-            builder.HasMany(cpo => cpo.ProducerCustomerOffers)
+
+/*            builder.HasMany(cpo => cpo.ProducerCustomerOffers)
                       .WithOne(pco => pco.CustomerPublishedOffer)
                       .HasForeignKey(pco => pco.CustomerPublishedOfferID)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Cascade);*/
 
             builder.HasMany<ActiveOfferLogs>()
                       .WithOne()
