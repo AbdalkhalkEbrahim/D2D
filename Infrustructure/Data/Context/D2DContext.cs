@@ -45,83 +45,11 @@ namespace Infrastructure.Data.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Offer>().UseTpcMappingStrategy();
             modelBuilder.Entity<CustomerOffer>().UseTpcMappingStrategy();
             modelBuilder.Entity<ProducerOffer>().UseTpcMappingStrategy();
             modelBuilder.Entity<Design>().UseTpcMappingStrategy();
-         
-            // ============================================================================
-            // 1. TPH (Table-Per-Hierarchy) Configuration for CustomerOffer Tree
-            // ============================================================================
-            modelBuilder.Entity<CustomerOffer>()
-                .HasDiscriminator<int>("Discriminator")
-                .HasValue<CustomerPublishedOffer>(0)
-                .HasValue<CustomerCustomOffer>(1);
-
-            // ============================================================================
-            // 2. TPH (Table-Per-Hierarchy) Configuration for ProducerOffer Tree
-            // ============================================================================
-            modelBuilder.Entity<ProducerOffer>()
-                .HasDiscriminator<int>("Discriminator")
-                .HasValue<ProducerCustomerOffer>(0)
-                .HasValue<ProducerDesignerOffer>(1);
-
-            // ============================================================================
-            // 3. CustomerPublishedOffer Relationships (1-to-Many)
-            // ============================================================================
-            modelBuilder.Entity<ProducerCustomerOffer>()
-                .HasOne(p => p.CustomerOffer)
-                .WithMany(c => c.ProducerCustomerOffers)
-                .HasForeignKey(p => p.CustomerOfferID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            // ============================================================================
-            // 4. CustomerCustomOffer Relationships (1-to-1)
-            // ============================================================================
-
-            // A. 1-to-1 Relationship with ProducerCustomerOffer
-            modelBuilder.Entity<ProducerCustomerOffer>()
-                .HasOne(p => p.CustomerOffer)
-                .WithOne(c => c.ProducerCustomerOffer)
-                .HasForeignKey<ProducerCustomerOffer>(p => p.CustomerOfferID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            // B. 1-to-1 Relationship with ProducerDesignerOffer
-/*            modelBuilder.Entity<ProducerDesignerOffer>()
-                .HasOne(p => p.DesignerDesign)
-                .WithMany(d => d.ProducerDesignerOffers)
-                .HasForeignKey<ProducerDesignerOffer>(p => p.DesignerDesignID)
-                .OnDelete(DeleteBehavior.ClientSetNull);*/
-
-            // ============================================================================
-            // 5. Filtered Indexes for Performance and Data Integrity
-            // ============================================================================
-
-            // Performance filtered indexes on the unified CustomerOffers table
-            modelBuilder.Entity<CustomerOffer>()
-                .HasIndex(c => c.ID)
-                .HasDatabaseName("IX_CustomerOffer_Published")
-                .HasFilter("[Discriminator] = 0");
-
-            modelBuilder.Entity<CustomerOffer>()
-                .HasIndex(c => c.ID)
-                .HasDatabaseName("IX_CustomerOffer_Custom")
-                .HasFilter("[Discriminator] = 1");
-
-            // Unique filtered index to enforce 1-to-1 integrity for CustomerCustomOffer inside ProducerCustomerOffer hierarchy
-            modelBuilder.Entity<ProducerCustomerOffer>()
-                .HasIndex(p => p.CustomerOfferID)
-                .HasDatabaseName("IX_Unique_CustomerCustom_To_ProducerCustomer")
-                .IsUnique()
-                .HasFilter("[Discriminator] = 0 AND [CustomerCustomOfferId] IS NOT NULL");
-
-            // Unique filtered index to enforce 1-to-1 integrity for CustomerCustomOffer inside ProducerDesignerOffer hierarchy
-            modelBuilder.Entity<ProducerDesignerOffer>()
-                .HasIndex(p => p.DesignerDesignID)
-                .HasDatabaseName("IX_Unique_CustomerCustom_To_ProducerDesigner")
-                .IsUnique()
-                .HasFilter("[Discriminator] = 1 AND [CustomerCustomOfferId] IS NOT NULL");
-        
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             
         }
     }

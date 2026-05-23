@@ -6,19 +6,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities.Offers
 {
-    public class CustomerOffer:Audits
+    public abstract class CustomerOffer: Offer
     {
         public bool Discriminator { get; set; } 
         public OfferStatus CustomerOfferStatus { get; set; }
         public required virtual Customer Customer { get; set; }
         [ForeignKey("Customer")]
         public required string CustomerID { get; set; }
-
-        public virtual ICollection<ProducerCustomerOffer> ProducerCustomerOffers { get; set; }
-        public virtual ProducerCustomerOffer? ProducerCustomerOffer { get; set; } //offer from producer to customer (custome)
-        [ForeignKey(nameof(ProducerCustomerOffer))]
-        public Guid? ProducerCustomerOfferID { get; set; }
-        /*public CustomerOffer()
+/*        public virtual ICollection<ProducerCustomerOffer> ProducerCustomerOffer { get; set; }
+*/        /*public CustomerOffer()
         {
             ProducerCustomerOffer = new List<ProducerCustomerOffer>();
         }*/

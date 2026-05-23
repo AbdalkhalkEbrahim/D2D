@@ -11,23 +11,19 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Data.Configurations.Offers
 {
-    public class CustomerCustomOfferConfiguration : IEntityTypeConfiguration<CustomerOffer>
+    public class CustomerCustomOfferConfiguration : IEntityTypeConfiguration<CustomerCustomOffer>
     {
-        public void Configure(EntityTypeBuilder<CustomerOffer> builder)
+        public void Configure(EntityTypeBuilder<CustomerCustomOffer> builder)
         {
 
             builder.HasIndex(o => new { o.ID, o.IsActive })
                       .IsUnique()
                       .HasFilter("[IsActive] = 1");
 
-            builder.HasIndex(o => new { o.ID, o.Discrimerator })
-                    .IsUnique()
-                    .HasFilter("[Discrimerator] = 0"); //published offers
-
-            builder.HasIndex(o => new { o.ID, o.Discrimerator })
-                   .IsUnique()
-                   .HasFilter("[Discrimerator] = 1"); //custom offers
-
+            builder.HasOne(cco => cco.ProducerDesign)
+                      .WithMany()
+                      .HasForeignKey(cco => cco.ProducerDesignID)
+                      .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany<ActiveOfferLogs>()
                       .WithOne()

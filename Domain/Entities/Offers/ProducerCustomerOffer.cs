@@ -6,11 +6,12 @@ namespace Domain.Entities.Offers
 {
     public class ProducerCustomerOffer : ProducerOffer
     {
-/*        public virtual CustomerCustomOffer? CustomerCustomOffer { get; set; }
+        public virtual CustomerCustomOffer? CustomerCustomOffer { get; set; }
         [ForeignKey(nameof(CustomerCustomOffer))]
-        public Guid? CustomerCustomOfferID { get; set; }*/
-        public virtual CustomerOffer? CustomerOffer { get; set; }
-        public Guid CustomerOfferID { get; set; }
+        public Guid? CustomerCustomOfferID { get; set; }
+        public virtual CustomerPublishedOffer? CustomerPublishedOffer { get; set; }
+        [ForeignKey(nameof(CustomerPublishedOffer))]
+        public Guid CustomerPublishedOfferID { get; set; }
 
     }
 }
