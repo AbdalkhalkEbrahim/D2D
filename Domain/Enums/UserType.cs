@@ -9,9 +9,9 @@ namespace Domain.Enums
     public enum UserType
     {
         User,
+        Admin,
         Customer,
-        Designer,
         Producer,
-        Admin
+        Designer
     }
 }

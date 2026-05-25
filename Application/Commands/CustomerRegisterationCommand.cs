@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Customers;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Commands
 {
-    public class CustomerRegisterationCommand
+    public class CustomerRegisterationCommand:IRequest<Dictionary<string, string>>
     {
         public string CustomerId { get; set; }
         public IFormFile FrontImageID { get; set; }

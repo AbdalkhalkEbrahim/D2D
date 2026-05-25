@@ -7,28 +7,23 @@ using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 using Domain.Settings;
 using Microsoft.Extensions.Options;
+using Application.Services;
+using Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Presentation.Controllers
 {
     public class AccountController : Controller
     {
         private readonly IMediator _mediator;
-        private readonly Cloudinary _cloudinary;
+        private readonly IUploadService _uploadService;
 
-
-        public AccountController(IMediator mediator, IOptions<CloudinarySettings> config)
+        public AccountController(IMediator mediator, IUploadService uploadService)
         {
             _mediator = mediator;
-            var account = new Account(
-               config.Value.CloudName,
-               config.Value.ApiKey,
-               config.Value.ApiSecret // ?? ApiSecret ??? ???? ??????
-           );
-
-            _cloudinary = new Cloudinary(account);
+            _uploadService = uploadService;
         }
 
         [HttpPost("register")]
@@ -50,79 +45,30 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-
-
-
-
+        [Authorize(Roles ="Producer")]
         [HttpPost("upload")]
         public async Task<IActionResult> Upload(IFormFile file)
         {
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest("No file uploaded.");
-            }
-
-            var uploadResult = new ImageUploadResult();
-
-            using (var stream = file.OpenReadStream())
-            {
-                var uploadParams = new ImageUploadParams
-                {
-                    File = new FileDescription(file.FileName, stream),
-                    Transformation = new Transformation().Height(500).Width(500).Crop("fill").Gravity("face")
-                };
-
-                uploadResult = await _cloudinary.UploadAsync(uploadParams);
-            }
-
-            if (uploadResult.Error != null)
-            {
-                return BadRequest($"Cloudinary Error: {uploadResult.Error.Message}");
-            }
-
-            string imageUrl = uploadResult.SecureUrl.ToString();
-            return Ok(new { Url = imageUrl });
+            return Ok(await _uploadService.UploadFileAsync(file));
         }
-        [HttpPost("upload")]
-        public async Task<IActionResult> Upload(IFormFile file) 
+        [HttpPost("customer-registeration")]
+        public async Task<IActionResult> CustomerRegisteration(CustomerRegisterationCommand dto)
         {
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest("No file uploaded.");
-            }
-
-            var uploadResult = new ImageUploadResult();
-
-            using (var stream = file.OpenReadStream())
-            {
-                var uploadParams = new ImageUploadParams
-                {
-                    File = new FileDescription(file.FileName, stream),
-                    Transformation = new Transformation().Height(500).Width(500).Crop("fill").Gravity("face")
-                };
-
-                uploadResult = await _cloudinary.UploadAsync(uploadParams);
-            }
-
-            if (uploadResult.Error != null)
-            {
-                return BadRequest($"Cloudinary Error: {uploadResult.Error.Message}");
-            }
-
-            string imageUrl = uploadResult.SecureUrl.ToString();
-            return Ok(new { Url = imageUrl });
+            var result = await _mediator.Send(dto);
+            return Ok(result);
         }
-        [HttpPost("delete")]
-        public async Task<DeletionResult> DeleteFileAsync(string publicId)
+        [HttpPost("producer-registeration")]
+        public async Task<IActionResult> ProducerRegisteration(ProducerRegisterrationCommand dto)
         {
-            var deleteParams = new DeletionParams(publicId)
-            {
-                ResourceType = ResourceType.Image // حدد نوع الملف (Image, Video, Raw)
-            };
+            var result = await _mediator.Send(dto);
+            return Ok(result);
+        }
+        [HttpPost("designer-registeration")]
+        public async Task<IActionResult> DesignerRegisteration(DesignerRegesterationCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return Ok(result);
 
-            var result = await _cloudinary.DestroyAsync(deleteParams);
-
-            return result; // النتيجة ستكون result.Result == "ok" في حال النجاح
         }
     }
 }

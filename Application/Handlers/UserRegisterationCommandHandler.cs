@@ -1,5 +1,8 @@
 ﻿using Application.Commands;
 using Domain.DTOs;
+using Domain.Entities.Customers;
+using Domain.Entities.Designers;
+using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums;
 using Domain.Interfaces;
@@ -55,7 +58,6 @@ namespace Application.Handlers
                 throw new Exception("aaaaaaaaaaaaaaaaaaaaaaaaaaaah");
 
             await _userManager.AddToRoleAsync(user, request.UserType.ToString());
-
 
             var code = _otpService.GenerateOtp();
 
