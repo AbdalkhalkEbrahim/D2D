@@ -1,4 +1,7 @@
-﻿using Domain.Interfaces;
+﻿using Domain.Entities.Shared;
+using Domain.Interfaces;
+using Infrastructure.Data.Context;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +13,27 @@ namespace Application.Services
 {
     public class OtpService : IOtpService
     {
+        private readonly D2DContext _context;
+
+        public OtpService(D2DContext context)
+        {
+            _context = context;
+        }
+
+        //verify email forget pass producer otp
+        public bool VerifyOtp(Otp? otp)
+        {
+            if (otp == null)
+                throw new Exception("OTP not found");
+
+            var result = true;
+
+            if (otp == null|| otp.ExpirationTime < DateTime.UtcNow|| otp.IsUsed)
+                result = false;
+
+
+            return result;
+        }
         public string GenerateOtp()
         {
             const string upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

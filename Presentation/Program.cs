@@ -1,9 +1,12 @@
 using Application.Services;
 using Domain.Entities.Shared;
 using Domain.Interfaces;
+using Domain.Settings;
 using Infrastructure.Data.Context;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
+using Microsoft.Extensions.DependencyInjection;
 namespace Presentation
 {
     public class Program
@@ -20,10 +23,28 @@ namespace Presentation
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Test"));
             });
 
-            builder.Services.AddIdentityCore<User>()
-                .AddEntityFrameworkStores<D2DContext>();
+           
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IOtpService, OtpService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddIdentity<User, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+
+                options.Password.RequiredLength = 6;
+
+                options.Password.RequireUppercase = false;
+
+                options.Password.RequireLowercase = false;
+
+                options.Password.RequireNonAlphanumeric = false;
+            })
+             .AddEntityFrameworkStores<D2DContext>()
+             .AddDefaultTokenProviders();
+            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+            builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("jwt"));
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+
             builder.Services.AddMediatR(cfg =>
             {
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies();

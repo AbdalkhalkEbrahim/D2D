@@ -14,6 +14,9 @@ namespace Infrastructure.Data.Configurations.Users
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
+            //builder.HasMany(u => u.RefreshTokens)
+            //   .WithOne(r => r.User)
+            //   .HasForeignKey(r => r.UserID);
             builder.UseTptMappingStrategy();
         }
     }
