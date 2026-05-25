@@ -5,11 +5,11 @@ using Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 namespace Domain.Entities.Shared
 {
-    public abstract class User : IdentityUser
+    public class User : IdentityUser
     {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
-        public DateTime BD { get; private set; }
+        public DateTime BD { get;  set; }
         public bool IsAllowed => DateTime.Now.Year - BD.Year >= 18;
         public UserType UserType { get; set; }
         public string? AnnonName { get; set; }
@@ -20,7 +20,8 @@ namespace Domain.Entities.Shared
         public string? PersonalImage { get; set; }
         public VerificationStatus IdentityStatus { get; set; } = VerificationStatus.Pending;
         #endregion
-        public virtual ICollection<Notification>? Notifications { get; set; }
+        public virtual ICollection<Notification>? Notifications { get; set; } = new List<Notification>();
+        public virtual ICollection<RefreshToken>? RefreshTokens { get; set; } = new List<RefreshToken>();
 
 
     }

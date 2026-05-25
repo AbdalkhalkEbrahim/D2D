@@ -7,6 +7,7 @@ using Domain.Entities.Offers;
 using Domain.Entities.Payment;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -41,6 +42,7 @@ namespace Infrastructure.Data.Context
         public DbSet<ModelChat> ModelChats { get; set; }
         public DbSet<ModelChatMessage> ModelChatMessages { get; set; }
         public DbSet<Otp> Otps { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

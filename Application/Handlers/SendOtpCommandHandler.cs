@@ -32,10 +32,8 @@ public class SendOtpCommandHandler
     public async Task<string> Handle(SendOtpCommand request, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
-
         if (user == null)
             throw new Exception("User not found");
-
         var code = _otpService.GenerateOtp();
 
         var otp = new Otp
@@ -49,7 +47,7 @@ public class SendOtpCommandHandler
         await _context.Otps.AddAsync(otp, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
         await _emailService.SendEmailAsync(request.Email, "OTP Verification", $"Your OTP is: {code}");
-
         return "OTP sent successfully";
     }
+
 }
