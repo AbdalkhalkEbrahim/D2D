@@ -1,4 +1,5 @@
 using Application.Services;
+using Domain.Entities;
 using Domain.Entities.Shared;
 using Domain.Interfaces;
 using Infrastructure.Data.Context;
@@ -24,6 +25,8 @@ namespace Presentation
                 .AddEntityFrameworkStores<D2DContext>();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IOtpService, OtpService>();
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+
             builder.Services.AddMediatR(cfg =>
             {
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies();

@@ -1,10 +1,15 @@
 ﻿using Application.Commands;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Domain.Entities;
 using Domain.Entities.Customers;
 using Domain.Entities.Shared;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace Presentation.Controllers
 {
@@ -13,13 +18,19 @@ namespace Presentation.Controllers
         private readonly UserManager<User> userManager;
         private readonly D2DContext c;
         private readonly IMediator _mediator;
+        private readonly Cloudinary _cloudinary;
 
-
-        public AccountController(UserManager<User> userManager, D2DContext d2DContext, IMediator mediator)
+        public AccountController(UserManager<User> userManager, D2DContext d2DContext, IMediator mediator, IOptions<CloudinarySettings> config)
         {
             this.userManager = userManager;
             this.c = d2DContext;
             this._mediator = mediator;
+            var account = new Account(
+                config.Value.CloudName,
+                config.Value.ApiKey,
+                config.Value.ApiSecret
+            );
+            _cloudinary = new Cloudinary(account);
         }
 /*        [HttpPost("Register")]
         public async Task<ActionResult<GeneralResponse>> Register(RegisterDTO registerUser)
@@ -63,6 +74,47 @@ namespace Presentation.Controllers
         {
             var result = await _mediator.Send(dto);
             return Ok(result);
+        }
+        [HttpPost("upload")]
+        public async Task<IActionResult> Upload(IFormFile file) 
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file uploaded.");
+            }
+
+            var uploadResult = new ImageUploadResult();
+
+            using (var stream = file.OpenReadStream())
+            {
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(file.FileName, stream),
+                    Transformation = new Transformation().Height(500).Width(500).Crop("fill").Gravity("face")
+                };
+
+                uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            }
+
+            if (uploadResult.Error != null)
+            {
+                return BadRequest($"Cloudinary Error: {uploadResult.Error.Message}");
+            }
+
+            string imageUrl = uploadResult.SecureUrl.ToString();
+            return Ok(new { Url = imageUrl });
+        }
+        [HttpPost("delete")]
+        public async Task<DeletionResult> DeleteFileAsync(string publicId)
+        {
+            var deleteParams = new DeletionParams(publicId)
+            {
+                ResourceType = ResourceType.Image // حدد نوع الملف (Image, Video, Raw)
+            };
+
+            var result = await _cloudinary.DestroyAsync(deleteParams);
+
+            return result; // النتيجة ستكون result.Result == "ok" في حال النجاح
         }
     }
 }
