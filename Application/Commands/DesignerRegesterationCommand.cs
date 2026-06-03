@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Domain.DTOs;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Commands
 {
-    public class DesignerRegesterationCommand:IRequest<Dictionary<string,string>>
+    public class DesignerRegesterationCommand:IRequest<JwtToken>
     {
         public string DesignerId { get; set; }
         public IFormFile FrontImageID { get; set; }

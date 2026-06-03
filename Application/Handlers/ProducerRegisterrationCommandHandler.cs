@@ -4,6 +4,7 @@ using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums;
 using Domain.Interfaces;
+using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -19,11 +20,13 @@ namespace Application.Handlers
         private readonly UserManager<User> _userManager;
         private readonly IUploadService _uploadService;
         private readonly IAuthService _authService;
-        public ProducerRegisterrationCommandHandler(UserManager<User> userManager, IUploadService uploadService, IAuthService authService)
+        private readonly D2DContext _context;
+        public ProducerRegisterrationCommandHandler(UserManager<User> userManager, IUploadService uploadService, IAuthService authService, D2DContext context)
         {
             _userManager = userManager;
             _uploadService = uploadService;
-            _authService = authService; 
+            _authService = authService;
+            _context = context;
         }
         public async Task<JwtToken> Handle(ProducerRegisterrationCommand request, CancellationToken cancellationToken)
         {
@@ -32,21 +35,21 @@ namespace Application.Handlers
                 throw new Exception("Invalid request");
 
             var licenseUrls = new List<LicenseVerification>();
-            request.LicenseUrls.ForEach(async file =>
+            foreach(var file in request.LicenseUrls)
             {
                 var url = await _uploadService.UploadFileAsync(file);
                 licenseUrls.Add(new LicenseVerification { LicenseUrl = url });
-            });
-            var producer = new Producer
-            {
-                Id = user.Id,
-                FrontImageID = await _uploadService.UploadFileAsync(request.FrontImageID),
-                BackImageID = await _uploadService.UploadFileAsync(request.BackImageID),
-                PersonalImage = await _uploadService.UploadFileAsync(request.PersonalImage),
-                LicenseVerifications = licenseUrls
-            };
-            await _userManager.UpdateAsync(producer);
-            
+            }
+
+            Producer producer = (Producer) user;
+            producer.FrontImageID = await _uploadService.UploadFileAsync(request.FrontImageID);
+            producer.BackImageID = await _uploadService.UploadFileAsync(request.BackImageID);
+            producer.PersonalImage = await _uploadService.UploadFileAsync(request.PersonalImage);
+            producer.LicenseVerifications = licenseUrls;
+            _context.Producers.Update(producer);
+            await _context.SaveChangesAsync();
+            //await _userManager.UpdateAsync(producer);
+
             var result = new Dictionary<string, string>
             {
                 { "FrontImageID", producer.FrontImageID },
@@ -55,7 +58,7 @@ namespace Application.Handlers
                 { "LicenseUrls", string.Join(", ", licenseUrls.Select(l => l.LicenseUrl)) }
             };
             var AccessToken = await _authService.GenerateAccessToken(producer);
-            var refreshToken = _authService.GenerateRefreshToken(producer.Id);
+            var refreshToken = await _authService.GenerateRefreshToken(producer.Id);
             return new JwtToken
             {
                 UserID = producer.Id,

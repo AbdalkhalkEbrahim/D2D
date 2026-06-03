@@ -8,14 +8,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -61,7 +57,7 @@ namespace Application.Services
             };  
         }
 
-        public TokenDTO GenerateRefreshToken(string userId)
+        public async Task<TokenDTO> GenerateRefreshToken(string userId)
         {
             var randomNumberGenerator = RandomNumberGenerator.Create();
             var randomBytes = new byte[64];
@@ -74,36 +70,35 @@ namespace Application.Services
                 Token = token,
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
             };
+            var generatedRefreshTokenEntity = new RefreshToken
+            {
+                Token = refreshToken.Token,
+                ExpiresAt = refreshToken.ExpiresAt,
+                IsRevoked = false,
+                UserID = userId
+            };
+
+            var user = _context.Users.Include(u=>u.RefreshTokens).FirstOrDefault(u => u.Id == userId) ?? throw new ArgumentNullException(nameof(userId));
+            user.RefreshTokens?.Add(generatedRefreshTokenEntity);
+            await _userManager.UpdateAsync(user);
 
             return refreshToken;
         }
 
         public async Task<JwtToken> JwtGenratedToken(string refreshToken)
         {
-            var user = await _userManager.Users
+            var user = await _context.Users.Include(u=> u.RefreshTokens)
                .SingleOrDefaultAsync(u => u.RefreshTokens!.Any(r => r.Token == refreshToken))
                ?? throw new SecurityTokenException("Invalid or expired refresh token");
 
             var existingRefreshToken = user.RefreshTokens!.Single(x => x.Token == refreshToken);
 
-            if (existingRefreshToken.IsRevoked||existingRefreshToken.ExpiresAt<DateTime.Now)
+            if (existingRefreshToken.IsRevoked||existingRefreshToken.ExpiresAt<DateTime.UtcNow)
                 throw new SecurityTokenException("Invalid or expired refresh token");
 
             existingRefreshToken.IsRevoked = true;
 
-            var newRefreshToken = GenerateRefreshToken(user.Id);
-            user.RefreshTokens ??= [];
-            var newRefreshTokenEntity = new RefreshToken
-            {
-                Token = newRefreshToken.Token,
-                ExpiresAt = newRefreshToken.ExpiresAt,
-                IsRevoked = false,
-                UserID = user.Id
-            };
-
-            user.RefreshTokens.Add(newRefreshTokenEntity);
-
-            await _userManager.UpdateAsync(user);
+            var newRefreshToken = await GenerateRefreshToken(user.Id);
 
             var jwt = await GenerateAccessToken(user);
             return new JwtToken
@@ -125,7 +120,6 @@ namespace Application.Services
                 _context.Update(existingtoken);
                 await _context.SaveChangesAsync();
             }
-
         }
     }
 }

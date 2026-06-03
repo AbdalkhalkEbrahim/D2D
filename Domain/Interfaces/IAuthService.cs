@@ -11,7 +11,7 @@ namespace Domain.Interfaces
     public interface IAuthService
     {
         public Task<TokenDTO> GenerateAccessToken(User user);
-        public TokenDTO GenerateRefreshToken(string userId);
+        public Task<TokenDTO> GenerateRefreshToken(string userId);
         public Task RevokeRefreshToken(string token);
         public Task<JwtToken> JwtGenratedToken(string refreshToken);
     }

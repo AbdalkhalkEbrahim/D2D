@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Commands
 {
-    public class VerifyEmailCommand:IRequest<string>
+    public class VerifyOtpCommand:IRequest<bool>
     {
         public string UserId { get; set; }  
         public string Otp { get; set; }

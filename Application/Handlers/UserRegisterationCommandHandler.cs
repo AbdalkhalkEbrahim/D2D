@@ -25,13 +25,14 @@ namespace Application.Handlers
         private readonly IOtpService _otpService;
         private readonly D2DContext _context;
         private readonly IEmailService _emailService;
-
-        public UserRegisterationCommandHandler(UserManager<User> userManager, IOtpService otpService, D2DContext context, IEmailService emailService)
+        private readonly IMediator _mediator;
+        public UserRegisterationCommandHandler(UserManager<User> userManager, IOtpService otpService, D2DContext context, IEmailService emailService, IMediator mediator    )
         {
             _userManager = userManager;
             _otpService = otpService;
             _context = context;
             _emailService = emailService;
+            _mediator = mediator;
         }
 
         public async Task<string> Handle(UserRegisterationCommand request, CancellationToken cancellationToken)
@@ -44,22 +45,35 @@ namespace Application.Handlers
             if (existingEmail != null)
                 throw new Exception("Email already exists.");
 
-            var user = new User
-            {
-                Email = request.Email,
-                UserName = request.Email,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                UserType = request.UserType,
-                BD = new DateTime(request.Year, request.Month, request.Day)
-            };
+            
+            User user;
+            if(request.UserType == UserType.Customer)
+                 user = new Customer();
+            else if(request.UserType == UserType.Designer)
+                user = new Designer();
+            else
+                user = new Producer();
+            
+            user.Email = request.Email;
+            user.UserName = request.Email;
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.UserType = request.UserType;
+            user.BD = new DateTime(request.Year, request.Month, request.Day);
+            user.AnonName = user.AnonymousName(request.UserType);
+
+            if (!user.IsAllowed)
+                throw new Exception("not allowed age to register.");
+
             var result=await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
                 throw new Exception("aaaaaaaaaaaaaaaaaaaaaaaaaaaah");
 
             await _userManager.AddToRoleAsync(user, request.UserType.ToString());
 
-            var code = _otpService.GenerateOtp();
+            await _mediator.Send(new SendOtpCommand { Email = request.Email });
+
+         /*   var code = _otpService.GenerateOtp();
 
             var otp = new Otp
             {
@@ -69,13 +83,11 @@ namespace Application.Handlers
                 IsUsed = false
             };
             
-            
-           
             await _context.Otps.AddAsync(otp, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
-            await _emailService.SendEmailAsync(request.Email, "OTP Email Verification", $"Your OTP is: {code}");
+            await _emailService.SendEmailAsync(request.Email, "OTP Email Verification", $"Your OTP is: {code}");*/
             
-            return request.UserType.ToString();
+            return user.Id;
         }
 
     }

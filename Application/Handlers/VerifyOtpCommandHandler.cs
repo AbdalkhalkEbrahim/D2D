@@ -13,21 +13,21 @@ using System.Threading.Tasks;
 
 namespace Application.Handlers
 {
-    public class VerifyEmailCommandHandler : IRequestHandler<VerifyEmailCommand, string>
+    public class VerifyOtpCommandHandler : IRequestHandler<VerifyOtpCommand, bool>
     {
         private readonly IOtpService _otpService;
         private readonly UserManager<User> _userManager;
         private readonly D2DContext _context;
 
 
-        public VerifyEmailCommandHandler(UserManager<User> userManager, IOtpService otpService, D2DContext context)
+        public VerifyOtpCommandHandler(UserManager<User> userManager, IOtpService otpService, D2DContext context)
         {
             _userManager = userManager;
             _otpService = otpService;
             _context = context;
         }
 
-        public async Task<string> Handle(VerifyEmailCommand request, CancellationToken cancellationToken)
+        public async Task<bool> Handle(VerifyOtpCommand request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByIdAsync(request.UserId);
             if (user == null)
@@ -43,13 +43,17 @@ namespace Application.Handlers
             }
 
             existingOtp!.IsUsed = true;
-            user.EmailConfirmed = true;
-            _context.Otps.Update(existingOtp);
-            await _userManager.UpdateAsync(user);
 
+            if (!user.EmailConfirmed)
+            {
+                user.EmailConfirmed = true;
+                await _userManager.UpdateAsync(user);
+            }
+
+            _context.Otps.Update(existingOtp);
             await _context.SaveChangesAsync(cancellationToken);
-           
-            return "Emai has been verified";
+
+            return true;
         }
     }
 }

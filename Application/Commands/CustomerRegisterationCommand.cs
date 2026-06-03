@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Customers;
+﻿using Domain.DTOs;
+using Domain.Entities.Customers;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Application.Commands
 {
-    public class CustomerRegisterationCommand:IRequest<Dictionary<string, string>>
+    public class CustomerRegisterationCommand:IRequest<JwtToken>
     {
         public string CustomerId { get; set; }
         public IFormFile FrontImageID { get; set; }

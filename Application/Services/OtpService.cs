@@ -39,7 +39,7 @@ namespace Application.Services
             const string upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             const string lower = "abcdefghijklmnopqrstuvwxyz";
             const string digits = "0123456789";
-            const string specials = "!@#$%^&*()_+=-[]{}|<>?";
+            const string specials = "!@#$%^&*?";
 
             var otpBuilder = new StringBuilder();
 
@@ -54,7 +54,6 @@ namespace Application.Services
                 char secureChar = currentPool[characterIndex];
 
                 otpBuilder.Append(secureChar);
-
             }
             //Console.WriteLine("New OTP" + otpBuilder);
             return otpBuilder.ToString();
