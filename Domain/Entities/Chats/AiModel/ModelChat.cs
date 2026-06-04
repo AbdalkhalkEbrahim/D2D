@@ -15,7 +15,7 @@ namespace Domain.Entities.Chats.AiModel
         public virtual  Customer Customer { get; set; }
         public virtual ICollection<ModelChatMessage> Message { get; set; }
         [ForeignKey(nameof(Customer))]
-        public  Guid CustomerID { get; set; }
+        public  string CustomerID { get; set; }
         public ModelChat()
         {
             Message = new List<ModelChatMessage>();

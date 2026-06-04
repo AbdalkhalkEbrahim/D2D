@@ -13,12 +13,13 @@ namespace Domain.Entities.Designers
     {
         public int ID { get; set; }
         public string Content { get; set; }
+        public bool IsProducer { get; set; }
         public Producer Producer { get; set; }
         [ForeignKey("Producer")]
-        public Guid ProducerID { get; set; }
+        public string ProducerID { get; set; }
         public Designer Designer { get; set; }
         [ForeignKey("Designer")]
-        public Guid DesignerID { get; set; }
+        public string DesignerID { get; set; }
 
 
     }

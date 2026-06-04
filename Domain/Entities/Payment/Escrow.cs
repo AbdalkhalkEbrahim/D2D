@@ -18,12 +18,12 @@ namespace Domain.Entities.Payment
         public EscrowStatus EscrowStatus { get; set; }
         public virtual ICollection< Transaction> Transactions { get; set; } = new List< Transaction >();
         [ForeignKey("Transaction")]
-        public   Guid TransactionID { get; set; }
+        public Guid TransactionID { get; set; }
         public virtual ProducerOffer? ProducerOffer { get; set; } 
         [ForeignKey("ProducerOffer")]
-        public int? ProducerOfferID { get; set; }
+        public Guid? ProducerOfferID { get; set; }
 
-        public int CustomerOfferID { get; set; }
+        public Guid CustomerOfferID { get; set; }
         public bool IsOfferActive { get; set; }//for customer
     }
 }

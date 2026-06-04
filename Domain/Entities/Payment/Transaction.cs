@@ -1,4 +1,7 @@
-﻿using Domain.Entities.Offers;
+﻿using Domain.Entities.Customers;
+using Domain.Entities.Designers;
+using Domain.Entities.Offers;
+using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,16 +20,8 @@ namespace Domain.Entities.Payment
         public virtual Escrow Escrow { get; set; }
         [ForeignKey("Escrow")]
         public Guid EscrowID { get; set; }
-        public virtual   User User { get; set; }
-
+        public virtual User User { get; set; }
         [ForeignKey("User")]
-        public Guid UserID { get; set; }
-
-
-        public Transaction()
-        {
-            Escrows = new HashSet<Escrow>();
-        }
-
+        public string UserID { get; set; }
     }
 }

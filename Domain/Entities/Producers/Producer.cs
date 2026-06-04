@@ -16,7 +16,8 @@ namespace Domain.Entities.Producers
         public virtual ICollection<ProducerDesign> ProducerDesigns { get; set; }
         public virtual ICollection<Report> Reports { get; private set; }
         public virtual ICollection<DesignerDesign> Favourite { get; set; }
-        public Producer():base()
+
+        public Producer()
         {
             LicenseVerifications = new List<LicenseVerification>();
             ProducerOffers = new List<ProducerOffer>();

@@ -9,15 +9,16 @@ namespace Domain.Entities.Customers
 {
     public class Address
     {
+        public int ID { get; set; }
         public string AppartmentNo { get; set; }
         public string Street { get; set; }
         public string City { get; set; }
         public string Goverate { get; set; }
         public bool Selected { get; set; }
 
-        public   Customer Customer { get; set; }
+        public  virtual Customer Customer { get; set; }
         [ForeignKey("Customer")]
-        public Guid CustomerID { get; set; }
+        public string CustomerID { get; set; }
 
 
         public override bool Equals(object? obj)

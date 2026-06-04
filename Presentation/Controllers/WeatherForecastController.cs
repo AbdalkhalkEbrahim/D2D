@@ -1,4 +1,9 @@
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Domain.Settings;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace Presentation.Controllers
 {
@@ -16,6 +21,8 @@ namespace Presentation.Controllers
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             _logger = logger;
+
+           
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
@@ -29,5 +36,6 @@ namespace Presentation.Controllers
             })
             .ToArray();
         }
+       
     }
 }
