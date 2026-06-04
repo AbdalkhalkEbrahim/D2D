@@ -44,9 +44,7 @@ namespace Application.Services
 
             new UserChatMessage(ChatMessageContentPart.CreateImagePart(new Uri(selfie)))
                 ]);
-            // Extract the raw text response from the AI (unstructured format)
             string rawResponse = response.Value.Content[0].Text;
-            // Map the raw response to the IdentityValidationResponse
             return AIResponseMapper.Map<IdentityValidationResponse>(rawResponse);
         }
     }
