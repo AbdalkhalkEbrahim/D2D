@@ -1,5 +1,4 @@
 using Application.Services;
-using Domain.Entities;
 using Domain.Entities.Shared;
 using Domain.Interfaces;
 using Domain.Settings;
@@ -10,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Scalar.AspNetCore;
 using System.Text;
 namespace Presentation
 {
@@ -60,6 +60,8 @@ namespace Presentation
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Test"));
             });
 
+            builder.Services.AddOpenApi();
+
             builder.Services.AddHostedService<OtpCleanupBackgroundWorker>();
             builder.Services.AddHostedService<RefreshTokenCleanupBackgroundWorker>();
 
@@ -67,6 +69,7 @@ namespace Presentation
             builder.Services.AddScoped<IOtpService, OtpService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUploadService, UploadService>();
+            builder.Services.AddScoped<IIdentityValidationService, IdentityValidationService>();
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -116,6 +119,8 @@ namespace Presentation
                 cfg.RegisterServicesFromAssemblies(assemblies);
             });
             builder.Services.AddControllers();
+
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -127,6 +132,9 @@ namespace Presentation
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+
+                app.MapOpenApi();
+                app.MapScalarApiReference();
             }
 
             app.UseHttpsRedirection();

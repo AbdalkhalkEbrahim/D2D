@@ -17,11 +17,13 @@ namespace Presentation.Controllers
         private readonly IMediator _mediator;
         private readonly IAuthService _authService;
         private readonly IUploadService _uploadService;
-        public AccountController(IMediator mediator, IAuthService authService, IUploadService uploadService)
+        private readonly IIdentityValidationService _identityValidationService;
+        public AccountController(IMediator mediator, IAuthService authService, IUploadService uploadService, IIdentityValidationService identityValidationService)
         {
             _mediator = mediator;
             _authService = authService;
             _uploadService = uploadService;
+            _identityValidationService = identityValidationService;
         }
 
         [HttpPost("register")]
@@ -112,6 +114,13 @@ namespace Presentation.Controllers
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
             var result = await _uploadService.UploadFileAsync(file);
+            return Ok(result);
+        }
+
+        [HttpPost("identity-validation")]
+        public async Task<IActionResult> IdentityValidation(IdentityValidationRequest request)
+        {
+            var result = await _identityValidationService.AnalyzeAsync(request.FrontImageUrl, request.BackImageUrl, request.SelfieImageUrl);
             return Ok(result);
         }
     }

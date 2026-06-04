@@ -47,9 +47,9 @@ namespace Application.Handlers
                     LastName = payload.FamilyName,
                     UserType = request.UserType,
                     BD = new DateTime(request.Year, request.Month, request.Day),
-                    AnonName = user.AnonymousName(request.UserType)
+                 //   AnonName = user.AnonymousName(request.UserType)
                 };
-
+                user.AnonName = user.AnonymousName(request.UserType);
                 if (!user.IsAllowed)
                     throw new Exception("not allowed age to register.");
 
