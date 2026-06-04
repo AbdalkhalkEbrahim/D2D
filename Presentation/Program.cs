@@ -60,7 +60,7 @@ namespace Presentation
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Test"));
             });
 
-            builder.Services.AddOpenApi();
+            builder.Services.AddSwaggerGen();
 
             builder.Services.AddHostedService<OtpCleanupBackgroundWorker>();
             builder.Services.AddHostedService<RefreshTokenCleanupBackgroundWorker>();
@@ -133,8 +133,7 @@ namespace Presentation
                 app.UseSwagger();
                 app.UseSwaggerUI();
 
-                app.MapOpenApi();
-                app.MapScalarApiReference();
+                app.MapSwagger();
             }
 
             app.UseHttpsRedirection();
