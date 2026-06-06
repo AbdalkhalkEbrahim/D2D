@@ -15,20 +15,20 @@ namespace Application.Commands
         //validation
 
         [Required]
-        [StringLength(15)]
+        [StringLength(30)]
         public string FirstName { get; set; }
 
         [Required]
-        [StringLength(15)]
+        [StringLength(30)]
         public string LastName { get; set; }
 
         [Required]
         [EmailAddress]
-        [MaxLength(30)]
+        [MaxLength(100)]
         public string Email { get; set; }
 
         [Required]
-        [MaxLength(25)]
+        [MaxLength(30)]
         [RegularExpression(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?]).*$",
         ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*?).")]
         public string Password { get; set; }

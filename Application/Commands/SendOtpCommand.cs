@@ -11,7 +11,7 @@ namespace Application.Commands
     {
         [Required]
         [EmailAddress]
-        [MaxLength(30)]
+        [MaxLength(100)]
         public string Email { get; set; }
     }
 }

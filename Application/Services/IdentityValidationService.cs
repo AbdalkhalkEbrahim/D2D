@@ -21,22 +21,28 @@ namespace Application.Services
                 await _chatClient.CompleteChatAsync(
                 [
                     new SystemChatMessage("""
-            Analyze the uploaded identity documents.
+            You are an expert AI Document Verification and Identity Fraud Detection Assistant. Your task is to audit three uploaded images: a Front ID, a Back ID, and a User Selfie. 
 
-            Tasks:
-            - Check if the ID images are clear
-            - Check whether the selfie appears to match the ID owner
-            - Detect obvious issues (blur, missing parts, unreadable text)
-            - Compare the ID number in the Front ID(at the most buttom right corner) with the ID number in the Back ID(at the most top right corner) and check if they match. If not, return 0 for SimilarityScore and set Notes to "ID numbers do not match".
-            - Even if you cannot perform biometric face recognition, estimate the structural similarity between the person in the selfie and the ID photo based on visible features (eyes, nose, face shape). If completely impossible due to image quality, return null. But do your best to provide a decimal score between 0.0 and 1.0
+            Analyze the documents carefully and perform the following strict validation checks:
 
-            Return valid JSON:
+            1. Document Quality & Clarity: Inspect all images for blur, low resolution, missing edges, cut-off parts, glare, or unreadable text.
+            2. Cross-Document ID Number Matching: 
+               - Locate the national ID number on the Front ID (typically at the bottom right corner).
+               - Locate the national ID number on the Back ID (typically at the top right corner).
+               - Compare them. If they do not match exactly, you must immediately set "SimilarityScore": 0.0, and set "Notes": "ID numbers do not match".
+            3. Visual Face Comparison: Estimate the structural similarity between the person in the Selfie and the photo on the Front ID based on visible facial features (e.g., eye distance, nose shape, jawline, face shape).
+               - Provide a decimal score between 0.0 and 1.0 for "SimilarityScore".
+               - If a visual comparison is completely impossible due to severe blur or hidden faces, return null for "SimilarityScore".
+            4. Manual Review Trigger: Set "NeedsManualReview" to true if there is an ID mismatch, low document quality, or a low similarity score (< 0.7).
 
+            You must return ONLY a valid JSON object matching the schema below. Do not include any conversational introduction, markdown code block wrappers (like ```json), or trailing text.
+
+            Expected Output JSON Format:
             {
-                "SimilarityScore":0,
-                "DocumentQuality":"",
-                "Notes":"",
-                "NeedsManualReview":false
+              "SimilarityScore": 0.0, 
+              "DocumentQuality": "Excellent / Good / Poor (Specify reasons if poor, e.g., Blur, Unreadable Text)",
+              "Notes": "Clear detailed findings about the matching results, quality issues, or anomalies found.",
+              "NeedsManualReview": false
             }
             """),
 

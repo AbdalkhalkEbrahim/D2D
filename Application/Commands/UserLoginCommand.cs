@@ -13,10 +13,10 @@ namespace Application.Commands
     {
         [Required]
         [EmailAddress]
-        [MaxLength(30)]
+        [MaxLength(100)]
         public string Email { get; set; }
         [Required]
-        [MaxLength(25)]
+        [MaxLength(30)]
         [RegularExpression(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?]).*$",
         ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*?).")]
         public string Password { get; set; }

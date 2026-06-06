@@ -128,7 +128,7 @@ namespace Presentation.Controllers
         [HttpPost("Test")]
         public async Task<IActionResult> Test()
         {
-            return NotFound(new GeneralResponse { });
+            return StatusCode(429, new { message = "Too Many Requests" });
         }
     }
 }

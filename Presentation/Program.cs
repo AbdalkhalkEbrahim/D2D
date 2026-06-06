@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using System.Text;
+using V01.Services;
 namespace Presentation
 {
     public class Program
@@ -72,6 +73,7 @@ namespace Presentation
             builder.Services.AddScoped<IOtpService, OtpService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUploadService, UploadService>();
+            builder.Services.AddScoped<IDesignValidationService,DesignValidationService>();
             builder.Services.AddScoped<IIdentityValidationService>(provider=>new IdentityValidationService(openAI_APIKey));
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
@@ -140,7 +142,7 @@ namespace Presentation
                     c.RoutePrefix = "swagger";
                 });
 
-                app.MapSwagger();
+                //app.MapSwagger();
             }
 
             app.UseHttpsRedirection();

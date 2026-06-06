@@ -24,13 +24,15 @@ namespace Application.Handlers
         private readonly D2DContext _context;
         private readonly IAuthService _authService;
         private readonly IIdentityValidationService _identityValidationService;
-        public DesignerRegesterationCommandHandler(UserManager<User> userManager, IUploadService uploadService, D2DContext context, IAuthService authService, IIdentityValidationService identityValidationService)
+        private readonly IDesignValidationService _designValidationService;
+        public DesignerRegesterationCommandHandler(UserManager<User> userManager, IUploadService uploadService, D2DContext context, IAuthService authService, IIdentityValidationService identityValidationService, IDesignValidationService designValidationService)
         {
             _userManager = userManager;
             _uploadService = uploadService;
             _context = context;
             _authService = authService;
             _identityValidationService = identityValidationService;
+            _designValidationService = designValidationService;
         }
 
         public async Task<object> Handle(DesignerRegesterationCommand request, CancellationToken cancellationToken)
@@ -62,25 +64,30 @@ namespace Application.Handlers
                 { "FrontImageID", designer.FrontImageID },
                 { "BackImageID", designer.BackImageID },
                 { "PersonalImage", designer.PersonalImage },
-                { "DesignVerificationUrls", string.Join(", ", designer.DesignVerifications.Select(d => d.StepUrl)) }
+              //  { "DesignVerificationUrls", string.Join(", ", designer.DesignVerifications.Select(d => d.StepUrl)) }
             };
 
-        checkAgain:
-            var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
-            if (response.SimilarityScore is null)
-                goto checkAgain;
+        checkIdentityAgain:
+            var identityResponse = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
+            if (identityResponse.SimilarityScore is null)
+                goto checkIdentityAgain;
 
-            if (response.SimilarityScore >= 0.8)
+            if (identityResponse.SimilarityScore >= 0.8)
             {
                 designer.IdentityStatus = VerificationStatus.Approved;
                 _context.Designers.Update(designer);
             }
+            CheckDesignAgain:
+            var designResponse = await _designValidationService.AnalyzeAsync(designer.DesignVerifications.Select(d => d.StepUrl).ToList());
+            if(designResponse.ConfidenceScore is null || designResponse.ProgressScore is null)
+                goto CheckDesignAgain;
+
             await _context.SaveChangesAsync();
 
             return new
             {
-                response = response,
-                DesignerVerificationUrls = result["DesignVerificationUrls"]
+                IdentityResponse = identityResponse,
+                DesignResponse = designResponse,
             };
 
             /*  var AccessToken = await _authService.GenerateAccessToken(designer);
