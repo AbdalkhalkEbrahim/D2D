@@ -13,9 +13,5 @@ namespace Domain.Settings
         public string Audience { get; set; }
         public int AccessTokenExpirationMinutes { get; set; }
         public int RefreshTokenExpirationDays { get; set; }
-        public bool ValidateLifetime { get; set; }
-        public bool ValidateIssuerSigningKey { get; set; }
-        public bool ValidateIssuer { get; set; }
-        public bool ValidateAudience { get; set; }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Application.Commands;
+using Application.Services;
 using Domain.DTOs;
+using Domain.Entities.Customers;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums;
@@ -15,20 +17,22 @@ using System.Threading.Tasks;
 
 namespace Application.Handlers
 {
-    internal class ProducerRegisterrationCommandHandler : IRequestHandler<ProducerRegisterrationCommand, JwtToken>
+    internal class ProducerRegisterrationCommandHandler : IRequestHandler<ProducerRegisterrationCommand, object>
     {
         private readonly UserManager<User> _userManager;
         private readonly IUploadService _uploadService;
         private readonly IAuthService _authService;
         private readonly D2DContext _context;
-        public ProducerRegisterrationCommandHandler(UserManager<User> userManager, IUploadService uploadService, IAuthService authService, D2DContext context)
+        private readonly IIdentityValidationService _identityValidationService;
+        public ProducerRegisterrationCommandHandler(UserManager<User> userManager, IUploadService uploadService, IAuthService authService, IIdentityValidationService identityValidationService, D2DContext context)
         {
             _userManager = userManager;
             _uploadService = uploadService;
             _authService = authService;
+            _identityValidationService = identityValidationService;
             _context = context;
         }
-        public async Task<JwtToken> Handle(ProducerRegisterrationCommand request, CancellationToken cancellationToken)
+        public async Task<object> Handle(ProducerRegisterrationCommand request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByIdAsync(request.ProducerId);
             if (user == null || !user.EmailConfirmed || user.UserType != UserType.Producer)
@@ -47,7 +51,7 @@ namespace Application.Handlers
             producer.PersonalImage = await _uploadService.UploadFileAsync(request.PersonalImage);
             producer.LicenseVerifications = licenseUrls;
             _context.Producers.Update(producer);
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
             //await _userManager.UpdateAsync(producer);
 
             var result = new Dictionary<string, string>
@@ -57,18 +61,41 @@ namespace Application.Handlers
                 { "PersonalImage", producer.PersonalImage },
                 { "LicenseUrls", string.Join(", ", licenseUrls.Select(l => l.LicenseUrl)) }
             };
-            var AccessToken = await _authService.GenerateAccessToken(producer);
-            var refreshToken = await _authService.GenerateRefreshToken(producer.Id);
-            return new JwtToken
-            {
-                UserID = producer.Id,
-                AccessToken = AccessToken.Token,
-                RefreshToken = refreshToken.Token,
-                AccessTokenExpiresAt = AccessToken.ExpiresAt,
-                RefreshTokenExpiresAt = refreshToken.ExpiresAt,
-                Data = result,
 
+        checkAgain:
+            var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
+            if (response.SimilarityScore is null)
+                goto checkAgain;
+
+            if (response.SimilarityScore >= 0.8)
+            {
+                producer.IdentityStatus = VerificationStatus.Approved;
+                _context.Producers.Update(producer);
+            }
+            await _context.SaveChangesAsync();
+
+            
+
+            return new
+            {
+                response = response,
+                licenseUrls = result["LicenseUrls"]
             };
+
+            /*  var AccessToken = await _authService.GenerateAccessToken(producer);
+              var refreshToken = await _authService.GenerateRefreshToken(producer.Id);
+              return new JwtToken
+              {
+                  UserID = producer.Id,
+                  AccessToken = AccessToken.Token,
+                  RefreshToken = refreshToken.Token,
+                  AccessTokenExpiresAt = AccessToken.ExpiresAt,
+                  RefreshTokenExpiresAt = refreshToken.ExpiresAt,
+                  Data = result,
+                };
+            */
+
+
         }
     }
 }

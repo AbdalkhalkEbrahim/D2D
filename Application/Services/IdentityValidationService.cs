@@ -8,10 +8,10 @@ namespace Application.Services
     public class IdentityValidationService: IIdentityValidationService
     {
         private readonly ChatClient _chatClient;
-
-        public IdentityValidationService(IConfiguration configuration)
+        
+        public IdentityValidationService(string openAI_APIKey)
         {
-            var client = new OpenAIClient(configuration["OpenAI:ApiKey"]);
+            var client = new OpenAIClient(openAI_APIKey);
             _chatClient = client.GetChatClient("gpt-5-mini");
         }
 
@@ -27,7 +27,9 @@ namespace Application.Services
             - Check if the ID images are clear
             - Check whether the selfie appears to match the ID owner
             - Detect obvious issues (blur, missing parts, unreadable text)
+            - Compare the ID number in the Front ID(at the most buttom right corner) with the ID number in the Back ID(at the most top right corner) and check if they match. If not, return 0 for SimilarityScore and set Notes to "ID numbers do not match".
             - Even if you cannot perform biometric face recognition, estimate the structural similarity between the person in the selfie and the ID photo based on visible features (eyes, nose, face shape). If completely impossible due to image quality, return null. But do your best to provide a decimal score between 0.0 and 1.0
+
             Return valid JSON:
 
             {

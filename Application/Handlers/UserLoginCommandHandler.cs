@@ -1,31 +1,24 @@
 ﻿using Application.Commands;
 using Domain.DTOs;
 using Domain.Entities.Shared;
+using Domain.Enums;
 using Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Application.Handlers
 {
-    public class UserLoginCommandHandler : IRequestHandler<UserLoginCommand, JwtToken>
+    public class UserLoginCommandHandler : IRequestHandler<UserLoginCommand, object>
     {
         private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
         private readonly IAuthService _authService;
 
-        public UserLoginCommandHandler(UserManager<User> userManager, SignInManager<User> signInManager, IAuthService authService)
+        public UserLoginCommandHandler(UserManager<User> userManager, IAuthService authService)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
             _authService = authService;
         }
 
-        public async Task<JwtToken> Handle(UserLoginCommand request, CancellationToken cancellationToken)
+        public async Task<object> Handle(UserLoginCommand request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
 
@@ -72,6 +65,18 @@ namespace Application.Handlers
             await _userManager.ResetAccessFailedCountAsync(user);
             await _userManager.SetLockoutEndDateAsync(user, null);
             #endregion
+
+            if(user.IdentityStatus == VerificationStatus.Rejected)
+            {
+                throw new UnauthorizedAccessException("Account isn't Verified");
+            }
+
+            else if(user.IdentityStatus == VerificationStatus.Pending)
+            {
+               return new {
+                    Status = "Pending"
+                };
+            }
             var AccessToken = await _authService.GenerateAccessToken(user);
             var refreshToken = await _authService.GenerateRefreshToken(user.Id);
 

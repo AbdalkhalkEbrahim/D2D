@@ -1,7 +1,4 @@
-﻿using Domain.Entities.Customers;
-using Domain.Entities.Designers;
-using Domain.Entities.Producers;
-using Domain.Enums;
+﻿using Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 namespace Domain.Entities.Shared
 {

@@ -9,24 +9,26 @@ using Domain.Interfaces;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using System.Reflection.Emit;
 
 namespace Application.Handlers
 {
-    public class CustomerRegisterationCommandHandler:IRequestHandler<CustomerRegisterationCommand, JwtToken>
+    public class CustomerRegisterationCommandHandler:IRequestHandler<CustomerRegisterationCommand, object>
     {
         private readonly UserManager<User> _userManager;
         private readonly IUploadService _uploadService;
         private readonly IAuthService _authService;
-
+        private readonly IIdentityValidationService _identityValidationService;
         private readonly D2DContext _context;
-        public CustomerRegisterationCommandHandler(UserManager<User> userManager, IUploadService uploadService, IAuthService authService, D2DContext context)
+        public CustomerRegisterationCommandHandler(UserManager<User> userManager, IUploadService uploadService, IAuthService authService, IIdentityValidationService identityValidationService, D2DContext context)
         {
             _userManager = userManager;
             _uploadService = uploadService;
             _authService = authService;
+            _identityValidationService = identityValidationService;
             _context = context;
         }
-        public async Task<JwtToken>Handle(CustomerRegisterationCommand request, CancellationToken cancellationToken)
+        public async Task<object>Handle(CustomerRegisterationCommand request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByIdAsync(request.CustomerId);
             if (user == null || !user.EmailConfirmed || user.UserType != UserType.Customer)
@@ -38,7 +40,9 @@ namespace Application.Handlers
                     new Address
                     {
                         AppartmentNo = request.AppartmentNo,
+                        BuildingNumber = request.BuildingNumber,
                         Street = request.Street,
+                        District = request.District,
                         City = request.City,
                         Goverate = request.Goverate,
                         Selected = true,
@@ -51,7 +55,7 @@ namespace Application.Handlers
 
             //await _userManager.UpdateAsync(customer);
             _context.Customers.Update(customer);
-            await _context.SaveChangesAsync();
+           // await _context.SaveChangesAsync();
 
             var result = new Dictionary<string,string>
             {
@@ -60,17 +64,35 @@ namespace Application.Handlers
                 { "PersonalImage", customer.PersonalImage }
             };
 
-            var AccessToken = await _authService.GenerateAccessToken(customer);
-            var refreshToken = await _authService.GenerateRefreshToken(customer.Id);
-            return new JwtToken
+        checkAgain:
+            var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
+            if(response.SimilarityScore is null)
+                goto checkAgain;
+
+            if (response.SimilarityScore >= 0.8)
             {
-                UserID = customer.Id,
-                AccessToken = AccessToken.Token,
-                RefreshToken = refreshToken.Token,
-                AccessTokenExpiresAt = AccessToken.ExpiresAt,
-                RefreshTokenExpiresAt = refreshToken.ExpiresAt,
-                Data = result,
+                customer.IdentityStatus = VerificationStatus.Approved;
+                _context.Customers.Update(customer);
+            }
+            await _context.SaveChangesAsync();
+
+            return new 
+            {
+                response = response
             };
+
+            /* var AccessToken = await _authService.GenerateAccessToken(customer);
+             var refreshToken = await _authService.GenerateRefreshToken(customer.Id);
+
+             return new JwtToken
+             {
+                 UserID = customer.Id,
+                 AccessToken = AccessToken.Token,
+                 RefreshToken = refreshToken.Token,
+                 AccessTokenExpiresAt = AccessToken.ExpiresAt,
+                 RefreshTokenExpiresAt = refreshToken.ExpiresAt,
+                 Data = result,
+             };*/
         }
     }
 }

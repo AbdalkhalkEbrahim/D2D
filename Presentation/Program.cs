@@ -22,6 +22,9 @@ namespace Presentation
             // Add services to the container.
 
             // custom services
+            string openAI_APIKey = builder.Configuration["OpenAI:ApiKey"];
+            string dbConn = builder.Configuration.GetConnectionString("Test");
+
             #region Swagger Settings
             builder.Services.AddSwaggerGen(swagger =>
             {
@@ -57,7 +60,7 @@ namespace Presentation
             #endregion
             builder.Services.AddDbContext<D2DContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("Test"));
+                options.UseSqlServer(dbConn);
             });
 
             builder.Services.AddSwaggerGen();
@@ -69,14 +72,14 @@ namespace Presentation
             builder.Services.AddScoped<IOtpService, OtpService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUploadService, UploadService>();
-            builder.Services.AddScoped<IIdentityValidationService, IdentityValidationService>();
+            builder.Services.AddScoped<IIdentityValidationService>(provider=>new IdentityValidationService(openAI_APIKey));
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 6;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = true;
 
                 options.Lockout.AllowedForNewUsers = true;   
                 options.Lockout.MaxFailedAccessAttempts = 3; 
@@ -128,10 +131,14 @@ namespace Presentation
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            //if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "D2D Platform");
+                    c.RoutePrefix = "swagger";
+                });
 
                 app.MapSwagger();
             }

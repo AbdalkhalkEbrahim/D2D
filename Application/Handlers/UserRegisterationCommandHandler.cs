@@ -6,16 +6,11 @@ using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums;
 using Domain.Interfaces;
+using Domain.Settings;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Application.Handlers
 {
@@ -24,17 +19,18 @@ namespace Application.Handlers
         private readonly UserManager<User> _userManager;
         private readonly IOtpService _otpService;
         private readonly D2DContext _context;
-        private readonly IEmailService _emailService;
+        //private readonly IEmailService _emailService;
+        private readonly EmailSettings _emailService;
         private readonly IMediator _mediator;
-        public UserRegisterationCommandHandler(UserManager<User> userManager, IOtpService otpService, D2DContext context, IEmailService emailService, IMediator mediator    )
+        public UserRegisterationCommandHandler(UserManager<User> userManager, IOtpService otpService, D2DContext context, IOptions<EmailSettings> emailService, IMediator mediator    )
         {
             _userManager = userManager;
             _otpService = otpService;
             _context = context;
-            _emailService = emailService;
+            _emailService = emailService.Value;
             _mediator = mediator;
         }
-
+        
         public async Task<string> Handle(UserRegisterationCommand request, CancellationToken cancellationToken)
         {
             if (request.Password != request.ComfirmedPassword)
@@ -44,8 +40,7 @@ namespace Application.Handlers
 
             if (existingEmail != null)
                 throw new Exception("Email already exists.");
-
-            
+           
             User user;
             if(request.UserType == UserType.Customer)
                  user = new Customer();
@@ -67,7 +62,7 @@ namespace Application.Handlers
 
             var result=await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
-                throw new Exception("aaaaaaaaaaaaaaaaaaaaaaaaaaaah");
+                throw new Exception("Failed to create user.");
 
             await _userManager.AddToRoleAsync(user, request.UserType.ToString());
 

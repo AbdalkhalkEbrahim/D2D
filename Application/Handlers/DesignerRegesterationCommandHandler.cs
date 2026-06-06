@@ -17,32 +17,36 @@ using System.Threading.Tasks;
 
 namespace Application.Handlers
 {
-    public class DesignerRegesterationCommandHandler : IRequestHandler<DesignerRegesterationCommand, JwtToken>
+    public class DesignerRegesterationCommandHandler : IRequestHandler<DesignerRegesterationCommand, object>
     {
         private readonly UserManager<User> _userManager;
         private readonly IUploadService _uploadService;
         private readonly D2DContext _context;
         private readonly IAuthService _authService;
-        public DesignerRegesterationCommandHandler(UserManager<User> userManager, IUploadService uploadService, D2DContext context, IAuthService authService)
+        private readonly IIdentityValidationService _identityValidationService;
+        public DesignerRegesterationCommandHandler(UserManager<User> userManager, IUploadService uploadService, D2DContext context, IAuthService authService, IIdentityValidationService identityValidationService)
         {
             _userManager = userManager;
             _uploadService = uploadService;
             _context = context;
             _authService = authService;
+            _identityValidationService = identityValidationService;
         }
 
-        public async Task<JwtToken> Handle(DesignerRegesterationCommand request, CancellationToken cancellationToken)
+        public async Task<object> Handle(DesignerRegesterationCommand request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByIdAsync(request.DesignerId);
             if (user == null || !user.EmailConfirmed || user.UserType != UserType.Designer)
                 throw new Exception("Invalid request");
 
             var stepUrls = new List<DesignVerification>();
+
             foreach (var file in request.StepUrls)
             {
                 var url = await _uploadService.UploadFileAsync(file);
                 stepUrls.Add(new DesignVerification { StepUrl = url });
             }
+
             Designer designer = (Designer) user;
             designer.FrontImageID = await _uploadService.UploadFileAsync(request.FrontImageID);
             designer.BackImageID = await _uploadService.UploadFileAsync(request.BackImageID);
@@ -50,7 +54,7 @@ namespace Application.Handlers
             designer.DesignVerifications = stepUrls;
 
             _context.Designers.Update(designer);
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
             //await _userManager.UpdateAsync(designer);
 
             var result = new Dictionary<string, string>
@@ -60,18 +64,37 @@ namespace Application.Handlers
                 { "PersonalImage", designer.PersonalImage },
                 { "DesignVerificationUrls", string.Join(", ", designer.DesignVerifications.Select(d => d.StepUrl)) }
             };
-            var AccessToken = await _authService.GenerateAccessToken(designer);
-            var refreshToken = await _authService.GenerateRefreshToken(designer.Id);
-            return new JwtToken
-            {
-                UserID = designer.Id,
-                AccessToken = AccessToken.Token,
-                RefreshToken = refreshToken.Token,
-                AccessTokenExpiresAt = AccessToken.ExpiresAt,
-                RefreshTokenExpiresAt = refreshToken.ExpiresAt,
-                Data = result,
 
+        checkAgain:
+            var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
+            if (response.SimilarityScore is null)
+                goto checkAgain;
+
+            if (response.SimilarityScore >= 0.8)
+            {
+                designer.IdentityStatus = VerificationStatus.Approved;
+                _context.Designers.Update(designer);
+            }
+            await _context.SaveChangesAsync();
+
+            return new
+            {
+                response = response,
+                DesignerVerificationUrls = result["DesignVerificationUrls"]
             };
+
+            /*  var AccessToken = await _authService.GenerateAccessToken(designer);
+              var refreshToken = await _authService.GenerateRefreshToken(designer.Id);
+              return new JwtToken
+              {
+                  UserID = designer.Id,
+                  AccessToken = AccessToken.Token,
+                  RefreshToken = refreshToken.Token,
+                  AccessTokenExpiresAt = AccessToken.ExpiresAt,
+                  RefreshTokenExpiresAt = refreshToken.ExpiresAt,
+                  Data = result,
+
+              };*/
         }
     }
 }

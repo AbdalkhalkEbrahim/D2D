@@ -5,10 +5,6 @@ using Domain.Interfaces;
 using Google.Apis.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Application.Handlers
 {
     public class GoogleLoginCommandHandler : IRequestHandler<GoogleLoginCommand, JwtToken>
@@ -36,7 +32,7 @@ namespace Application.Handlers
 
             var user = await _userManager.FindByEmailAsync(payload.Email);
 
-            if (user == null)
+           /* if (user == null)
             {
                 user = new User
                 {
@@ -62,8 +58,9 @@ namespace Application.Handlers
                 var identityUserLogin = new UserLoginInfo("Google", payload.Subject, "Google");
                 await _userManager.AddLoginAsync(user, identityUserLogin);
             }
-            else
+            else*/
             {
+                
                 var logins = await _userManager.GetLoginsAsync(user);
                 bool isLinkedToGoogle = false;
                 foreach (var login in logins)

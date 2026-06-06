@@ -1,4 +1,5 @@
 ﻿using Application.Commands;
+using Application.Response;
 using Application.Services;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
@@ -32,12 +33,14 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return Ok(result);
         }
+
         [HttpPost("send-otp")]
         public async Task<IActionResult> SendOtp(SendOtpCommand dto)
         {
             var result = await _mediator.Send(dto);
             return Ok(result);
         }
+
         [HttpPost("verify-otp")]
         public async Task<IActionResult> VerifyOtp(VerifyOtpCommand dto)
         {
@@ -65,7 +68,6 @@ namespace Presentation.Controllers
         {
             var result = await _mediator.Send(dto);
             return Ok(result);
-
         }
 
         [HttpPost("login")]
@@ -122,6 +124,11 @@ namespace Presentation.Controllers
         {
             var result = await _identityValidationService.AnalyzeAsync(request.FrontImageUrl, request.BackImageUrl, request.SelfieImageUrl);
             return Ok(result);
+        }
+        [HttpPost("Test")]
+        public async Task<IActionResult> Test()
+        {
+            return NotFound(new GeneralResponse { });
         }
     }
 }

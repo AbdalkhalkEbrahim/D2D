@@ -71,6 +71,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, string>
         await _context.Otps.AddAsync(otp, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
+        //alter email formula
         await _emailService.SendEmailAsync(request.Email, "OTP Verification", $"Your OTP is: {code}");
 
         return "OTP sent successfully"; //userID, UserType
