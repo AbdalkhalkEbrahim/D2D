@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using OpenAI;
 using OpenAI.Chat;
 
-namespace V01.Services
+namespace Application.Services
 {
     public class DesignValidationService:IDesignValidationService
     {
@@ -34,7 +34,6 @@ namespace V01.Services
             [
                 new SystemChatMessage("""
             You are an expert AI Forensic Auditor specializing in the Fashion and Apparel Industry, focusing on design authenticity, intellectual property verification, and plagiarism detection.
-
             Your task is to analyze a series of step-by-step images provided by a designer to verify whether they represent an authentic, continuous, and logical workflow of creating a single, cohesive clothing design. You must also detect any indicators of fraud, theft, or inconsistent ownership.
 
             Carefully evaluate the images using the following criteria:
