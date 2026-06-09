@@ -15,10 +15,12 @@ namespace Domain.Entities.Shared
         public static int DCounter { get; set; }
         public int ReportsCounter { get; set; }
         public DateTimeOffset? OtpLockoutEnd { get; set; }
+        public int? OtpLockoutCount { get; set; }
         #region IdentityVerification
         public string? FrontImageID { get; set; }
         public string? BackImageID { get; set; }
         public string? PersonalImage { get; set; }
+        public MagicToken? MagicToken { get; set; }
         public VerificationStatus IdentityStatus { get; set; } = VerificationStatus.Pending;
         #endregion
         public virtual ICollection<Notification>? Notifications { get; set; } = new List<Notification>();

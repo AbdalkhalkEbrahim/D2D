@@ -31,6 +31,8 @@ namespace Application.Handlers
             }
 
             var user = await _userManager.FindByEmailAsync(payload.Email);
+            if (user == null)
+                throw new Exception("user not found, register first"); 
 
            /* if (user == null)
             {

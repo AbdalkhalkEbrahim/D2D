@@ -24,37 +24,22 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, string>
 
     public async Task<string> Handle(SendOtpCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
+        var user = _context.Users.FirstOrDefault(u=>u.Email == request.Email);
+        
         if (user == null)
             throw new Exception("User not found");
 
         #region Exponential Backoff
         if (user.OtpLockoutEnd.HasValue && user.OtpLockoutEnd.Value > DateTimeOffset.UtcNow)
         {
-            var timeLeft = user.OtpLockoutEnd.Value - DateTimeOffset.UtcNow;
-            throw new Exception($"Please wait {Math.Ceiling(timeLeft.TotalMinutes)} minutes before requesting a new OTP.");
+            var duration = user.OtpLockoutCount != 1 ? user.OtpLockoutCount / 2 : user.OtpLockoutCount;
+            throw new Exception($"Please wait {duration} minutes before requesting a new OTP.");
         }
 
-        int nextLockoutMinutes = 1;
+        user.OtpLockoutCount = user.OtpLockoutCount ?? 1;
+        user.OtpLockoutEnd = DateTimeOffset.UtcNow.AddMinutes((double)user.OtpLockoutCount);
+        user.OtpLockoutCount *= 2;
 
-        if (user.OtpLockoutEnd.HasValue)
-        {
-            var timeSinceLockoutEnded = DateTimeOffset.UtcNow - user.OtpLockoutEnd.Value;
-
-            if (timeSinceLockoutEnded.TotalMinutes > 60)
-            {
-                nextLockoutMinutes = 1;
-                user.OtpLockoutEnd = null;
-            }
-            else
-            {
-                var previousDuration = user.OtpLockoutEnd.Value - DateTimeOffset.UtcNow;
-                int previousMinutes = (int)Math.Abs(Math.Ceiling(previousDuration.TotalMinutes));
-                nextLockoutMinutes = previousMinutes * 2;
-            }
-        }
-
-        user.OtpLockoutEnd = DateTimeOffset.UtcNow.AddMinutes(nextLockoutMinutes);
         _context.Users.Update(user);
         #endregion
 

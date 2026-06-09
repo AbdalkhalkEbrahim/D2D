@@ -43,7 +43,7 @@ namespace Infrastructure.Data.Context
         public DbSet<ModelChatMessage> ModelChatMessages { get; set; }
         public DbSet<Otp> Otps { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
-
+        public DbSet<MagicToken> MagicTokens { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

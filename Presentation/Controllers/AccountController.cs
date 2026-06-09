@@ -125,10 +125,17 @@ namespace Presentation.Controllers
             var result = await _identityValidationService.AnalyzeAsync(request.FrontImageUrl, request.BackImageUrl, request.SelfieImageUrl);
             return Ok(result);
         }
-        [HttpPost("Test")]
-        public async Task<IActionResult> Test()
+        [HttpPost("send-login-link")]
+        public async Task<IActionResult> SendLoginLink(SendLoginLinkCommand dto)
         {
-            return StatusCode(429, new { message = "Too Many Requests" });
+            var result = await _mediator.Send(dto);
+            return Ok(result);
+        }
+        [HttpPost("verify-magic-token")]
+        public async Task<IActionResult> VerifyMagicToken(VerifyMagicTokenCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return Ok(result);
         }
     }
 }

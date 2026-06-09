@@ -64,8 +64,10 @@ namespace Presentation
 
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddHostedService<OtpCleanupBackgroundWorker>();
+/*            builder.Services.AddHostedService<OtpCleanupBackgroundWorker>();
             builder.Services.AddHostedService<RefreshTokenCleanupBackgroundWorker>();
+            builder.Services.AddHostedService<MagicTokenCleaupBackgroundWorker>();*/
+            builder.Services.AddHostedService<D2DBackgroundServices>();
 
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IOtpService, OtpService>();

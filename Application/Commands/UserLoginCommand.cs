@@ -17,7 +17,7 @@ namespace Application.Commands
         public string Email { get; set; }
         [Required]
         [MaxLength(30)]
-        [RegularExpression(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?]).*$",
+        [RegularExpression(@"^(?=.*)(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?]).*$",
         ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*?).")]
         public string Password { get; set; }
     }
