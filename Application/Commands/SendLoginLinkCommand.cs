@@ -1,14 +1,10 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Application.Response;
+using MediatR;
 
 namespace Application.Commands
 {
-    public class SendLoginLinkCommand:IRequest<string>
+    public class SendLoginLinkCommand:IRequest<Result<string>>
     {
-        public string UserID { get; set; }
+        public required string UserID { get; set; }
     }
 }

@@ -1,30 +1,25 @@
-﻿using Domain.DTOs;
-using Domain.Entities.Customers;
+﻿using Application.Response;
+using Domain.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Commands
 {
-    public class CustomerRegisterationCommand : IRequest<object>
+    public class CustomerRegisterationCommand : IRequest<Result<CustomerRegisteratonResponse>>
     {
         [Required]
-        public string CustomerId { get; set; }
+        public required string CustomerId { get; set; }
         [Required]
 
-        public IFormFile FrontImageID { get; set; }
+        public required IFormFile FrontImageID { get; set; }
         [Required]
-        public IFormFile BackImageID { get; set; }
+        public required IFormFile BackImageID { get; set; }
         [Required]
-        public IFormFile PersonalImage { get; set; }
+        public required IFormFile PersonalImage { get; set; }
         [Required]
         [MaxLength(2)]
-        public string AppartmentNo { get; set; }
+        public required string AppartmentNo { get; set; }
 
         [Required]
         [Range(1, 70, ErrorMessage = "Building number must be between 1 and 70.")]
@@ -32,19 +27,19 @@ namespace Application.Commands
 
         [Required]
         [MaxLength(30)]
-        public string Street { get; set; }
+        public required string Street { get; set; }
 
         [Required]
         [MaxLength(30)]
-        public string District { get; set; }
+        public required string District { get; set; }
 
         [Required]
         [MaxLength(30)]
-        public string City { get; set; }
+        public required string City { get; set; }
 
         [Required]
         [MaxLength(30)]
-        public string Goverate { get; set; }
+        public required string Goverate { get; set; }
     }
 
 }

@@ -1,16 +1,8 @@
 ﻿using Domain.Entities.Chats;
 using Domain.Entities.Chats.AiModel;
-using Domain.Entities.Designs;
 using Domain.Entities.Offers;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities.Customers
 {

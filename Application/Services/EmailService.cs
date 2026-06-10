@@ -1,10 +1,8 @@
-﻿using Domain.Entities.Shared;
-using Domain.Interfaces;
+﻿using Application.Interfaces;
 using Domain.Settings;
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
+
 using Microsoft.Extensions.Options;
 using MimeKit;
 

@@ -1,5 +1,5 @@
-﻿using Domain.DTOs;
-using Domain.Interfaces;
+﻿using Application.Interfaces;
+using Domain.DTOs;
 using Microsoft.Extensions.Configuration;
 using OpenAI;
 using OpenAI.Chat;

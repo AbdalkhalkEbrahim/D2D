@@ -1,36 +1,34 @@
 ﻿using Application.Commands;
+using Application.Response;
 using Domain.Entities.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Handlers
 {
-    public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, string>
+    public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, Result<string>>
     {
         private readonly UserManager<User> _userManager;
+
         public ChangePasswordCommandHandler(UserManager<User> userManager)
         {
             _userManager = userManager;
-         }
-        public async Task<string> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
+        }
+
+        public async Task<Result<string>> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByIdAsync(request.UserId);
             if (user == null)
-                throw new Exception("User not found");
+                return Result<string>.Failure(Messages.NotFound.WithTarget("User"));
 
             if (request.NewPassword != request.ConfirmPassword)
-                throw new Exception("Passwords do not match");
+                return Result<string>.Failure(Messages.BadRequest.WithTarget("PasswordMismatch"));
 
             var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
             if (!result.Succeeded)
-                throw new Exception("Failed to change password");
+                return Result<string>.Failure(Messages.BadRequest.WithTarget("PasswordChangeFailed"));
 
-            return "Password has been successfully updated.";
+            return Result<string>.Success("Password has been successfully updated.");
         }
     }
 }

@@ -1,6 +1,6 @@
+using Application.Interfaces;
 using Application.Services;
 using Domain.Entities.Shared;
-using Domain.Interfaces;
 using Domain.Settings;
 using Infrastructure.Background_services;
 using Infrastructure.Data.Context;
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 using System.Text;
 namespace Presentation
 {
@@ -62,11 +63,17 @@ namespace Presentation
                 options.UseSqlServer(dbConn);
             });
 
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
-/*            builder.Services.AddHostedService<OtpCleanupBackgroundWorker>();
-            builder.Services.AddHostedService<RefreshTokenCleanupBackgroundWorker>();
-            builder.Services.AddHostedService<MagicTokenCleaupBackgroundWorker>();*/
+                options.IncludeXmlComments(xmlPath);
+            });
+
+            /*            builder.Services.AddHostedService<OtpCleanupBackgroundWorker>();
+                        builder.Services.AddHostedService<RefreshTokenCleanupBackgroundWorker>();
+                        builder.Services.AddHostedService<MagicTokenCleaupBackgroundWorker>();*/
             builder.Services.AddHostedService<D2DBackgroundServices>();
 
             builder.Services.AddScoped<IEmailService, EmailService>();
@@ -84,7 +91,7 @@ namespace Presentation
                 options.Password.RequireNonAlphanumeric = true;
 
                 options.Lockout.AllowedForNewUsers = true;   
-                options.Lockout.MaxFailedAccessAttempts = 3; 
+                options.Lockout.MaxFailedAccessAttempts = 4; 
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
             })
              .AddEntityFrameworkStores<D2DContext>()
@@ -133,17 +140,18 @@ namespace Presentation
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            //if (app.Environment.IsDevelopment())
-            {
+           // if (app.Environment.IsDevelopment())
+            //{
                 app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "D2D Platform");
-                    c.RoutePrefix = "swagger";
-                });
-
-                //app.MapSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "D2D API V1");
+                c.RoutePrefix = "swagger";
             }
+             );
+
+                app.MapSwagger();
+            //}
 
             app.UseHttpsRedirection();
             app.UseAuthentication();

@@ -7,7 +7,6 @@ using Domain.Entities.Offers;
 using Domain.Entities.Payment;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;

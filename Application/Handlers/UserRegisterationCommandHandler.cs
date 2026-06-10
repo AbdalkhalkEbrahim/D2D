@@ -1,54 +1,43 @@
 ﻿using Application.Commands;
+using Application.Response;
 using Domain.DTOs;
 using Domain.Entities.Customers;
 using Domain.Entities.Designers;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums;
-using Domain.Interfaces;
-using Domain.Settings;
-using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 
 namespace Application.Handlers
 {
-    public class UserRegisterationCommandHandler : IRequestHandler<UserRegisterationCommand,string>
+    public class UserRegisterationCommandHandler : IRequestHandler<UserRegisterationCommand, Result<UserRegisterationResponse>>
     {
         private readonly UserManager<User> _userManager;
-        private readonly IOtpService _otpService;
-        private readonly D2DContext _context;
-        //private readonly IEmailService _emailService;
-        private readonly EmailSettings _emailService;
         private readonly IMediator _mediator;
-        public UserRegisterationCommandHandler(UserManager<User> userManager, IOtpService otpService, D2DContext context, IOptions<EmailSettings> emailService, IMediator mediator    )
+
+        public UserRegisterationCommandHandler(UserManager<User> userManager, IMediator mediator)
         {
             _userManager = userManager;
-            _otpService = otpService;
-            _context = context;
-            _emailService = emailService.Value;
             _mediator = mediator;
         }
-        
-        public async Task<string> Handle(UserRegisterationCommand request, CancellationToken cancellationToken)
+
+        public async Task<Result<UserRegisterationResponse>> Handle(UserRegisterationCommand request, CancellationToken cancellationToken)
         {
             if (request.Password != request.ComfirmedPassword)
-                throw new Exception("Passwords do not match.");
+                return Result<UserRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("PasswordMismatch"));
 
-            var existingEmail =await _userManager.FindByEmailAsync(request.Email);
-
+            var existingEmail = await _userManager.FindByEmailAsync(request.Email);
             if (existingEmail != null)
-                throw new Exception("Email already exists.");
-           
-            User user;
-            if(request.UserType == UserType.Customer)
-                 user = new Customer();
-            else if(request.UserType == UserType.Designer)
-                user = new Designer();
-            else
-                user = new Producer();
-            
+                return Result<UserRegisterationResponse>.Failure(Messages.Conflict.WithTarget("Email"));
+
+            User user = request.UserType switch
+            {
+                UserType.Customer => new Customer(),
+                UserType.Designer => new Designer(),
+                _ => new Producer()
+            };
+
             user.Email = request.Email;
             user.UserName = request.Email;
             user.FirstName = request.FirstName;
@@ -58,32 +47,16 @@ namespace Application.Handlers
             user.AnonName = user.AnonymousName(request.UserType);
 
             if (!user.IsAllowed)
-                throw new Exception("not allowed age to register.");
+                return Result<UserRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("Underage"));
 
-            var result=await _userManager.CreateAsync(user, request.Password);
+            var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
-                throw new Exception("Failed to create user.");
+                return Result<UserRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("UserCreationFailed"));
 
             await _userManager.AddToRoleAsync(user, request.UserType.ToString());
-
             await _mediator.Send(new SendOtpCommand { Email = request.Email });
 
-         /*   var code = _otpService.GenerateOtp();
-
-            var otp = new Otp
-            {
-                Code = code,
-                UserId = user.Id,
-                ExpirationTime = DateTime.UtcNow.AddMinutes(5),
-                IsUsed = false
-            };
-            
-            await _context.Otps.AddAsync(otp, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
-            await _emailService.SendEmailAsync(request.Email, "OTP Email Verification", $"Your OTP is: {code}");*/
-            
-            return user.Id;
+            return Result<UserRegisterationResponse>.Success(new UserRegisterationResponse {UserId=user.Id,Email=user.Email,UserType=user.UserType});
         }
-
     }
 }

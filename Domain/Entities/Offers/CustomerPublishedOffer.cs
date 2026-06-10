@@ -1,6 +1,4 @@
 ﻿using Domain.Entities.Designs;
-using Domain.Enums;
-using Domain.Entities.Customers;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities.Offers

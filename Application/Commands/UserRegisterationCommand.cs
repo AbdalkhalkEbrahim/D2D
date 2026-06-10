@@ -1,44 +1,41 @@
-﻿using Domain.DTOs;
+﻿using Application.Response;
+using Domain.DTOs;
 using Domain.Enums;
 using MediatR;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Commands
 {
-    public class UserRegisterationCommand: IRequest<string>
+    public class UserRegisterationCommand: IRequest<Result<UserRegisterationResponse>>
     {
         //validation
 
         [Required]
         [StringLength(30)]
-        public string FirstName { get; set; }
+        public required string FirstName { get; set; }
 
         [Required]
         [StringLength(30)]
-        public string LastName { get; set; }
+        public required string LastName { get; set; }
 
         [Required]
         [EmailAddress]
         [MaxLength(100)]
-        public string Email { get; set; }
+        public required string Email { get; set; }
 
         [Required]
         [MaxLength(30)]
         [RegularExpression(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?]).*$",
         ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*?).")]
-        public string Password { get; set; }
+        public required string Password { get; set; }
 
         [Required]
         [Compare(nameof(Password))]
-        public string ComfirmedPassword { get; set; }
+        public required string ComfirmedPassword { get; set; }
 
         [Required]
         [EnumDataType(typeof(UserType))]
+        [Range(2, 4)]
         public UserType UserType { get; set; }
 
         [Required]

@@ -1,28 +1,25 @@
-﻿using Domain.DTOs;
+﻿using Application.Response;
+using Domain.DTOs;
+using Domain.Entities.Designers;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Commands
 {
-    public class DesignerRegesterationCommand:IRequest<object>
+    public class DesignerRegesterationCommand:IRequest<Result<DesignerRegisterationResponse>>
     {
         [Required]
-        public string DesignerId { get; set; }
+        public required string DesignerId { get; set; }
         [Required]
-        public IFormFile FrontImageID { get; set; }
+        public required IFormFile FrontImageID { get; set; }
         [Required]
-        public IFormFile BackImageID { get; set; }
+        public required IFormFile BackImageID { get; set; }
         [Required]
-        public IFormFile PersonalImage { get; set; }
+        public required IFormFile PersonalImage { get; set; }
         [Required]
         [MinLength(3, ErrorMessage = "At least three steps are required.")]
 
-        public List<IFormFile> StepUrls { get; set; }
+        public required List<IFormFile> StepUrls { get; set; }
     }
 }

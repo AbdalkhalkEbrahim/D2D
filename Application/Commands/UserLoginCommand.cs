@@ -1,24 +1,20 @@
-﻿using Domain.DTOs;
+﻿using Application.Response;
+using Domain.DTOs;
 using MediatR;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Commands
 {
-    public class UserLoginCommand:IRequest<object>
+    public class UserLoginCommand:IRequest<Result<JwtToken>>
     {
         [Required]
         [EmailAddress]
         [MaxLength(100)]
-        public string Email { get; set; }
+        public required string Email { get; set; }
         [Required]
         [MaxLength(30)]
         [RegularExpression(@"^(?=.*)(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?]).*$",
         ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*?).")]
-        public string Password { get; set; }
+        public required string Password { get; set; }
     }
 }

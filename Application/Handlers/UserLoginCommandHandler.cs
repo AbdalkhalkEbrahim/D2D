@@ -1,13 +1,15 @@
 ﻿using Application.Commands;
+using Application.Interfaces;
+using Application.Response;
 using Domain.DTOs;
 using Domain.Entities.Shared;
 using Domain.Enums;
-using Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+
 namespace Application.Handlers
 {
-    public class UserLoginCommandHandler : IRequestHandler<UserLoginCommand, object>
+    public class UserLoginCommandHandler : IRequestHandler<UserLoginCommand, Result<JwtToken>>
     {
         private readonly UserManager<User> _userManager;
         private readonly IAuthService _authService;
@@ -18,26 +20,23 @@ namespace Application.Handlers
             _authService = authService;
         }
 
-        public async Task<object> Handle(UserLoginCommand request, CancellationToken cancellationToken)
+        public async Task<Result<JwtToken>> Handle(UserLoginCommand request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
 
             if (user == null)
             {
-                throw new UnauthorizedAccessException("Invalid email or password.");
+                return Result<JwtToken>.Failure(Messages.NotFound.WithTarget("User"));
             }
-            #region Rate Limit
+
             if (await _userManager.IsLockedOutAsync(user))
             {
                 var lockoutEndDate = await _userManager.GetLockoutEndDateAsync(user);
                 var timeLeft = lockoutEndDate.Value.UtcDateTime - DateTime.UtcNow;
-                throw new Exception($"Account is temporarily locked. Try again after {Math.Ceiling(timeLeft.TotalMinutes)} minutes.");
+                return Result<JwtToken>.Failure(Messages.AccountLocked(timeLeft.Minutes, timeLeft.Seconds));
             }
 
-            //var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
-
-            //if (!result.Succeed)\
-            if(!await _userManager.CheckPasswordAsync(user, request.Password))
+            if (!await _userManager.CheckPasswordAsync(user, request.Password))
             {
                 await _userManager.AccessFailedAsync(user);
                 var failedAttempts = await _userManager.GetAccessFailedCountAsync(user);
@@ -55,39 +54,35 @@ namespace Application.Handlers
 
                     var lockoutEnd = DateTimeOffset.UtcNow.AddMinutes(lockoutMinutes);
                     await _userManager.SetLockoutEndDateAsync(user, lockoutEnd);
-
-                    throw new Exception($"Too many failed attempts. Account locked for {lockoutMinutes} minutes.");
+                    return Result<JwtToken>.Failure(Messages.AccountLocked(lockoutMinutes));
                 }
 
-                throw new UnauthorizedAccessException("Invalid email or password.");
+                return Result<JwtToken>.Failure(Messages.BadRequest.WithTarget("InvalidCredentials"));
             }
 
             await _userManager.ResetAccessFailedCountAsync(user);
             await _userManager.SetLockoutEndDateAsync(user, null);
-            #endregion
 
-            if(user.IdentityStatus == VerificationStatus.Rejected)
+            if (user.IdentityStatus == VerificationStatus.Rejected)
             {
-                throw new UnauthorizedAccessException("Account isn't Verified");
+                return Result<JwtToken>.Failure(Messages.AccountStatus.WithTarget("Rejected"));
+            }
+            else if (user.IdentityStatus == VerificationStatus.Pending)
+            {
+                return Result<JwtToken>.Failure(Messages.AccountStatus.WithTarget("Pending"));
             }
 
-            else if(user.IdentityStatus == VerificationStatus.Pending)
-            {
-               return new {
-                    Status = "Pending"
-                };
-            }
-            var AccessToken = await _authService.GenerateAccessToken(user);
+            var accessToken = await _authService.GenerateAccessToken(user);
             var refreshToken = await _authService.GenerateRefreshToken(user.Id);
 
-            return new JwtToken
+            return Result<JwtToken>.Success(new JwtToken
             {
                 UserID = user.Id,
-                AccessToken = AccessToken.Token,
+                AccessToken = accessToken.Token,
                 RefreshToken = refreshToken.Token,
-                AccessTokenExpiresAt = AccessToken.ExpiresAt,
+                AccessTokenExpiresAt = accessToken.ExpiresAt,
                 RefreshTokenExpiresAt = refreshToken.ExpiresAt,
-            };
+            });
         }
     }
 }

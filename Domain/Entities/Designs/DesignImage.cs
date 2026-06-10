@@ -1,12 +1,4 @@
-﻿using Domain.Entities.Customers;
-using Domain.Entities.Designers;
-using Domain.Entities.Producers;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities.Designs
 {
