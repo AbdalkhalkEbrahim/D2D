@@ -1,8 +1,8 @@
 ﻿using OpenAI;
 using OpenAI.Chat;
-using Domain.DTOs;
 using Application.Interfaces;
 using Application.Response;
+using Domain.DTOs.ModelDtos;
 namespace Application.Services
 {
     public class IdentityValidationService: IIdentityValidationService

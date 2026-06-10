@@ -1,4 +1,5 @@
-﻿using Domain.Enums;
+﻿using Domain.Enums.Status;
+using Domain.Enums.Types;
 using Microsoft.AspNetCore.Identity;
 namespace Domain.Entities.Shared
 {

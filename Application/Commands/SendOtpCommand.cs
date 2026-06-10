@@ -4,7 +4,7 @@ using MediatR;
 using System.ComponentModel.DataAnnotations;
 namespace Application.Commands
 {
-    public class SendOtpCommand:IRequest<Result<OtpResponse>>
+    public class SendOtpCommand : IRequest<Result<OtpResponse>>
     {
         [Required]
         [EmailAddress]

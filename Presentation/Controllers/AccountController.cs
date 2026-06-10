@@ -1,6 +1,11 @@
 ﻿using Application.Commands;
+using Application.Commands.RegisterationFeature;
+using Application.Commands.SettingsFeature;
 using Application.Interfaces;
 using Domain.DTOs;
+using Domain.DTOs.AuthDtos;
+using Domain.DTOs.ModelDtos;
+using Domain.DTOs.RegisterationDtos;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
