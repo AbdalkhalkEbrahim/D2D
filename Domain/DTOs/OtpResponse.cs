@@ -1,4 +1,4 @@
-﻿using Domain.Enums.Types;
+﻿using Domain.Enums;
 
 namespace Domain.DTOs
 {

@@ -1,5 +1,6 @@
 ﻿using Application.Response;
 using Domain.DTOs;
+using Domain.DTOs.AuthDtos;
 using Domain.Entities.Shared;
 
 namespace Application.Interfaces

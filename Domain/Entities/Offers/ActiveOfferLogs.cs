@@ -1,4 +1,5 @@
-﻿using Domain.Enums.Status;
+﻿using Domain.Enums;
+using Domain.Enums.Status;
 namespace Domain.Entities.Offers
 {
     public class ActiveOfferLogs

@@ -1,7 +1,8 @@
 ﻿using Domain.Entities.Shared;
-using Domain.Enums.Status;
+using Domain.Enums;
 using Domain.Enums.Types;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Transactions;
 
 
 namespace Domain.Entities.Payment
