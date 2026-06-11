@@ -1,4 +1,5 @@
-﻿using Application.Commands.RegisterationFeature;
+﻿using Application.Commands;
+using Application.Commands.RegisterationFeature;
 using Application.Response;
 using Domain.DTOs.RegisterationDtos;
 using Domain.Entities.Customers;

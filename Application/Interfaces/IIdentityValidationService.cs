@@ -1,5 +1,6 @@
 ﻿using Application.Response;
 using Domain.DTOs;
+using Domain.DTOs.ModelDtos;
 
 namespace Application.Interfaces
 {
