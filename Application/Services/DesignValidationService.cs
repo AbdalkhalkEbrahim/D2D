@@ -1,5 +1,6 @@
-﻿using Domain.DTOs;
-using Domain.Interfaces;
+﻿using Application.Interfaces;
+using Application.Response;
+using Domain.DTOs;
 using Microsoft.Extensions.Configuration;
 using OpenAI;
 using OpenAI.Chat;
@@ -17,7 +18,7 @@ namespace Application.Services
             _chatClient = client.GetChatClient("gpt-5-mini");
         }
 
-        public async Task<DesignValidationResponse> AnalyzeAsync(List<string> stepsUrls)
+        public async Task<Result<DesignValidationResponse>> AnalyzeAsync(List<string> stepsUrls)
         {
             var userMessage = new UserChatMessage();
             userMessage.Content.Add(ChatMessageContentPart.CreateTextPart("Here are the images representing the stages of the clothing design process:"));
@@ -58,7 +59,7 @@ namespace Application.Services
         userMessage
             ]);
             string rawResponse = response.Value.Content[0].Text;
-            return AIResponseMapper.Map<DesignValidationResponse>(rawResponse);
+            return Result<DesignValidationResponse>.Success(AIResponseMapper.Map<DesignValidationResponse>(rawResponse));
         }
     }
 }

@@ -3,6 +3,8 @@ using OpenAI;
 using OpenAI.Chat;
 using Domain.DTOs;
 using Domain.Interfaces;
+using Application.Response;
+using Application.Interfaces;
 namespace Application.Services
 {
     public class IdentityValidationService: IIdentityValidationService
@@ -15,7 +17,7 @@ namespace Application.Services
             _chatClient = client.GetChatClient("gpt-5-mini");
         }
 
-        public async Task<IdentityValidationResponse> AnalyzeAsync(string idFront, string idBack, string selfie)
+        public async Task<Result<IdentityValidationResponse>> AnalyzeAsync(string idFront, string idBack, string selfie)
         {
             var response =
                 await _chatClient.CompleteChatAsync(
@@ -53,7 +55,7 @@ namespace Application.Services
             new UserChatMessage(ChatMessageContentPart.CreateImagePart(new Uri(selfie)))
                 ]);
             string rawResponse = response.Value.Content[0].Text;
-            return AIResponseMapper.Map<IdentityValidationResponse>(rawResponse);
+            return Result<IdentityValidationResponse>.Success(AIResponseMapper.Map<IdentityValidationResponse>(rawResponse));
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using Domain.Entities.Shared;
+﻿using Application.Interfaces;
+using Application.Response;
+using Domain.Entities.Shared;
 using Domain.Interfaces;
 using Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
@@ -21,18 +23,18 @@ namespace Application.Services
         }
 
         //verify email forget pass producer otp
-        public bool VerifyOtp(Otp? otp)
+        public Result<bool> VerifyOtp(Otp? otp)
         {
             if (otp == null)
-                throw new Exception("OTP not found");
+                return Result<bool>.Failure(Messages.Expired.WithTarget("Otp"));
 
             var result = true;
 
-            if (otp == null|| otp.ExpirationTime < DateTime.UtcNow|| otp.IsUsed)
+            if (otp.ExpirationTime < DateTime.UtcNow|| otp.IsUsed)
                 result = false;
 
 
-            return result;
+            return Result<bool>.Success(result);
         }
         public string GenerateOtp()
         {

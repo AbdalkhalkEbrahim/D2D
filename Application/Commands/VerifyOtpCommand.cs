@@ -1,14 +1,10 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
+﻿using Application.Response;
+using MediatR;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Commands
 {
-    public class VerifyOtpCommand:IRequest<bool>
+    public class VerifyOtpCommand:IRequest<Result<bool>>
     {
         [Required]
         public string UserId { get; set; }  
