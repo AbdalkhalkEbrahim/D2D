@@ -3,6 +3,8 @@ using Application.Response;
 using Domain.Entities.Shared;
 using System.Security.Cryptography;
 using System.Text;
+using Application.Interfaces;
+using Application.Response;
 
 namespace Application.Services
 {
@@ -12,16 +14,11 @@ namespace Application.Services
         //verify email forget pass producer otp
         public Result<bool> VerifyOtp(Otp? otp)
         {
-            if (otp == null)
-                return Result<bool>.Failure(Messages.Expired.WithTarget("Otp"));
 
-            var result = true;
+            if (otp == null || otp.ExpirationTime < DateTime.UtcNow || otp.IsUsed)
+               return Result<bool>.Failure(Messages.Expired.WithTarget("otp"));
 
-            if (otp.ExpirationTime < DateTime.UtcNow || otp.IsUsed)
-                result = false;
-
-
-            return Result<bool>.Success(result);
+            return Result<bool>.Success(true);
         }
         public string GenerateOtp()
         {

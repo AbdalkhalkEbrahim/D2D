@@ -205,7 +205,7 @@ namespace Application.Response
                 { "Default", "The requested resource, token, or code has expired." },
                 { "MagicToken", "The magic login link has expired. Please request a new one." },
                 {"Otp", "The OTP code has expired. Please request a new one." },
-                {"Token","Invalid or expired  token" },
+                {"Token","Invalid, revoked or expired token" },
                 
             });
 
@@ -246,5 +246,6 @@ namespace Application.Response
         public static Error OtpBackoff(int? minutes) =>
             new("Forbidden", $"Please wait {minutes??1} minutes before requesting a new OTP.");
         public static Error CloudinaryError(string message) => new("InternalServerError", $"Cloudinary Error: {message}");
+        public static Error EmailConnection(string message) => new("Connection failed", $"Email connection Error : {message}");
     }
 }

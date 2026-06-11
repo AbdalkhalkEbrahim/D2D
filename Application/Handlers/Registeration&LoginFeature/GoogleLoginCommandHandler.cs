@@ -60,9 +60,9 @@ namespace Application.Handlers
             {
                 UserID = user.Id,
                 AccessToken = accessToken.Token,
-                RefreshToken = refreshToken.Token,
+                RefreshToken = refreshToken.Value.Token,
                 AccessTokenExpiresAt = accessToken.ExpiresAt,
-                RefreshTokenExpiresAt = refreshToken.ExpiresAt
+                RefreshTokenExpiresAt = refreshToken.Value.ExpiresAt
             });
         }
     }

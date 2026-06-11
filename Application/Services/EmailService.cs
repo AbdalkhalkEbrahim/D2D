@@ -51,12 +51,11 @@ namespace Application.Services
 
                         await smtpClient.SendAsync(message);
                         await smtpClient.DisconnectAsync(true);
-                        return Result.Success();
                     }
-                    catch (Exception ex)
-                    {
-                        return Result.Failure(new Error("EmailSendingFailed", ex.Message));
+                    catch (Exception ex) {
+                        return Result.Failure(Messages.EmailConnection(ex.Message));
                     }
+                return Result.Success();
                 }
            
         }

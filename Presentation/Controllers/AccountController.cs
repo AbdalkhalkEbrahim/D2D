@@ -166,7 +166,7 @@ namespace Presentation.Controllers
         /// → User enters OTP code received in email
         /// → Frontend must store the email temporarily
         /// STEP 3:
-        /// POST /api/account/change-password
+        /// POST /api/account/forget-password
         /// → frontend submits:
         ///   - Email (stored from step 1)
         ///   - Verified OTP (stored from step 2)

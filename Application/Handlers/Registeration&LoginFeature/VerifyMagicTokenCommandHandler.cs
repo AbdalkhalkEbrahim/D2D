@@ -1,5 +1,4 @@
-﻿using Application.Commands;
-using Application.Commands.RegisterationFeature;
+﻿using Application.Commands.RegisterationFeature;
 using Application.Interfaces;
 using Application.Response;
 using Domain.DTOs.AuthDtos;
@@ -40,9 +39,9 @@ namespace Application.Handlers
             {
                 UserID = token.UserId,
                 AccessToken = jwt.Token,
-                RefreshToken = newRefreshToken.Token,
+                RefreshToken = newRefreshToken.Value.Token,
                 AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(15),
-                RefreshTokenExpiresAt = newRefreshToken.ExpiresAt
+                RefreshTokenExpiresAt = newRefreshToken.Value.ExpiresAt
             });
         }
     }

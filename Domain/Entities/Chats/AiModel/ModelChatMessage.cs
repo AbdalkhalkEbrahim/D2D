@@ -1,4 +1,4 @@
-﻿using Domain.Enums;
+﻿using Domain.Enums.Types;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities.Chats.AiModel
