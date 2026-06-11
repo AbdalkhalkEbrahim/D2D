@@ -130,13 +130,13 @@ namespace Application.Response
                 { "Default", "An unexpected error occurred on the server. Please try again later." },
             });
         public static Error AccountLocked(int minutes, int seconds) =>
-             new("Forbidden", $"Account is locked. Try again in {minutes} minutes and {seconds} seconds.");
+             new("AccountStatus", $"Account is locked. Try again in {minutes} minutes and {seconds} seconds.");
 
         public static Error AccountLocked(int minutes) =>
-            new("Forbidden", $"Account is locked due to multiple failed login attempts. Try again in {minutes} minutes.");
+            new("AccountStatus", $"Account is locked due to multiple failed login attempts. Try again in {minutes} minutes.");
         public static Error OtpBackoff(int? minutes) =>
             new("Forbidden", $"Please wait {minutes??1} minutes before requesting a new OTP.");
-        public static Error CloudinaryError(string message) => new("InternalServerError", $"Cloudinary Error: {message}");
-        public static Error EmailConnection(string message) => new("Connection failed", $"Email connection Error : {message}");
+        public static Error CloudinaryError(string message) => new("SystemError", $"Cloudinary Error: {message}");
+        public static Error EmailConnection(string message) => new("SystemError", $"Email connection Error : {message}");
     }
 }

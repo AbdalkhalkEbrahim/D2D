@@ -1,9 +1,10 @@
-﻿using Domain.DTOs.ModelDtos;
+﻿using Application.Response;
+using Domain.DTOs.ModelDtos;
 
 namespace Application.Interfaces
 {
     public interface IDesignValidationService
     {
-        public Task<DesignValidationResponse> AnalyzeAsync(List<string> stepsUrls);
+        public Task<Result<DesignValidationResponse>> AnalyzeAsync(List<string> stepsUrls);
     }
 }

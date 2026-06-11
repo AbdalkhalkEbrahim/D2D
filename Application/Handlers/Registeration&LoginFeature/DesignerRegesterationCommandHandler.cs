@@ -1,6 +1,7 @@
 ﻿using Application.Commands.RegisterationFeature;
 using Application.Interfaces;
 using Application.Response;
+using Domain.DTOs.ModelDtos;
 using Domain.DTOs.RegisterationDtos;
 using Domain.Entities.Designers;
 using Domain.Entities.Shared;
@@ -81,7 +82,10 @@ namespace Application.Handlers
 
         CheckDesignAgain:
             var designResponse = await _designValidationService.AnalyzeAsync(designer.DesignVerifications.Select(d => d.StepUrl).ToList());
-            if (designResponse.ConfidenceScore is null || designResponse.ProgressScore is null)
+            if (!designResponse.IsSuccess)
+                return Result<DesignerRegisterationResponse>.Failure(new Error("SystemError",designResponse.Error.Message));
+
+            if (designResponse.Value.ConfidenceScore is null || designResponse.Value.ProgressScore is null)
                 goto CheckDesignAgain;
 
             await _context.SaveChangesAsync();

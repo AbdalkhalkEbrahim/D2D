@@ -59,7 +59,7 @@ namespace Application.Services
             }
             catch(Exception ex)
             {
-                return Result<IdentityValidationResponse>.Failure(new Error($"An error occurred during analysis", ex.Message));
+                return Result<IdentityValidationResponse>.Failure(new Error("SystemError", ex.Message));
             }
            
         }

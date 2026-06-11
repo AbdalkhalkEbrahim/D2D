@@ -117,7 +117,7 @@ namespace Application.Services
 
         public async Task<Result> RevokeRefreshToken(string token)
         {
-            var existingtoken = _context.RefreshTokens.FirstOrDefault(t => t.Token == token);
+            var existingtoken = _context.RefreshTokens.FirstOrDefault(t => t.Token == token&&!t.IsRevoked);
             if (existingtoken != null)
             {
                 existingtoken.IsRevoked = true;
@@ -125,7 +125,7 @@ namespace Application.Services
                 await _context.SaveChangesAsync();
                 return Result.Success();
             }
-            return Result.Failure(Messages.NotFound.WithTarget("Default"));
+            return Result.Failure(Messages.BadRequest.WithTarget("Default"));
         }
     }
 }

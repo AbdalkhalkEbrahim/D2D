@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces;
+using Application.Response;
 using Domain.DTOs.ModelDtos;
 using Microsoft.Extensions.Configuration;
 using OpenAI;
@@ -6,7 +7,7 @@ using OpenAI.Chat;
 
 namespace Application.Services
 {
-    public class DesignValidationService:IDesignValidationService
+    public class DesignValidationService : IDesignValidationService
     {
         private readonly ChatClient _chatClient;
 
@@ -17,8 +18,9 @@ namespace Application.Services
             _chatClient = client.GetChatClient("gpt-5-mini");
         }
 
-        public async Task<DesignValidationResponse> AnalyzeAsync(List<string> stepsUrls)
+        public async Task<Result<DesignValidationResponse>> AnalyzeAsync(List<string> stepsUrls)
         {
+
             var userMessage = new UserChatMessage();
             userMessage.Content.Add(ChatMessageContentPart.CreateTextPart("Here are the images representing the stages of the clothing design process:"));
 
@@ -29,10 +31,11 @@ namespace Application.Services
                     userMessage.Content.Add(ChatMessageContentPart.CreateImagePart(new Uri(url)));
                 }
             }
-
-            var response = await _chatClient.CompleteChatAsync(
-            [
-                new SystemChatMessage("""
+            try
+            {
+                var response = await _chatClient.CompleteChatAsync(
+                [
+                    new SystemChatMessage("""
             You are an expert AI Forensic Auditor specializing in the Fashion and Apparel Industry, focusing on design authenticity, intellectual property verification, and plagiarism detection.
             Your task is to analyze a series of step-by-step images provided by a designer to verify whether they represent an authentic, continuous, and logical workflow of creating a single, cohesive clothing design. You must also detect any indicators of fraud, theft, or inconsistent ownership.
 
@@ -56,9 +59,14 @@ namespace Application.Services
             """),
 
         userMessage
-            ]);
-            string rawResponse = response.Value.Content[0].Text;
-            return AIResponseMapper.Map<DesignValidationResponse>(rawResponse);
+                ]);
+                string rawResponse = response.Value.Content[0].Text;
+                return Result< DesignValidationResponse>.Success(AIResponseMapper.Map<DesignValidationResponse>(rawResponse));
+            }
+            catch (Exception ex)
+            {
+                return Result<DesignValidationResponse>.Failure(new Error("SystemError", ex.Message));
+            }
         }
     }
 }
