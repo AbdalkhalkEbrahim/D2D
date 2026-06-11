@@ -1,21 +1,13 @@
 ﻿using Application.Interfaces;
 using Application.Response;
 using Domain.Entities.Shared;
-using Infrastructure.Data.Context;
 using System.Security.Cryptography;
 using System.Text;
-using Application.Interfaces;
 
 namespace Application.Services
 {
     public class OtpService : IOtpService
     {
-        private readonly D2DContext _context;
-
-        public OtpService(D2DContext context)
-        {
-            _context = context;
-        }
 
         //verify email forget pass producer otp
         public Result<bool> VerifyOtp(Otp? otp)
@@ -25,7 +17,7 @@ namespace Application.Services
 
             var result = true;
 
-            if (otp == null || otp.ExpirationTime < DateTime.UtcNow || otp.IsUsed)
+            if (otp.ExpirationTime < DateTime.UtcNow || otp.IsUsed)
                 result = false;
 
 

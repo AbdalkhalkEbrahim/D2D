@@ -1,4 +1,4 @@
-﻿using Domain.Enums;
+﻿using Domain.Enums.Status;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities.Producers

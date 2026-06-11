@@ -1,6 +1,6 @@
 ﻿using Domain.Entities.Producers;
 using Domain.Entities.Shared;
-using Domain.Enums;
+using Domain.Enums.Status;
 
 namespace Domain.Entities.Offers
 {

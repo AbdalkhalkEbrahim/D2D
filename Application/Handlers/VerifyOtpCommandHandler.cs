@@ -31,7 +31,7 @@ namespace Application.Handlers
 
             var existingOtp = await _context.Otps.FirstOrDefaultAsync(e => e.Code == request.Otp && e.UserId == request.UserId, cancellationToken);
             var isVerified = _otpService.VerifyOtp(existingOtp);
-            if (!isVerified)
+            if (!isVerified.IsSuccess)
                 return Result<OtpResponse>.Failure(Messages.Expired.WithTarget("Otp"));
 
             existingOtp!.IsUsed = true;

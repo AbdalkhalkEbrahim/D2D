@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces;
+using Application.Response;
 using Domain.DTOs.ModelDtos;
 using Microsoft.Extensions.Configuration;
 using OpenAI;
