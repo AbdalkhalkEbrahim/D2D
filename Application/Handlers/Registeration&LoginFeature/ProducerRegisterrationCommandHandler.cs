@@ -67,6 +67,8 @@ namespace Application.Handlers
 
         checkAgain:
             var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
+            if (!response.IsSuccess)
+                return Result<ProducerRegisterationResponse>.Failure(new Error("SystemError", response.Error.Message));
             if (response.Value.SimilarityScore is null)
                 goto checkAgain;
 

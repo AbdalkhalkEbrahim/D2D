@@ -29,7 +29,7 @@ namespace Application.Handlers
 
             var verifyOtp = await _mediator.Send(new VerifyOtpCommand { UserId = user.Id, Otp = request.Otp });
             if (verifyOtp.IsSuccess==false)
-                return Result<string>.Failure(Messages.Expired.WithTarget("Token"));
+                return Result<string>.Failure(Messages.Expired.WithTarget("Otp"));
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, token, request.NewPassword);

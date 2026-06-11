@@ -246,18 +246,18 @@ namespace Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> SignOut(string refreshToken)
         {
-            var result =await _authService.RevokeRefreshToken(refreshToken);
+            var result = await _authService.RevokeRefreshToken(refreshToken);
             return HandleResult(result);
         }
 
-/*        [HttpPost("upload-file")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UploadFile(IFormFile file)
-        {
-            var result = await _uploadService.UploadFileAsync(file);
-            return HandleResult(result);
-        }*/
+        /*        [HttpPost("upload-file")]
+                [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+                [ProducesResponseType(StatusCodes.Status400BadRequest)]
+                public async Task<IActionResult> UploadFile(IFormFile file)
+                {
+                    var result = await _uploadService.UploadFileAsync(file);
+                    return HandleResult(result);
+                }*/
 
         [HttpPost("identity-validation")]
         [ProducesResponseType(typeof(IdentityValidationResponse), StatusCodes.Status200OK)]
