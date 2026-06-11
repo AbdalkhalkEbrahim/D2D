@@ -1,5 +1,4 @@
-﻿using Application.Commands;
-using Application.Commands.RegisterationFeature;
+﻿using Application.Commands.RegisterationFeature;
 using Application.Interfaces;
 using Application.Response;
 using Domain.DTOs.AuthDtos;
