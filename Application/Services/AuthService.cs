@@ -1,5 +1,4 @@
-﻿using Domain.DTOs;
-using Domain.Entities.Shared;
+﻿using Domain.Entities.Shared;
 using Application.Interfaces;
 using Domain.Settings;
 using Application.Response;
@@ -58,7 +57,7 @@ namespace Application.Services
             };
         }
 
-        public async Task<TokenDTO> GenerateRefreshToken(string userId)
+        public async Task<Result<TokenDTO>> GenerateRefreshToken(string userId)
         {
             var randomNumberGenerator = RandomNumberGenerator.Create();
             var randomBytes = new byte[64];
@@ -79,11 +78,13 @@ namespace Application.Services
                 UserID = userId
             };
 
-            var user = _context.Users.Include(u => u.RefreshTokens).FirstOrDefault(u => u.Id == userId) ?? throw new ArgumentNullException(nameof(userId));
+            var user = _context.Users.Include(u => u.RefreshTokens).FirstOrDefault(u => u.Id == userId) ;
+            if(user == null)
+                return Result<TokenDTO>.Failure(Messages.NotFound.WithTarget("User"));
             user.RefreshTokens?.Add(generatedRefreshTokenEntity);
             await _userManager.UpdateAsync(user);
 
-            return refreshToken;
+            return Result<TokenDTO>.Success(refreshToken);
         }
 
         public async Task<Result<JwtToken>> JwtGenratedToken(string refreshToken)
@@ -108,9 +109,9 @@ namespace Application.Services
             {
                 UserID = user.Id,
                 AccessToken = jwt.Token,
-                RefreshToken = newRefreshToken.Token,
+                RefreshToken = newRefreshToken.Value.Token,
                 AccessTokenExpiresAt = jwt.ExpiresAt,
-                RefreshTokenExpiresAt = newRefreshToken.ExpiresAt
+                RefreshTokenExpiresAt = newRefreshToken.Value.ExpiresAt
             });
         }
 

@@ -1,5 +1,4 @@
-﻿using Domain.Enums;
-using Domain.Enums.Status;
+﻿using Domain.Enums.Status;
 namespace Domain.Entities.Designs
 {
     public abstract class Design

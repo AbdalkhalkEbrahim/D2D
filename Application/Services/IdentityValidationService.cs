@@ -17,10 +17,12 @@ namespace Application.Services
 
         public async Task<Result<IdentityValidationResponse>> AnalyzeAsync(string idFront, string idBack, string selfie)
         {
-            var response =
-                await _chatClient.CompleteChatAsync(
-                [
-                    new SystemChatMessage("""
+            try
+            {
+                var response =
+                    await _chatClient.CompleteChatAsync(
+                    [
+                        new SystemChatMessage("""
             You are an expert AI Document Verification and Identity Fraud Detection Assistant. Your task is to audit three uploaded images: a Front ID, a Back ID, and a User Selfie. 
 
             Analyze the documents carefully and perform the following strict validation checks:
@@ -51,9 +53,15 @@ namespace Application.Services
             new UserChatMessage(ChatMessageContentPart.CreateImagePart(new Uri(idBack))),
 
             new UserChatMessage(ChatMessageContentPart.CreateImagePart(new Uri(selfie)))
-                ]);
-            string rawResponse = response.Value.Content[0].Text;
-            return Result<IdentityValidationResponse>.Success( AIResponseMapper.Map<IdentityValidationResponse>(rawResponse));
+                    ]);
+                string rawResponse = response.Value.Content[0].Text;
+                return Result<IdentityValidationResponse>.Success(AIResponseMapper.Map<IdentityValidationResponse>(rawResponse));
+            }
+            catch(Exception ex)
+            {
+                return Result<IdentityValidationResponse>.Failure(new Error($"An error occurred during analysis", ex.Message));
+            }
+           
         }
     }
 }

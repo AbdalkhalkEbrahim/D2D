@@ -43,7 +43,7 @@ namespace Application.Services
             if (uploadResult.Error != null)
                return Result<string>.Failure(Messages.CloudinaryError(uploadResult.Error.Message));
 
-            return Result<string>.Success( uploadResult.SecureUrl.ToString());
+            return Result<string>.Success(uploadResult.SecureUrl.ToString());
         }
     }
 }

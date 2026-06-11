@@ -3,6 +3,7 @@ using Infrastructure.Data.Context;
 using System.Security.Cryptography;
 using System.Text;
 using Application.Interfaces;
+using Application.Response;
 
 namespace Application.Services
 {
@@ -16,18 +17,13 @@ namespace Application.Services
         }
 
         //verify email forget pass producer otp
-        public bool VerifyOtp(Otp? otp)
+        public Result<bool> VerifyOtp(Otp? otp)
         {
-            if (otp == null)
-                throw new Exception("OTP not found");
-
-            var result = true;
 
             if (otp == null || otp.ExpirationTime < DateTime.UtcNow || otp.IsUsed)
-                result = false;
+               return Result<bool>.Failure(Messages.Expired.WithTarget("otp"));
 
-
-            return result;
+            return Result<bool>.Success(true);
         }
         public string GenerateOtp()
         {

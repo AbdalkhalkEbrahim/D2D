@@ -1,5 +1,4 @@
 ﻿using Domain.Entities.Shared;
-using Domain.Enums;
 using Domain.Entities.Customers;
 using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Enums.Status;

@@ -1,6 +1,5 @@
 ﻿using Application.Response;
 using Domain.DTOs.RegisterationDtos;
-using Domain.Entities.Designers;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;

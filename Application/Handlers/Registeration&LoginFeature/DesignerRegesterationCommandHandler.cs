@@ -1,9 +1,7 @@
 ﻿using Application.Commands.RegisterationFeature;
 using Application.Interfaces;
 using Application.Response;
-using Azure;
 using Domain.DTOs.RegisterationDtos;
-using Domain.Entities.Customers;
 using Domain.Entities.Designers;
 using Domain.Entities.Shared;
 using Domain.Enums.Status;

@@ -1,5 +1,4 @@
-﻿using Application.Commands;
-using Application.Commands.SettingsFeature;
+﻿using Application.Commands.SettingsFeature;
 using Application.Response;
 using Domain.Entities.Shared;
 using MediatR;
