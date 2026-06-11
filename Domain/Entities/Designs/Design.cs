@@ -1,6 +1,4 @@
-﻿using Domain.Entities.Designers;
-using Domain.Enums;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using Domain.Enums;
 namespace Domain.Entities.Designs
 {
     public abstract class Design

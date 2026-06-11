@@ -1,12 +1,7 @@
 ﻿using Domain.Entities.Designers;
 using Domain.Entities.Offers;
 using Domain.Entities.Producers;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities.Designs
 {

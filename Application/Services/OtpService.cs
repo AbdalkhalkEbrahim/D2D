@@ -1,15 +1,10 @@
 ﻿using Application.Interfaces;
 using Application.Response;
 using Domain.Entities.Shared;
-using Domain.Interfaces;
 using Infrastructure.Data.Context;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
+using Application.Interfaces;
 
 namespace Application.Services
 {
@@ -30,7 +25,7 @@ namespace Application.Services
 
             var result = true;
 
-            if (otp.ExpirationTime < DateTime.UtcNow|| otp.IsUsed)
+            if (otp == null || otp.ExpirationTime < DateTime.UtcNow || otp.IsUsed)
                 result = false;
 
 
@@ -62,5 +57,3 @@ namespace Application.Services
         }
     }
 }
-
-

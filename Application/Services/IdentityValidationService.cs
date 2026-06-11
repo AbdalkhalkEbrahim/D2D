@@ -1,10 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
-using OpenAI;
+﻿using OpenAI;
 using OpenAI.Chat;
-using Domain.DTOs;
-using Domain.Interfaces;
-using Application.Response;
 using Application.Interfaces;
+using Application.Response;
+using Domain.DTOs.ModelDtos;
 namespace Application.Services
 {
     public class IdentityValidationService: IIdentityValidationService
@@ -55,7 +53,7 @@ namespace Application.Services
             new UserChatMessage(ChatMessageContentPart.CreateImagePart(new Uri(selfie)))
                 ]);
             string rawResponse = response.Value.Content[0].Text;
-            return Result<IdentityValidationResponse>.Success(AIResponseMapper.Map<IdentityValidationResponse>(rawResponse));
+            return Result<IdentityValidationResponse>.Success( AIResponseMapper.Map<IdentityValidationResponse>(rawResponse));
         }
     }
 }

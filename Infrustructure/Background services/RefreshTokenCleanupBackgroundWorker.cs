@@ -1,7 +1,6 @@
 ﻿using Infrastructure.Data.Context;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Background_services
 {

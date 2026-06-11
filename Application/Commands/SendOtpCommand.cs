@@ -1,17 +1,14 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
+﻿using Application.Response;
+using Domain.DTOs;
+using MediatR;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 namespace Application.Commands
 {
-    public class SendOtpCommand:IRequest<string>
+    public class SendOtpCommand : IRequest<Result<OtpResponse>>
     {
         [Required]
         [EmailAddress]
         [MaxLength(100)]
-        public string Email { get; set; }
+        public required string Email { get; set; }
     }
 }

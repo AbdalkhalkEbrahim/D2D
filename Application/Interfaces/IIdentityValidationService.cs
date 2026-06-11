@@ -1,5 +1,6 @@
 ﻿using Application.Response;
 using Domain.DTOs;
+
 namespace Application.Interfaces
 {
     public interface IIdentityValidationService

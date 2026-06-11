@@ -5,6 +5,6 @@ namespace Application.Interfaces
 {
     public interface IDesignValidationService
     {
-        public Task<Result<DesignValidationResponse>> AnalyzeAsync(List<string> stepsUrls);
+        public Task<DesignValidationResponse> AnalyzeAsync(List<string> stepsUrls);
     }
 }

@@ -1,11 +1,6 @@
-﻿using Domain.Entities.Customers;
-using Domain.Entities.Designers;
-using Domain.Entities.Offers;
-using Domain.Entities.Producers;
-using Domain.Entities.Shared;
+﻿using Domain.Entities.Shared;
 using Domain.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.InteropServices;
 
 
 namespace Domain.Entities.Payment

@@ -1,4 +1,5 @@
-﻿using Domain.Enums;
+﻿using Domain.Enums.Status;
+using Domain.Enums.Types;
 using Microsoft.AspNetCore.Identity;
 namespace Domain.Entities.Shared
 {
@@ -34,6 +35,7 @@ namespace Domain.Entities.Shared
                 UserType.Customer => ++CCounter,
                 UserType.Producer => ++PCounter,
                 UserType.Designer => ++DCounter,
+                _ => 0
             };
             string leadingZeros = new string('0', 6 - AnonCounter.ToString().Length);
             return $"Anon{leadingZeros}{AnonCounter}_{UserType.ToString()}";

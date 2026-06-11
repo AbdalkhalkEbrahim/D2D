@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
     [Route("api/[controller]")]
     public class BaseApiController : ControllerBase
     {
-        protected IActionResult HandleResult(Result result)
+        protected ActionResult HandleResult(Result result)
         {
             if (result.IsSuccess)
                 return Ok();
@@ -15,7 +16,7 @@ namespace Presentation.Controllers
             return HandleFailure(result.Error);
         }
 
-        protected IActionResult HandleResult<T>(Result<T> result)
+        protected ActionResult HandleResult<T>(Result<T> result)
         {
             if (result.IsSuccess)
                 return Ok(result.Value);
@@ -23,9 +24,9 @@ namespace Presentation.Controllers
             return HandleFailure(result.Error);
         }
 
-        private IActionResult HandleFailure(Error error)
+        private ActionResult HandleFailure(Error error)
         {
-            return error.Code switch
+            return error.StatusCode switch
             {
                 // 400 Bad Request
                 "BadRequest" => BadRequest(error),

@@ -24,7 +24,8 @@ namespace Application.Services
         public async Task<Result<string>> UploadFileAsync(IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return Result<string>.Failure(Messages.NotFound.WithTarget("File"));
+                return Result<string>.Failure(Messages.BadRequest.WithTarget("NullValue"));
+
 
             var uploadResult = new ImageUploadResult();
 
@@ -39,10 +40,9 @@ namespace Application.Services
             }
 
             if (uploadResult.Error != null)
-                return Result<string>.Failure(new Application.Response.Error("Cloudinary Error", uploadResult.Error.Message));
+               return Result<string>.Failure(Messages.CloudinaryError(uploadResult.Error.Message));
 
-
-            return Result<string>.Success(uploadResult.SecureUrl.ToString());
+            return Result<string>.Success( uploadResult.SecureUrl.ToString());
         }
     }
 }

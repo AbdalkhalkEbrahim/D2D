@@ -5,7 +5,7 @@ namespace Application.Interfaces
 {
     public interface IOtpService
     {
-        public Result<bool> VerifyOtp(Otp? otp);
-       public string GenerateOtp();
+        public bool VerifyOtp(Otp? otp);
+        public string GenerateOtp();
     }
 }

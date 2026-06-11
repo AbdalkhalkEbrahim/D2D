@@ -1,8 +1,9 @@
-﻿namespace Application.Response
+﻿
+namespace Application.Response
 
 {
 
-    public sealed record CustomError(string StatusCode, Dictionary<string, string> Messages)
+    public sealed record CustomError(string StatusCode, Dictionary<string, string> Messages) 
     {
         public Error WithTarget(string target)
         {
@@ -32,11 +33,7 @@
                 { "Product", "The requested product variant or material was not found." },
 
                 { "Design", "The design layout or blueprint was not found." },
-
-                { "Order", "The specified order does not exist in our records." },
-
-                {"File", "No uploaded file found" }
-
+                { "Order", "The specified order does not exist in our records." }
             });
 
 
@@ -90,16 +87,12 @@
                 { "PriceMismatch", "The final checkout price does not match the accumulated cost of items, production, and shipping." },
 
                 { "PasswordMismatch", "The passwords provided do not match." },
-
-                { "InvalidRequest", "The registration request parameters are invalid or mismatch your account type." },
-
+                { "InvalidRequest", "The registration request parameters are invalid, do not match your account type, or your email address has not been verified yet." },
                 { "Underage", "You do not meet the minimum age requirement to register on this platform." },
 
                 { "UserCreationFailed", "Failed to create the user account in our identity management system." },
-
-                { "PasswordChangeFailed", "Failed to update the password. Please verify your current password and try again." }
-
-
+                { "PasswordChangeFailed", "Failed to update the password. Please verify your current password and try again." },
+                { "ImageUploadFailed", "Failed to upload one or more images. Please try again." }
             });
 
 
@@ -209,9 +202,10 @@
             {
 
                 { "Default", "The requested resource, token, or code has expired." },
-                { "Token", "Token is either invalid, revoked or expired" },
-                { "Otp", "Otp is either invalid, used or expired" }
-
+                { "MagicToken", "The magic login link has expired. Please request a new one." },
+                {"Otp", "The OTP code has expired. Please request a new one." },
+                {"Token","Invalid or expired  token" },
+                
             });
 
 
@@ -241,12 +235,15 @@
             new Dictionary<string, string>
 
             {
-
-                { "Default", "An unexpected error occurred on the server. Please try again later." }
-
+                { "Default", "An unexpected error occurred on the server. Please try again later." },
             });
-        public static Error OtpBackoff(double minutes) =>
-            new("Forbidden", $"Please wait {minutes} minutes before requesting a new OTP.");
+        public static Error AccountLocked(int minutes, int seconds) =>
+             new("Forbidden", $"Account is locked. Try again in {minutes} minutes and {seconds} seconds.");
 
+        public static Error AccountLocked(int minutes) =>
+            new("Forbidden", $"Account is locked due to multiple failed login attempts. Try again in {minutes} minutes.");
+        public static Error OtpBackoff(int? minutes) =>
+            new("Forbidden", $"Please wait {minutes??1} minutes before requesting a new OTP.");
+        public static Error CloudinaryError(string message) => new("InternalServerError", $"Cloudinary Error: {message}");
     }
 }

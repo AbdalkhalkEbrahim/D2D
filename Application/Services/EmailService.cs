@@ -1,8 +1,8 @@
 ﻿using Application.Interfaces;
-using Application.Response;
 using Domain.Settings;
 using MailKit.Net.Smtp;
 using MailKit.Security;
+
 using Microsoft.Extensions.Options;
 using MimeKit;
 

@@ -1,6 +1,4 @@
-﻿using Domain.Entities.Shared;
-using Domain.Enums;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities.Offers
 {
