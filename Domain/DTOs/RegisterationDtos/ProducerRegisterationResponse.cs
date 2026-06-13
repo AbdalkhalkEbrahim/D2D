@@ -11,7 +11,7 @@ namespace Domain.DTOs.RegisterationDtos
         public required string FrontImageID { get; set; }
         public required string BackImageID { get; set; }
         public required string PersonalImage { get; set; }
-        public ICollection<LicenseVerification> LicenseVerification { get; set; } = new List<LicenseVerification>();
+        public string LicenseVerification { get; set; }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public VerificationStatus VerificationStatus { get; set; }

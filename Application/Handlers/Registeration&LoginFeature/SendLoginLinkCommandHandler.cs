@@ -23,7 +23,7 @@ namespace Application.Handlers
 
         public async Task<Result<string>> Handle(SendLoginLinkCommand request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserID);
+            var user = await _context.Users.Include(u=>u.MagicToken).FirstOrDefaultAsync(u => u.Id == request.UserID);
             if (user is null)
                 return Result<string>.Failure(Messages.NotFound.WithTarget("User"));
 
@@ -38,14 +38,14 @@ namespace Application.Handlers
                 Token = Convert.ToHexString(bytes).ToLower(),
                 Expiration = DateTime.UtcNow.AddHours(1),
                 IsUsed = false,
-                UserId = user.Id
+               // UserId = user.Id
             };
 
             user.IdentityStatus = VerificationStatus.Approved;
-            _context.MagicTokens.Add(user.MagicToken);
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
-            await _emailService.SendEmailAsync(user.Email!, "Your Login Link", $"Click the link to login: https://d2dplatform.runasp.net/api/verify-magic-token?token={user.MagicToken.Token}");
+            await _emailService.SendEmailAsync(user.Email!, "Your Login Link", $"Click the link to login: https://d2dplatformv2.runasp.net/api/auth/verify-magic-token?token={user.MagicToken.Token}");
 
             return Result<string>.Success(user.MagicToken.Token);
         }
