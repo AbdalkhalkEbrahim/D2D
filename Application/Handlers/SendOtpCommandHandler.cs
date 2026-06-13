@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Application.Response;
 using Domain.DTOs;
+using Domain.DTOs.AuthDtos;
 using Domain.Entities.Shared;
 using Infrastructure.Data.Context;
 using MediatR;
@@ -27,13 +28,13 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
 
         if (user.OtpLockoutEnd.HasValue && user.OtpLockoutEnd.Value > DateTimeOffset.UtcNow)
         {
-            var duration = user.OtpLockoutCount != 1 ? user.OtpLockoutCount / 2 : user.OtpLockoutCount;
-            return Result<OtpResponse>.Failure(Messages.OtpBackoff(duration));
+            var duration = user.OtpLockoutEnd;
+            var timeLeft = duration.Value.UtcDateTime - DateTime.UtcNow;
+            return Result<OtpResponse>.Failure(Messages.OtpBackoff(timeLeft.Minutes, timeLeft.Seconds));
         }
 
         user.OtpLockoutCount = user.OtpLockoutCount ?? 1;
         user.OtpLockoutEnd = DateTimeOffset.UtcNow.AddMinutes((double)user.OtpLockoutCount);
-        user.OtpLockoutCount *= 2;
 
         _context.Users.Update(user);
 

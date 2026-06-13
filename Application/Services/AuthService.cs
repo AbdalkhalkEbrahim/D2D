@@ -26,12 +26,8 @@ namespace Application.Services
             _userManager = userManager;
             _context = context;
         }
-        public async Task<Result<TokenDTO>> GenerateAccessToken(User user)
-        {
-            user = await _userManager.FindByIdAsync(user.Id);
-            if (user is null)
-                return Result<TokenDTO>.Failure(Messages.NotFound.WithTarget("User"));
-
+        public async Task<TokenDTO> GenerateAccessToken(User user)
+        { 
             var userRoles = await _userManager.GetRolesAsync(user);
             var expiration = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes);
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
@@ -53,7 +49,7 @@ namespace Application.Services
                 signingCredentials: signingCredentials
              );
 
-            return Result<TokenDTO>.Success(new TokenDTO{
+            return new TokenDTO{
                 UserID = user.Id,
                 Token = new JwtSecurityTokenHandler().WriteToken(jwtsecurity),
                 ExpiresAt = expiration
@@ -112,9 +108,9 @@ namespace Application.Services
             {
                 UserID = user.Id,
                 AccessToken = jwt.Token,
-                RefreshToken = newRefreshToken.Value.Token,
+                RefreshToken = newRefreshToken.Token,
                 AccessTokenExpiresAt = jwt.ExpiresAt,
-                RefreshTokenExpiresAt = newRefreshToken.Value.ExpiresAt
+                RefreshTokenExpiresAt = newRefreshToken.ExpiresAt
             });
         }
 
