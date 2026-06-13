@@ -60,7 +60,8 @@ namespace Presentation
             #endregion
             builder.Services.AddDbContext<D2DContext>(options =>
             {
-                options.UseSqlServer(dbConn);
+                options.UseSqlServer(dbConn).LogTo(Console.WriteLine, LogLevel.Information);
+                ;
             });
 
             builder.Services.AddSwaggerGen(options =>

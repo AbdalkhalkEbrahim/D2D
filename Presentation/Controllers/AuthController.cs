@@ -96,7 +96,7 @@ namespace Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<IActionResult> CustomerRegisteration(CustomerRegisterationCommand dto)
+        public async Task<IActionResult> CustomerRegisteration([FromForm] CustomerRegisterationCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);
@@ -113,7 +113,7 @@ namespace Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<IActionResult> ProducerRegisteration(ProducerRegisterrationCommand dto)
+        public async Task<IActionResult> ProducerRegisteration([FromForm]ProducerRegisterrationCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);
@@ -290,13 +290,13 @@ namespace Presentation.Controllers
         /// <remarks>
         /// Final authentication step.
         /// </remarks>
-        [HttpPost("verify-magic-token")]
+        [HttpGet("verify-magic-token")]
         [ProducesResponseType(typeof(JwtToken), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status410Gone)]
 
-        public async Task<IActionResult> VerifyMagicToken(VerifyMagicTokenCommand dto)
+        public async Task<IActionResult> VerifyMagicToken([FromQuery] VerifyMagicTokenCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

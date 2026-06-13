@@ -65,18 +65,18 @@ namespace Application.Handlers
                 { "LicenseUrls", string.Join(", ", licenseUrls.Select(l => l.LicenseUrl)) }
             };
 
-        checkAgain:
-            var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
-            if (!response.IsSuccess)
-                return Result<ProducerRegisterationResponse>.Failure(new Error("SystemError", response.Error.Message));
-            if (response.Value.SimilarityScore is null)
-                goto checkAgain;
+        //checkAgain:
+        //    var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
+        //    if (!response.IsSuccess)
+        //        return Result<ProducerRegisterationResponse>.Failure(new Error("SystemError", response.Error.Message));
+        //    if (response.Value.SimilarityScore is null)
+        //        goto checkAgain;
 
-            if (response.Value.SimilarityScore >= 0.8)
-            {
-                producer.IdentityStatus = VerificationStatus.Approved;
-                _context.Producers.Update(producer);
-            }
+        //    if (response.Value.SimilarityScore >= 0.8)
+        //    {
+        //        producer.IdentityStatus = VerificationStatus.Approved;
+        //        _context.Producers.Update(producer);
+         //}
             await _context.SaveChangesAsync();
 
             return Result<ProducerRegisterationResponse>.Success(new ProducerRegisterationResponse
@@ -86,11 +86,11 @@ namespace Application.Handlers
                 BackImageID = producer.BackImageID,
                 PersonalImage = producer.PersonalImage,
                 VerificationStatus = producer.IdentityStatus,
-                LicenseVerification=producer.LicenseVerifications,
-                SimilarityScore = response.Value.SimilarityScore,
-                DocumentQuality = response.Value.DocumentQuality,
-                NeedsManualReview = response.Value.NeedsManualReview,
-                Notes = response.Value.Notes,
+                LicenseVerification = result["LicenseUrls"],
+                //SimilarityScore = response.Value.SimilarityScore,
+                //DocumentQuality = response.Value.DocumentQuality,
+                //NeedsManualReview = response.Value.NeedsManualReview,
+                //Notes = response.Value.Notes,
             });
         }
     }

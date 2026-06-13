@@ -244,7 +244,7 @@ namespace Application.Response
         public static Error AccountLocked(int minutes) =>
             new("AccountStatus", $"Account is locked due to multiple failed login attempts. Try again in {minutes} minutes.");
         public static Error OtpBackoff(int minutes, int seconds) =>
-            new("Forbidden", $"Please Try again in {minutes} minutes and {seconds} seconds.");
+             new("Forbidden", $"Please Try again in {minutes} minutes and {seconds} seconds.");
         public static Error CloudinaryError(string message) => new("SystemError", $"Cloudinary Error: {message}");
         public static Error EmailConnection(string message) => new("SystemError", $"Email connection Error : {message}");
     }

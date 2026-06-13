@@ -1,6 +1,7 @@
 ﻿using Application.Commands.RegisterationFeature;
 using Application.Interfaces;
 using Application.Response;
+using CloudinaryDotNet.Actions;
 using Domain.DTOs.ModelDtos;
 using Domain.DTOs.RegisterationDtos;
 using Domain.Entities.Designers;
@@ -40,9 +41,11 @@ namespace Application.Handlers
 
             foreach (var file in request.StepUrls)
             {
-                var url =  _uploadService.UploadFileAsync(file).ToString();
-                if (url != null)
-                 stepUrls.Add(new DesignVerification { StepUrl = url });
+                var url =await  _uploadService.UploadFileAsync(file);
+                if (url.IsSuccess )
+                 stepUrls.Add(new DesignVerification { StepUrl = url.Value });
+                else
+                    return  Result<DesignerRegisterationResponse>.Failure(Messages.CloudinaryError(url.Error.Message));
             }
 
             Designer designer = (Designer)user;
@@ -67,6 +70,7 @@ namespace Application.Handlers
                 { "FrontImageID", designer.FrontImageID },
                 { "BackImageID", designer.BackImageID },
                 { "PersonalImage", designer.PersonalImage },
+                { "StepUrls", string.Join(", ", stepUrls.Select(s => s.StepUrl)) }
             };
 
         checkIdentityAgain:
@@ -80,13 +84,13 @@ namespace Application.Handlers
                 _context.Designers.Update(designer);
             }
 
-        CheckDesignAgain:
-            var designResponse = await _designValidationService.AnalyzeAsync(designer.DesignVerifications.Select(d => d.StepUrl).ToList());
-            if (!designResponse.IsSuccess)
-                return Result<DesignerRegisterationResponse>.Failure(new Error("SystemError",designResponse.Error.Message));
+        //CheckDesignAgain:
+        //    var designResponse = await _designValidationService.AnalyzeAsync(designer.DesignVerifications.Select(d => d.StepUrl).ToList());
+        //    if (!designResponse.IsSuccess)
+        //        return Result<DesignerRegisterationResponse>.Failure(new Error("SystemError",designResponse.Error.Message));
 
-            if (designResponse.Value.ConfidenceScore is null || designResponse.Value.ProgressScore is null)
-                goto CheckDesignAgain;
+        //    if (designResponse.Value.ConfidenceScore is null || designResponse.Value.ProgressScore is null)
+        //        goto CheckDesignAgain;
 
             await _context.SaveChangesAsync();
 
@@ -96,7 +100,7 @@ namespace Application.Handlers
                 FrontImageID = designer.FrontImageID,
                 BackImageID = designer.BackImageID,
                 PersonalImage = designer.PersonalImage,
-                DesignVerification=designer.DesignVerifications,
+                DesignVerification = result["StepUrls"],
                 VerificationStatus = designer.IdentityStatus,
                 SimilarityScore = identityResponse.Value.SimilarityScore,
                 DocumentQuality = identityResponse.Value.DocumentQuality,

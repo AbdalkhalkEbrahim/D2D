@@ -48,37 +48,37 @@ namespace Application.Handlers
                     Selected = true,
                 }
             };
-            var personalImageResult = await _uploadService.UploadFileAsync(request.PersonalImage);
-            var frontImageResult = await _uploadService.UploadFileAsync(request.FrontImageID);
-            var backImageResult = await _uploadService.UploadFileAsync(request.BackImageID);
+            //var personalImageResult = await _uploadService.UploadFileAsync(request.PersonalImage);
+            //var frontImageResult = await _uploadService.UploadFileAsync(request.FrontImageID);
+            //var backImageResult = await _uploadService.UploadFileAsync(request.BackImageID);
 
-            if (!personalImageResult.IsSuccess || !frontImageResult.IsSuccess || !backImageResult.IsSuccess)
-                return Result<CustomerRegisteratonResponse>.Failure(Messages.BadRequest.WithTarget("ImageUploadFailed"));
+            //if (!personalImageResult.IsSuccess || !frontImageResult.IsSuccess || !backImageResult.IsSuccess)
+            //    return Result<CustomerRegisteratonResponse>.Failure(Messages.BadRequest.WithTarget("ImageUploadFailed"));
 
-            customer.PersonalImage = personalImageResult.Value;
-            customer.FrontImageID = frontImageResult.Value;
-            customer.BackImageID = backImageResult.Value;
+            //customer.PersonalImage = personalImageResult.Value;
+            //customer.FrontImageID = frontImageResult.Value;
+            //customer.BackImageID = backImageResult.Value;
             _context.Customers.Update(customer);
  
-            var result = new Dictionary<string, string>
-            {
-                { "FrontImageID", customer.FrontImageID },
-                { "BackImageID", customer.BackImageID },
-                { "PersonalImage", customer.PersonalImage }
-            };
+            //var result = new Dictionary<string, string>
+            //{
+            //    { "FrontImageID", customer.FrontImageID },
+            //    { "BackImageID", customer.BackImageID },
+            //    { "PersonalImage", customer.PersonalImage }
+            //};
 
-        checkAgain:
-            var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
-            if (!response.IsSuccess)
-                return Result<CustomerRegisteratonResponse>.Failure(new Error("SystemError", response.Error.Message));
-            if (response.Value.SimilarityScore is null)
-                goto checkAgain;
+        //checkAgain:
+        //    var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
+        //    if (!response.IsSuccess)
+        //        return Result<CustomerRegisteratonResponse>.Failure(new Error("SystemError", response.Error.Message));
+        //    if (response.Value.SimilarityScore is null)
+        //        goto checkAgain;
 
-            if (response.Value.SimilarityScore >= 0.8)
-            {
-                customer.IdentityStatus = VerificationStatus.Approved;
-                _context.Customers.Update(customer);
-            }
+        //    if (response.Value.SimilarityScore >= 0.8)
+        //    {
+        //        customer.IdentityStatus = VerificationStatus.Approved;
+        //        _context.Customers.Update(customer);
+        //    }
             await _context.SaveChangesAsync();
 
             return Result<CustomerRegisteratonResponse>.Success(new CustomerRegisteratonResponse
@@ -88,10 +88,10 @@ namespace Application.Handlers
                 BackImageID=customer.BackImageID,
                 PersonalImage = customer.PersonalImage,
                 VerificationStatus=customer.IdentityStatus,
-                SimilarityScore=response.Value.SimilarityScore,
-                DocumentQuality=response.Value.DocumentQuality,
-                NeedsManualReview=response.Value.NeedsManualReview,
-                Notes=response.Value.Notes,
+                //SimilarityScore=response.Value.SimilarityScore,
+                //DocumentQuality=response.Value.DocumentQuality,
+                //NeedsManualReview=response.Value.NeedsManualReview,
+                //Notes=response.Value.Notes,
             });
         }
     }
