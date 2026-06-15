@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Application.Commands.RegisterationFeature
 {
-    public class UserLoginCommand : IRequest<Result<JwtToken>>
+    public class UserLoginCommand : IRequest<Result<object>>
     {
         [Required]
         [EmailAddress]

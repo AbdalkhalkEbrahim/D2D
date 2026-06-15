@@ -53,7 +53,7 @@ namespace Application.Services
                         await smtpClient.DisconnectAsync(true);
                     }
                     catch (Exception ex) {
-                        return Result.Failure(Messages.EmailConnection(ex.Message));
+                        throw new Exception(ex.Message);
                     }
                 return Result.Success();
                 }

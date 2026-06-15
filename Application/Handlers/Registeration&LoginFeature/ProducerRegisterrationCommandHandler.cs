@@ -29,54 +29,62 @@ namespace Application.Handlers
 
         public async Task<Result<ProducerRegisterationResponse>> Handle(ProducerRegisterrationCommand request, CancellationToken cancellationToken)
         {
+            // 1. Initial Validation (Fail fast)
             var user = await _userManager.FindByIdAsync(request.ProducerId);
             if (user == null || !user.EmailConfirmed || user.UserType != UserType.Producer)
                 return Result<ProducerRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("InvalidRequest"));
 
-            var licenseUrls = new List<LicenseVerification>();
-            foreach (var file in request.LicenseUrls)
-            {
-                var url =  _uploadService.UploadFileAsync(file).ToString();
-                if (url != null)
-                    licenseUrls.Add(new LicenseVerification { LicenseUrl = url });
-            }
+            // 2. Start single uploads SIMULTANEOUSLY (Notice: NO 'await' here)
+            Task<Result<string>> personalImageTask = _uploadService.UploadFileAsync(request.PersonalImage);
+            Task<Result<string>> frontImageTask = _uploadService.UploadFileAsync(request.FrontImageID);
+            Task<Result<string>> backImageTask = _uploadService.UploadFileAsync(request.BackImageID);
 
-            Producer producer = (Producer)user;
-            var personalImageResult = await _uploadService.UploadFileAsync(request.PersonalImage);
-            var frontImageResult = await _uploadService.UploadFileAsync(request.FrontImageID);
-            var backImageResult = await _uploadService.UploadFileAsync(request.BackImageID);
+            // 3. Start the list of license uploads SIMULTANEOUSLY using LINQ
+            List<Task<Result<string>>> licenseTasks = request.LicenseUrls
+                .Select(file => _uploadService.UploadFileAsync(file))
+                .ToList();
 
-            if (!personalImageResult.IsSuccess || !frontImageResult.IsSuccess || !backImageResult.IsSuccess)
+            // 4. Group all tasks together into one big execution pool
+            var allUploadTasks = new List<Task>();
+            allUploadTasks.Add(personalImageTask);
+            allUploadTasks.Add(frontImageTask);
+            allUploadTasks.Add(backImageTask);
+            allUploadTasks.AddRange(licenseTasks); // Add the list of license tasks
+
+            // 5. CRITICAL STEP: Await them all at the exact same time
+            // This tells .NET to fire them over the network concurrently
+            await Task.WhenAll(allUploadTasks);
+
+            // 6. Now that Task.WhenAll is done, extracting '.Result' or 'awaiting' them is instant 
+            var personalResult = await personalImageTask;
+            var frontResult = await frontImageTask;
+            var backResult = await backImageTask;
+
+            if (!personalResult.IsSuccess || !frontResult.IsSuccess || !backResult.IsSuccess)
                 return Result<ProducerRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("ImageUploadFailed"));
 
-            producer.FrontImageID = personalImageResult.Value;
-            producer.BackImageID = personalImageResult.Value;
-            producer.PersonalImage = personalImageResult.Value;
+            // 7. Process the license results securely
+            var licenseUrls = new List<LicenseVerification>();
+            foreach (var task in licenseTasks)
+            {
+                var licenseResult = await task; // Instant because it already finished in step 5
+                if (licenseResult.IsSuccess && licenseResult.Value != null)
+                {
+                    licenseUrls.Add(new LicenseVerification { LicenseUrl = licenseResult.Value });
+                }
+            }
+            
+/*            var response = await _identityValidationService.AnalyzeAsync(frontResult.Value, backResult.Value, personalResult.Value);
+            if(!response.IsSuccess)
+                return Result<ProducerRegisterationResponse>.Failure(new Error("None",response.Error.Message));*/
+            // 8. Bind data to your entity (Fixed your previous copy-paste variable bugs)
+            Producer producer = (Producer)user;
+            producer.PersonalImage = personalResult.Value;
+            producer.FrontImageID = frontResult.Value;
+            producer.BackImageID = backResult.Value;
             producer.LicenseVerifications = licenseUrls;
 
-          
             _context.Producers.Update(producer);
-
-            var result = new Dictionary<string, string>
-            {
-                { "FrontImageID", producer.FrontImageID },
-                { "BackImageID", producer.BackImageID },
-                { "PersonalImage", producer.PersonalImage },
-                { "LicenseUrls", string.Join(", ", licenseUrls.Select(l => l.LicenseUrl)) }
-            };
-
-        //checkAgain:
-        //    var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
-        //    if (!response.IsSuccess)
-        //        return Result<ProducerRegisterationResponse>.Failure(new Error("SystemError", response.Error.Message));
-        //    if (response.Value.SimilarityScore is null)
-        //        goto checkAgain;
-
-        //    if (response.Value.SimilarityScore >= 0.8)
-        //    {
-        //        producer.IdentityStatus = VerificationStatus.Approved;
-        //        _context.Producers.Update(producer);
-         //}
             await _context.SaveChangesAsync();
 
             return Result<ProducerRegisterationResponse>.Success(new ProducerRegisterationResponse
@@ -86,11 +94,10 @@ namespace Application.Handlers
                 BackImageID = producer.BackImageID,
                 PersonalImage = producer.PersonalImage,
                 VerificationStatus = producer.IdentityStatus,
-                LicenseVerification = result["LicenseUrls"],
-                //SimilarityScore = response.Value.SimilarityScore,
-                //DocumentQuality = response.Value.DocumentQuality,
-                //NeedsManualReview = response.Value.NeedsManualReview,
-                //Notes = response.Value.Notes,
+                LicenseVerification = string.Join(", ", licenseUrls.Select(l => l.LicenseUrl)),
+/*                SimilarityScore = response.Value.SimilarityScore,
+                DocumentQuality = response.Value.DocumentQuality,
+               Notes = response.Value.Notes*/
             });
         }
     }

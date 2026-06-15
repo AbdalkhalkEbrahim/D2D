@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Application.Handlers
 {
-    public class UserLoginCommandHandler : IRequestHandler<UserLoginCommand, Result<JwtToken>>
+    public class UserLoginCommandHandler : IRequestHandler<UserLoginCommand, Result<object>>
     {
         private readonly UserManager<User> _userManager;
         private readonly IAuthService _authService;
@@ -20,7 +20,7 @@ namespace Application.Handlers
             _authService = authService;
         }
 
-        public async Task<Result<JwtToken>> Handle(UserLoginCommand request, CancellationToken cancellationToken)
+        public async Task<Result<object>> Handle(UserLoginCommand request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
 
@@ -35,6 +35,7 @@ namespace Application.Handlers
                 var timeLeft = lockoutEndDate.Value.UtcDateTime - DateTime.UtcNow;
                 return Result<JwtToken>.Failure(Messages.AccountLocked(timeLeft.Minutes, timeLeft.Seconds));
             }
+            
 
             if (!await _userManager.CheckPasswordAsync(user, request.Password))
             {
@@ -62,6 +63,13 @@ namespace Application.Handlers
 
             await _userManager.ResetAccessFailedCountAsync(user);
             await _userManager.SetLockoutEndDateAsync(user, null);
+
+            if (!user.EmailConfirmed)
+                return Result<object>.Success(new {message ="Redirect to sned otp", Id = user.Id});
+
+            if (user.FrontImageID is null)
+                return Result<object>.Success(new { message = "Redirect to identity uploading", Id = user.Id, role = user.UserType });
+
 
             if (user.IdentityStatus == VerificationStatus.Rejected)
             {

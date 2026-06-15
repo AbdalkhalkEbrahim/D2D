@@ -11,6 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
+using Hangfire.SqlServer;
+using Hangfire;
 namespace Presentation
 {
     public class Program
@@ -60,7 +62,7 @@ namespace Presentation
             #endregion
             builder.Services.AddDbContext<D2DContext>(options =>
             {
-                options.UseSqlServer(dbConn).LogTo(Console.WriteLine, LogLevel.Information);
+                options.UseSqlServer(dbConn)/*.LogTo(Console.WriteLine, LogLevel.Information)*/
                 ;
             });
 
@@ -138,12 +140,20 @@ namespace Presentation
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            var app = builder.Build();
+            builder.Services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseSqlServerStorage(builder.Configuration.GetConnectionString("Test")));
 
+            builder.Services.AddHangfireServer();
+
+            var app = builder.Build();
+            app.UseHangfireDashboard("/hangfire");
             // Configure the HTTP request pipeline.
-           // if (app.Environment.IsDevelopment())
+            // if (app.Environment.IsDevelopment())
             //{
-                app.UseSwagger();
+            app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "D2D API V1");
