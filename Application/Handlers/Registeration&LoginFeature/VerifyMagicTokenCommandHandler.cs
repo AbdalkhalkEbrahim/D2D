@@ -6,6 +6,7 @@ using Domain.Entities.Shared;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Handlers
 {
@@ -24,16 +25,21 @@ namespace Application.Handlers
 
         public async Task<Result<JwtToken>> Handle(VerifyMagicTokenCommand request, CancellationToken cancellationToken)
         {
-            var token = _context.MagicTokens.FirstOrDefault(t => t.Token == request.Token);
+            var token = await _context.MagicTokens
+                .Include(t => t.User) 
+                .FirstOrDefaultAsync(t => t.Token == request.Token, cancellationToken);
+
             if (token == null || token.Expiration < DateTime.UtcNow || token.IsUsed)
                 return Result<JwtToken>.Failure(Messages.Expired.WithTarget("MagicToken"));
+
+            if (token.User == null)
+                return Result<JwtToken>.Failure(Messages.NotFound.WithTarget("User"));
 
             token.IsUsed = true;
             await _context.SaveChangesAsync(cancellationToken);
 
-            var user = await _userManager.FindByIdAsync(token.UserId);
             var newRefreshToken = await _authService.GenerateRefreshToken(token.UserId);
-            var jwt = await _authService.GenerateAccessToken(user!);
+            var jwt = await _authService.GenerateAccessToken(token.User);
 
             return Result<JwtToken>.Success(new JwtToken
             {

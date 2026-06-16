@@ -1,10 +1,15 @@
 ﻿using Application.Response;
+using Domain.DTOs;
+using Domain.Enums.Types;
 using Microsoft.AspNetCore.Http;
 
 namespace Application.Interfaces
 {
     public interface IUploadService
     {
-        Task<Result<string>> UploadFileAsync(IFormFile file);
+       // public Task<Result<List<string>>> UploadFileAsync(List<FileUploadModel> files);
+        public Task<List<FileUploadModel>> ChangeFileFormat(List<IFormFile> files);
+        public Task<Result> UploadAndSaveUserDocsAsync(string userId, UserType userType, List<FileUploadModel> files);
+
     }
 }

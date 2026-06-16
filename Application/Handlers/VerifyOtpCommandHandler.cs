@@ -25,24 +25,26 @@ namespace Application.Handlers
 
         public async Task<Result<OtpResponse>> Handle(VerifyOtpCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByIdAsync(request.UserId);
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u=>u.Id == request.UserId);
             if (user == null)
                 return Result<OtpResponse>.Failure(Messages.NotFound.WithTarget("User"));
 
-            var existingOtp = await _context.Otps.FirstOrDefaultAsync(e => e.Code == request.Otp && e.UserId == request.UserId, cancellationToken);
+            var existingOtp = await _context.Otps.AsNoTracking().FirstOrDefaultAsync(e => e.Code == request.Otp && e.UserId == request.UserId, cancellationToken);
             var isVerified = _otpService.VerifyOtp(existingOtp);
             if (!isVerified.IsSuccess)
                 return Result<OtpResponse>.Failure(Messages.Expired.WithTarget("Otp"));
 
             existingOtp!.IsUsed = true;
-
+            _context.Otps.Attach(existingOtp);
+            _context.Entry(existingOtp).Property(o => o.IsUsed).IsModified = true;
             if (!user.EmailConfirmed)
             {
+
                 user.EmailConfirmed = true;
-                await _userManager.UpdateAsync(user);
+                _context.Users.Attach(user);
+                _context.Entry(user).Property(u => u.EmailConfirmed).IsModified = true;
             }
 
-            _context.Otps.Update(existingOtp);
             await _context.SaveChangesAsync(cancellationToken);
 
             return Result<OtpResponse>.Success(new OtpResponse { UserId=user.Id,UserType=user.UserType});

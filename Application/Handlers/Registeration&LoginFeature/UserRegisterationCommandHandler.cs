@@ -66,7 +66,7 @@ namespace Application.Handlers
             });
             //await _userManager.AddToRoleAsync(user, request.UserType.ToString());
             // await _mediator.Send(new SendOtpCommand { ID = user.Id });
-            _ = Task.Run(async () => await _context.SaveChangesAsync());
+            await _context.SaveChangesAsync(cancellationToken);
             return Result<UserRegisterationResponse>.Success(new UserRegisterationResponse {UserId=user.Id,Email=user.Email,UserType=user.UserType});
         }
     }

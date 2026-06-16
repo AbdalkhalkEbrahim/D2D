@@ -2,6 +2,9 @@ using Application.Interfaces;
 using Application.Services;
 using Domain.Entities.Shared;
 using Domain.Settings;
+using Hangfire;
+using Hangfire.MemoryStorage;
+using Hangfire.SqlServer;
 using Infrastructure.Background_services;
 using Infrastructure.Data.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,8 +14,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
-using Hangfire.SqlServer;
-using Hangfire;
 namespace Presentation
 {
     public class Program
@@ -60,10 +61,9 @@ namespace Presentation
                 });
             });
             #endregion
-            builder.Services.AddDbContext<D2DContext>(options =>
+            builder.Services.AddDbContextPool<D2DContext>(options =>
             {
-                options.UseSqlServer(dbConn)/*.LogTo(Console.WriteLine, LogLevel.Information)*/
-                ;
+                options.UseSqlServer(dbConn);
             });
 
             builder.Services.AddSwaggerGen(options =>
@@ -141,10 +141,10 @@ namespace Presentation
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddHangfire(config => config
-            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-            .UseSimpleAssemblyNameTypeSerializer()
-            .UseRecommendedSerializerSettings()
-            .UseSqlServerStorage(builder.Configuration.GetConnectionString("Test")));
+             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+             .UseSimpleAssemblyNameTypeSerializer()
+             .UseRecommendedSerializerSettings()
+             .UseMemoryStorage());
 
             builder.Services.AddHangfireServer();
 

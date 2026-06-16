@@ -11,13 +11,13 @@ namespace Application.Commands.RegisterationFeature
         [MaxLength(100)]
         public required string Email { get; set; }
         [Required]
-        [RegularExpression("^[A-Za-z0-9!@#$%^&*?]{6}$", ErrorMessage = "Invalid Otp format.")]
-        public required string Otp { get; set; }
+        //[RegularExpression("^[A-Za-z0-9!@#$%^&*?]{6}$", ErrorMessage = "Invalid Otp format.")]
+       /* public required string Otp { get; set; }
         [Required]
         [MaxLength(30)]
         [RegularExpression(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?]).*$",
             ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*?).")]
-        public required string NewPassword { get; set; }
+*/        public required string NewPassword { get; set; }
         [Required]
         [Compare(nameof(NewPassword))]
         public required string ConfirmPassword { get; set; }

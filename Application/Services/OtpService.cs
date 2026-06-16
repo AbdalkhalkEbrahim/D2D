@@ -3,8 +3,6 @@ using Application.Response;
 using Domain.Entities.Shared;
 using System.Security.Cryptography;
 using System.Text;
-using Application.Interfaces;
-using Application.Response;
 
 namespace Application.Services
 {
@@ -15,7 +13,7 @@ namespace Application.Services
         public Result<bool> VerifyOtp(Otp? otp)
         {
 
-            if (otp == null || otp.ExpirationTime < DateTime.UtcNow /*|| otp.IsUsed*/)
+            if (otp == null || otp.ExpirationTime < DateTime.UtcNow || otp.IsUsed)
                return Result<bool>.Failure(Messages.Expired.WithTarget("otp"));
 
             return Result<bool>.Success(true);

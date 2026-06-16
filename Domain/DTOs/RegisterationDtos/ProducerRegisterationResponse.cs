@@ -8,10 +8,10 @@ namespace Domain.DTOs.RegisterationDtos
     {
         public required string UserId { get; set; }
 
-        public required string FrontImageID { get; set; }
+/*        public required string FrontImageID { get; set; }
         public required string BackImageID { get; set; }
         public required string PersonalImage { get; set; }
-        public string LicenseVerification { get; set; }
+        public string LicenseVerification { get; set; }*/
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public VerificationStatus VerificationStatus { get; set; }

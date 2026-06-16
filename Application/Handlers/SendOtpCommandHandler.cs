@@ -25,7 +25,6 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
         var totalWatch = Stopwatch.StartNew();
         var stepWatch = Stopwatch.StartNew();
 
-        // 1. جلب المستخدم
         var user = await _context.Users
             .AsNoTracking()
             .Select(u => new { u.Id, u.Email, u.UserType, u.OtpLockoutEnd, u.OtpLockoutCount })
@@ -43,10 +42,9 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
             return Result<OtpResponse>.Failure(Messages.OtpBackoff(timeLeft.Minutes, timeLeft.Seconds));
         }
 
-        var currentCount = user.OtpLockoutCount ?? 5;
-        var newLockoutEnd = DateTimeOffset.UtcNow.AddSeconds((double)currentCount);
+        var currentCount = user.OtpLockoutCount ?? 1;
+        var newLockoutEnd = DateTimeOffset.UtcNow.AddMinutes((double)currentCount);
 
-        // 2. تحديث الـ Lockout
         stepWatch.Restart();
         await _context.Users
             .Where(u => u.Id == user.Id)
@@ -57,7 +55,6 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
         stepWatch.Stop();
         Console.WriteLine($"[PERF] 2. ExecuteUpdateAsync (Lockout) took: {stepWatch.ElapsedMilliseconds}ms");
 
-        // 3. توليد الـ OTP في الـ Memory
         stepWatch.Restart();
         var code = _otpService.GenerateOtp();
         var otp = new Otp
@@ -70,14 +67,12 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
         stepWatch.Stop();
         Console.WriteLine($"[PERF] 3. OTP Generation in memory took: {stepWatch.ElapsedMilliseconds}ms");
 
-        // 4. حفظ الـ OTP الجديد (Add + SaveChanges)
         stepWatch.Restart();
         await _context.Otps.AddAsync(otp, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
         stepWatch.Stop();
         Console.WriteLine($"[PERF] 4. SaveChangesAsync (Insert OTP) took: {stepWatch.ElapsedMilliseconds}ms");
 
-        // 5. رمي المهمة لـ Hangfire
         stepWatch.Restart();
         BackgroundJob.Enqueue<IEmailService>(emailService =>
             emailService.SendEmailAsync(user.Email, "Your OTP Code", $"Your code is {code}"));
@@ -87,6 +82,6 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
         totalWatch.Stop();
         Console.WriteLine($"[PERF] === TOTAL HANDLER TIME: {totalWatch.ElapsedMilliseconds}ms ===");
 
-        return Result<OtpResponse>.Success(new OtpResponse { UserId = user.Id, UserType = user.UserType });
+        return Result<OtpResponse>.Success(new OtpResponse { UserId = user.Id, UserType = user.UserType,Code = code});
     }
 }
