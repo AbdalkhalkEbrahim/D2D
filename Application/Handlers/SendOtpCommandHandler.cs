@@ -1,10 +1,13 @@
 ﻿using Application.Commands;
 using Application.Interfaces;
 using Application.Response;
+using Application.Services;
 using Domain.DTOs;
 using Domain.Entities.Shared;
 using Infrastructure.Data.Context;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpResponse>>
 {
@@ -19,39 +22,78 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
         _context = context;
     }
 
-    public async Task<Result<OtpResponse>> Handle(SendOtpCommand request, CancellationToken cancellationToken)
+
+public async Task<Result<OtpResponse>> Handle(SendOtpCommand request, CancellationToken cancellationToken)
+{
+    var totalSw = Stopwatch.StartNew();
+
+    var dbSw = Stopwatch.StartNew();
+    var user = _context.Users.FirstOrDefault(u => u.Email == request.Email);
+    dbSw.Stop();
+
+    Console.WriteLine($"Get User: {dbSw.ElapsedMilliseconds} ms");
+
+    if (user == null)
+        return Result<OtpResponse>.Failure(Messages.NotFound.WithTarget("User"));
+
+    if (user.OtpLockoutEnd.HasValue && user.OtpLockoutEnd.Value > DateTimeOffset.UtcNow)
     {
-        var user = _context.Users.FirstOrDefault(u => u.Email == request.Email);
-        if (user == null)
-            return Result<OtpResponse>.Failure(Messages.NotFound.WithTarget("User"));
-
-        if (user.OtpLockoutEnd.HasValue && user.OtpLockoutEnd.Value > DateTimeOffset.UtcNow)
-        {
-            var duration = user.OtpLockoutEnd;
-            var timeLeft = duration.Value.UtcDateTime - DateTime.UtcNow;
-            return Result<OtpResponse>.Failure(Messages.OtpBackoff(timeLeft.Minutes, timeLeft.Seconds));
-        }
-
-        user.OtpLockoutCount = user.OtpLockoutCount ?? 1;
-        user.OtpLockoutEnd = DateTimeOffset.UtcNow.AddMinutes((double)user.OtpLockoutCount);
-
-        _context.Users.Update(user);
-
-        var code = _otpService.GenerateOtp();
-
-        var otp = new Otp
-        {
-            Code = code,
-            UserId = user.Id,
-            ExpirationTime = DateTime.UtcNow.AddMinutes(5),
-            IsUsed = false
-        };
-
-        await _context.Otps.AddAsync(otp, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _emailService.SendEmailAsync(request.Email, "OTP Verification", $"Your OTP is: {code}");
-
-        return Result<OtpResponse>.Success(new OtpResponse { UserId=user.Id,UserType=user.UserType});
+        var duration = user.OtpLockoutEnd;
+        var timeLeft = duration.Value.UtcDateTime - DateTime.UtcNow;
+        return Result<OtpResponse>.Failure(Messages.OtpBackoff(timeLeft.Minutes, timeLeft.Seconds));
     }
+
+    var updateUserSw = Stopwatch.StartNew();
+
+    user.OtpLockoutCount = user.OtpLockoutCount ?? 1;
+    user.OtpLockoutEnd = DateTimeOffset.UtcNow.AddMinutes((double)user.OtpLockoutCount);
+
+    _context.Users.Update(user);
+
+    updateUserSw.Stop();
+    Console.WriteLine($"Update User Entity: {updateUserSw.ElapsedMilliseconds} ms");
+
+    var otpGenerateSw = Stopwatch.StartNew();
+
+    var code = _otpService.GenerateOtp();
+
+    var otp = new Otp
+    {
+        Code = code,
+        UserId = user.Id,
+        ExpirationTime = DateTime.UtcNow.AddMinutes(5),
+        IsUsed = false
+    };
+
+    otpGenerateSw.Stop();
+    Console.WriteLine($"Generate OTP: {otpGenerateSw.ElapsedMilliseconds} ms");
+
+    var saveSw = Stopwatch.StartNew();
+
+    await _context.Otps.AddAsync(otp, cancellationToken);
+    await _context.SaveChangesAsync(cancellationToken);
+
+    saveSw.Stop();
+    Console.WriteLine($"SaveChanges: {saveSw.ElapsedMilliseconds} ms");
+
+    var emailSw = Stopwatch.StartNew();
+
+    await _emailService.SendEmailAsync(
+        request.Email,
+        "OTP Verification",
+        $"Your OTP is: {code}");
+
+    emailSw.Stop();
+    Console.WriteLine($"Send Email: {emailSw.ElapsedMilliseconds} ms");
+
+    totalSw.Stop();
+    Console.WriteLine($"TOTAL HANDLE TIME: {totalSw.ElapsedMilliseconds} ms");
+
+    return Result<OtpResponse>.Success(
+        new OtpResponse
+        {
+            UserId = user.Id,
+            UserType = user.UserType
+        });
+}
 }

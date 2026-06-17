@@ -34,24 +34,24 @@ namespace Application.Handlers
                 return Result<ProducerRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("InvalidRequest"));
 
             var licenseUrls = new List<LicenseVerification>();
-            foreach (var file in request.LicenseUrls)
+           /* foreach (var file in request.LicenseUrls)
             {
-                var url =  _uploadService.UploadFileAsync(file).ToString();
+                var url = await _uploadService.UploadFileAsync(file);
                 if (url != null)
-                    licenseUrls.Add(new LicenseVerification { LicenseUrl = url });
-            }
+                    licenseUrls.Add(new LicenseVerification { LicenseUrl = url.Value });
+            }*/
 
             Producer producer = (Producer)user;
             var personalImageResult = await _uploadService.UploadFileAsync(request.PersonalImage);
             var frontImageResult = await _uploadService.UploadFileAsync(request.FrontImageID);
             var backImageResult = await _uploadService.UploadFileAsync(request.BackImageID);
 
-            if (!personalImageResult.IsSuccess || !frontImageResult.IsSuccess || !backImageResult.IsSuccess)
-                return Result<ProducerRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("ImageUploadFailed"));
+            //if (!personalImageResult.IsSuccess || !frontImageResult.IsSuccess || !backImageResult.IsSuccess)
+            //    return Result<ProducerRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("ImageUploadFailed"));
 
-            producer.FrontImageID = personalImageResult.Value;
-            producer.BackImageID = personalImageResult.Value;
-            producer.PersonalImage = personalImageResult.Value;
+            //producer.FrontImageID = personalImageResult.Value;
+            //producer.BackImageID = personalImageResult.Value;
+            //producer.PersonalImage = personalImageResult.Value;
             producer.LicenseVerifications = licenseUrls;
 
           
@@ -65,18 +65,18 @@ namespace Application.Handlers
                 { "LicenseUrls", string.Join(", ", licenseUrls.Select(l => l.LicenseUrl)) }
             };
 
-        //checkAgain:
-        //    var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
-        //    if (!response.IsSuccess)
-        //        return Result<ProducerRegisterationResponse>.Failure(new Error("SystemError", response.Error.Message));
-        //    if (response.Value.SimilarityScore is null)
-        //        goto checkAgain;
+        checkAgain:
+            var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
+            if (!response.IsSuccess)
+                return Result<ProducerRegisterationResponse>.Failure(new Error("SystemError", response.Error.Message));
+            if (response.Value.SimilarityScore is null)
+                goto checkAgain;
 
-        //    if (response.Value.SimilarityScore >= 0.8)
-        //    {
-        //        producer.IdentityStatus = VerificationStatus.Approved;
-        //        _context.Producers.Update(producer);
-         //}
+            if (response.Value.SimilarityScore >= 0.8)
+            {
+                producer.IdentityStatus = VerificationStatus.Approved;
+                _context.Producers.Update(producer);
+            }
             await _context.SaveChangesAsync();
 
             return Result<ProducerRegisterationResponse>.Success(new ProducerRegisterationResponse
@@ -87,10 +87,10 @@ namespace Application.Handlers
                 PersonalImage = producer.PersonalImage,
                 VerificationStatus = producer.IdentityStatus,
                 LicenseVerification = result["LicenseUrls"],
-                //SimilarityScore = response.Value.SimilarityScore,
-                //DocumentQuality = response.Value.DocumentQuality,
-                //NeedsManualReview = response.Value.NeedsManualReview,
-                //Notes = response.Value.Notes,
+                SimilarityScore = response.Value.SimilarityScore,
+                DocumentQuality = response.Value.DocumentQuality,
+                NeedsManualReview = response.Value.NeedsManualReview,
+                Notes = response.Value.Notes,
             });
         }
     }
