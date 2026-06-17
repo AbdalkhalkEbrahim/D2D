@@ -26,7 +26,7 @@ namespace Application.Handlers
 
         public async Task<Result<object>> Handle(UserLoginCommand request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u=>u.Email == request.Email);
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u=>u.Email == request.Email);
 
             if (user == null)
             {

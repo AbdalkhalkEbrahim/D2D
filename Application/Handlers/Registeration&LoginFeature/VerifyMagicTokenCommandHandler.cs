@@ -25,9 +25,7 @@ namespace Application.Handlers
 
         public async Task<Result<JwtToken>> Handle(VerifyMagicTokenCommand request, CancellationToken cancellationToken)
         {
-            var token = await _context.MagicTokens
-                .Include(t => t.User) 
-                .FirstOrDefaultAsync(t => t.Token == request.Token, cancellationToken);
+            var token = await _context.MagicTokens.Include(t => t.User).FirstOrDefaultAsync(t => t.Token == request.Token, cancellationToken);
 
             if (token == null || token.Expiration < DateTime.UtcNow || token.IsUsed)
                 return Result<JwtToken>.Failure(Messages.Expired.WithTarget("MagicToken"));

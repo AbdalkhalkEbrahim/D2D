@@ -128,7 +128,7 @@ namespace Application.Services
                 {
                     using (var ms = new MemoryStream())
                     {
-                        await file.CopyToAsync(ms); // قراءة الملف فوراً قبل قفل الـ Request
+                        await file.CopyToAsync(ms);
                         filesToUpload.Add(new FileUploadModel
                         {
                             FileBytes = ms.ToArray(),
