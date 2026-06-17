@@ -22,6 +22,10 @@ namespace Application.Handlers
 
         public async Task<Result<string>> Handle(ForgetPasswordCommand request, CancellationToken cancellationToken)
         {
+            var verification = await _mediator.Send(new VerifyOtpCommand { Otp =  request.Otp , UserId = request.Id});
+            if(!verification.IsSuccess)
+                return Result<string>.Failure(verification.Error);
+
             if (request.NewPassword != request.ConfirmPassword)
                 return Result<string>.Failure(Messages.BadRequest.WithTarget("PasswordMismatch"));
 

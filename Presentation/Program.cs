@@ -4,7 +4,6 @@ using Domain.Entities.Shared;
 using Domain.Settings;
 using Hangfire;
 using Hangfire.MemoryStorage;
-using Hangfire.SqlServer;
 using Infrastructure.Background_services;
 using Infrastructure.Data.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
