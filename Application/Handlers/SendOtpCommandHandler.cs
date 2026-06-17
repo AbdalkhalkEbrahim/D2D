@@ -4,6 +4,7 @@ using Application.Response;
 using Application.Services;
 using Domain.DTOs;
 using Domain.Entities.Shared;
+using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -12,88 +13,76 @@ using System.Diagnostics;
 public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpResponse>>
 {
     private readonly IOtpService _otpService;
-    private readonly IEmailService _emailService;
     private readonly D2DContext _context;
 
-    public SendOtpCommandHandler(IOtpService otpService, IEmailService emailService, D2DContext context)
+    public SendOtpCommandHandler(IOtpService otpService, D2DContext context)
     {
         _otpService = otpService;
-        _emailService = emailService;
         _context = context;
     }
 
-
-public async Task<Result<OtpResponse>> Handle(SendOtpCommand request, CancellationToken cancellationToken)
-{
-    var totalSw = Stopwatch.StartNew();
-
-    var dbSw = Stopwatch.StartNew();
-    var user = _context.Users.FirstOrDefault(u => u.Email == request.Email);
-    dbSw.Stop();
-
-    Console.WriteLine($"Get User: {dbSw.ElapsedMilliseconds} ms");
-
-    if (user == null)
-        return Result<OtpResponse>.Failure(Messages.NotFound.WithTarget("User"));
-
-    if (user.OtpLockoutEnd.HasValue && user.OtpLockoutEnd.Value > DateTimeOffset.UtcNow)
+    public async Task<Result<OtpResponse>> Handle(SendOtpCommand request, CancellationToken cancellationToken)
     {
-        var duration = user.OtpLockoutEnd;
-        var timeLeft = duration.Value.UtcDateTime - DateTime.UtcNow;
-        return Result<OtpResponse>.Failure(Messages.OtpBackoff(timeLeft.Minutes, timeLeft.Seconds));
-    }
+        var totalWatch = Stopwatch.StartNew();
+        var stepWatch = Stopwatch.StartNew();
 
-    var updateUserSw = Stopwatch.StartNew();
+        var user = await _context.Users
+            .AsNoTracking()
+            .Select(u => new { u.Id, u.Email, u.UserType, u.OtpLockoutEnd, u.OtpLockoutCount })
+            .FirstOrDefaultAsync(u => u.Id == request.ID, cancellationToken);
 
-    user.OtpLockoutCount = user.OtpLockoutCount ?? 1;
-    user.OtpLockoutEnd = DateTimeOffset.UtcNow.AddMinutes((double)user.OtpLockoutCount);
+        stepWatch.Stop();
+        Console.WriteLine($"[PERF] 1. Fetch User took: {stepWatch.ElapsedMilliseconds}ms");
 
-    _context.Users.Update(user);
+        if (user == null)
+            return Result<OtpResponse>.Failure(Messages.NotFound.WithTarget("User"));
 
-    updateUserSw.Stop();
-    Console.WriteLine($"Update User Entity: {updateUserSw.ElapsedMilliseconds} ms");
-
-    var otpGenerateSw = Stopwatch.StartNew();
-
-    var code = _otpService.GenerateOtp();
-
-    var otp = new Otp
-    {
-        Code = code,
-        UserId = user.Id,
-        ExpirationTime = DateTime.UtcNow.AddMinutes(5),
-        IsUsed = false
-    };
-
-    otpGenerateSw.Stop();
-    Console.WriteLine($"Generate OTP: {otpGenerateSw.ElapsedMilliseconds} ms");
-
-    var saveSw = Stopwatch.StartNew();
-
-    await _context.Otps.AddAsync(otp, cancellationToken);
-    await _context.SaveChangesAsync(cancellationToken);
-
-    saveSw.Stop();
-    Console.WriteLine($"SaveChanges: {saveSw.ElapsedMilliseconds} ms");
-
-    var emailSw = Stopwatch.StartNew();
-
-    await _emailService.SendEmailAsync(
-        request.Email,
-        "OTP Verification",
-        $"Your OTP is: {code}");
-
-    emailSw.Stop();
-    Console.WriteLine($"Send Email: {emailSw.ElapsedMilliseconds} ms");
-
-    totalSw.Stop();
-    Console.WriteLine($"TOTAL HANDLE TIME: {totalSw.ElapsedMilliseconds} ms");
-
-    return Result<OtpResponse>.Success(
-        new OtpResponse
+        if (user.OtpLockoutEnd.HasValue && user.OtpLockoutEnd.Value > DateTimeOffset.UtcNow)
         {
+            var timeLeft = user.OtpLockoutEnd.Value.UtcDateTime - DateTime.UtcNow;
+            return Result<OtpResponse>.Failure(Messages.OtpBackoff(timeLeft.Minutes, timeLeft.Seconds));
+        }
+
+        var currentCount = user.OtpLockoutCount ?? 1;
+        var newLockoutEnd = DateTimeOffset.UtcNow.AddMinutes((double)currentCount);
+
+        stepWatch.Restart();
+        await _context.Users
+            .Where(u => u.Id == user.Id)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.OtpLockoutEnd, newLockoutEnd)
+                .SetProperty(u => u.OtpLockoutCount, currentCount),
+                cancellationToken);
+        stepWatch.Stop();
+        Console.WriteLine($"[PERF] 2. ExecuteUpdateAsync (Lockout) took: {stepWatch.ElapsedMilliseconds}ms");
+
+        stepWatch.Restart();
+        var code = _otpService.GenerateOtp();
+        var otp = new Otp
+        {
+            Code = code,
             UserId = user.Id,
-            UserType = user.UserType
-        });
-}
+            ExpirationTime = DateTime.UtcNow.AddMinutes(5),
+            IsUsed = false
+        };
+        stepWatch.Stop();
+        Console.WriteLine($"[PERF] 3. OTP Generation in memory took: {stepWatch.ElapsedMilliseconds}ms");
+
+        stepWatch.Restart();
+        await _context.Otps.AddAsync(otp, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        stepWatch.Stop();
+        Console.WriteLine($"[PERF] 4. SaveChangesAsync (Insert OTP) took: {stepWatch.ElapsedMilliseconds}ms");
+
+        stepWatch.Restart();
+        BackgroundJob.Enqueue<IEmailService>(emailService =>
+            emailService.SendEmailAsync(user.Email, "Your OTP Code", $"Your code is {code}"));
+        stepWatch.Stop();
+        Console.WriteLine($"[PERF] 5. Hangfire Enqueue took: {stepWatch.ElapsedMilliseconds}ms");
+
+        totalWatch.Stop();
+        Console.WriteLine($"[PERF] === TOTAL HANDLER TIME: {totalWatch.ElapsedMilliseconds}ms ===");
+
+        return Result<OtpResponse>.Success(new OtpResponse { UserId = user.Id, UserType = user.UserType,Code = code});
+    }
 }

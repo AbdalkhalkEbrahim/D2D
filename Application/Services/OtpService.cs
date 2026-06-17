@@ -1,26 +1,19 @@
-﻿using Domain.Entities.Shared;
-using Infrastructure.Data.Context;
+﻿using Application.Interfaces;
+using Application.Response;
+using Domain.Entities.Shared;
 using System.Security.Cryptography;
 using System.Text;
-using Application.Interfaces;
-using Application.Response;
 
 namespace Application.Services
 {
     public class OtpService : IOtpService
     {
-        private readonly D2DContext _context;
-
-        public OtpService(D2DContext context)
-        {
-            _context = context;
-        }
 
         //verify email forget pass producer otp
         public Result<bool> VerifyOtp(Otp? otp)
         {
 
-            if (otp == null || otp.ExpirationTime < DateTime.UtcNow /*|| otp.IsUsed*/)
+            if (otp == null || otp.ExpirationTime < DateTime.UtcNow || otp.IsUsed)
                return Result<bool>.Failure(Messages.Expired.WithTarget("otp"));
 
             return Result<bool>.Success(true);

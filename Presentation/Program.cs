@@ -2,6 +2,9 @@ using Application.Interfaces;
 using Application.Services;
 using Domain.Entities.Shared;
 using Domain.Settings;
+using Hangfire;
+using Hangfire.MemoryStorage;
+using Hangfire.SqlServer;
 using Infrastructure.Background_services;
 using Infrastructure.Data.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -58,10 +61,9 @@ namespace Presentation
                 });
             });
             #endregion
-            builder.Services.AddDbContext<D2DContext>(options =>
+            builder.Services.AddDbContextPool<D2DContext>(options =>
             {
-                options.UseSqlServer(dbConn).LogTo(Console.WriteLine, LogLevel.Information);
-                ;
+                options.UseSqlServer(dbConn);
             });
 
             builder.Services.AddSwaggerGen(options =>
@@ -138,12 +140,20 @@ namespace Presentation
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            var app = builder.Build();
+            builder.Services.AddHangfire(config => config
+             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+             .UseSimpleAssemblyNameTypeSerializer()
+             .UseRecommendedSerializerSettings()
+             .UseMemoryStorage());
 
+            builder.Services.AddHangfireServer();
+
+            var app = builder.Build();
+            app.UseHangfireDashboard("/hangfire");
             // Configure the HTTP request pipeline.
-           // if (app.Environment.IsDevelopment())
+            // if (app.Environment.IsDevelopment())
             //{
-                app.UseSwagger();
+            app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "D2D API V1");

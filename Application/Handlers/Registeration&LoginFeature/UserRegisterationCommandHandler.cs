@@ -7,8 +7,10 @@ using Domain.Entities.Designers;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums.Types;
+using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Handlers
 {
@@ -16,11 +18,12 @@ namespace Application.Handlers
     {
         private readonly UserManager<User> _userManager;
         private readonly IMediator _mediator;
-
-        public UserRegisterationCommandHandler(UserManager<User> userManager, IMediator mediator)
+        private readonly D2DContext _context;
+        public UserRegisterationCommandHandler(UserManager<User> userManager, IMediator mediator, D2DContext context)
         {
             _userManager = userManager;
             _mediator = mediator;
+            _context = context;
         }
 
         public async Task<Result<UserRegisterationResponse>> Handle(UserRegisterationCommand request, CancellationToken cancellationToken)
@@ -28,7 +31,7 @@ namespace Application.Handlers
             if (request.Password != request.ComfirmedPassword)
                 return Result<UserRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("PasswordMismatch"));
 
-            var existingEmail = await _userManager.FindByEmailAsync(request.Email);
+            var existingEmail = await _context.Users.FirstOrDefaultAsync(u=>u.Email == request.Email);
             if (existingEmail != null)
                 return Result<UserRegisterationResponse>.Failure(Messages.Conflict.WithTarget("Email"));
 
@@ -50,13 +53,20 @@ namespace Application.Handlers
             if (!user.IsAllowed)
                 return Result<UserRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("Underage"));
 
-            var result = await _userManager.CreateAsync(user, request.Password);
-            if (!result.Succeeded)
-                return Result<UserRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("UserCreationFailed"));
-
-            await _userManager.AddToRoleAsync(user, request.UserType.ToString());
-            await _mediator.Send(new SendOtpCommand { Email = request.Email });
-
+            var passwordHasher = new PasswordHasher<User>();
+            user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
+            /*            var result = await _userManager.CreateAsync(user, request.Password);
+                        if (!result.Succeeded)
+                            return Result<UserRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("UserCreationFailed"));*/
+            _context.Users.Add(user);
+            _context.UserRoles.Add(new IdentityUserRole<string>
+            {
+                UserId = user.Id,
+                RoleId = request.UserType == UserType.Customer ? "2" : (request.UserType == UserType.Producer ? "3" : "4")
+            });
+            //await _userManager.AddToRoleAsync(user, request.UserType.ToString());
+            // await _mediator.Send(new SendOtpCommand { ID = user.Id });
+            await _context.SaveChangesAsync(cancellationToken);
             return Result<UserRegisterationResponse>.Success(new UserRegisterationResponse {UserId=user.Id,Email=user.Email,UserType=user.UserType});
         }
     }

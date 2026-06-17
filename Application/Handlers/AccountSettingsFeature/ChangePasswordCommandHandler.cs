@@ -23,7 +23,6 @@ namespace Application.Handlers.AccountSettingsFeature
 
             if (request.NewPassword != request.ConfirmPassword)
                 return Result<string>.Failure(Messages.BadRequest.WithTarget("PasswordMismatch"));
-
             var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
             if (!result.Succeeded)
                 return Result<string>.Failure(Messages.BadRequest.WithTarget("PasswordChangeFailed"));

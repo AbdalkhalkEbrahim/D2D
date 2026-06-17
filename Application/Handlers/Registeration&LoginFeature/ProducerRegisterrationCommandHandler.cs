@@ -6,9 +6,13 @@ using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums.Status;
 using Domain.Enums.Types;
+using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 
 namespace Application.Handlers
 {
@@ -29,68 +33,29 @@ namespace Application.Handlers
 
         public async Task<Result<ProducerRegisterationResponse>> Handle(ProducerRegisterrationCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByIdAsync(request.ProducerId);
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u=>u.Id == request.ProducerId);
             if (user == null || !user.EmailConfirmed || user.UserType != UserType.Producer)
                 return Result<ProducerRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("InvalidRequest"));
 
-            var licenseUrls = new List<LicenseVerification>();
-           /* foreach (var file in request.LicenseUrls)
-            {
-                var url = await _uploadService.UploadFileAsync(file);
-                if (url != null)
-                    licenseUrls.Add(new LicenseVerification { LicenseUrl = url.Value });
-            }*/
+            List<IFormFile> files = request.LicenseUrls;
+            files.AddRange(new List<IFormFile> { request.FrontImageID, request.BackImageID, request.PersonalImage });
 
-            Producer producer = (Producer)user;
-            var personalImageResult = await _uploadService.UploadFileAsync(request.PersonalImage);
-            var frontImageResult = await _uploadService.UploadFileAsync(request.FrontImageID);
-            var backImageResult = await _uploadService.UploadFileAsync(request.BackImageID);
+            var filesToBeUploaded = await _uploadService.ChangeFileFormat(files);
 
-            //if (!personalImageResult.IsSuccess || !frontImageResult.IsSuccess || !backImageResult.IsSuccess)
-            //    return Result<ProducerRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("ImageUploadFailed"));
+            List<string> links = new List<string>();
+            BackgroundJob.Enqueue<IUploadService>(uploadService =>
+                uploadService.UploadAndSaveUserDocsAsync(user.Id,user.UserType,filesToBeUploaded)
+                );
 
-            //producer.FrontImageID = personalImageResult.Value;
-            //producer.BackImageID = personalImageResult.Value;
-            //producer.PersonalImage = personalImageResult.Value;
-            producer.LicenseVerifications = licenseUrls;
-
-          
-            _context.Producers.Update(producer);
-
-            var result = new Dictionary<string, string>
-            {
-                { "FrontImageID", producer.FrontImageID },
-                { "BackImageID", producer.BackImageID },
-                { "PersonalImage", producer.PersonalImage },
-                { "LicenseUrls", string.Join(", ", licenseUrls.Select(l => l.LicenseUrl)) }
-            };
-
-        checkAgain:
-            var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
-            if (!response.IsSuccess)
-                return Result<ProducerRegisterationResponse>.Failure(new Error("SystemError", response.Error.Message));
-            if (response.Value.SimilarityScore is null)
-                goto checkAgain;
-
-            if (response.Value.SimilarityScore >= 0.8)
-            {
-                producer.IdentityStatus = VerificationStatus.Approved;
-                _context.Producers.Update(producer);
-            }
-            await _context.SaveChangesAsync();
-
+            user.IdentityStatus = VerificationStatus.Approved;
             return Result<ProducerRegisterationResponse>.Success(new ProducerRegisterationResponse
             {
-                UserId = producer.Id,
-                FrontImageID = producer.FrontImageID,
-                BackImageID = producer.BackImageID,
-                PersonalImage = producer.PersonalImage,
-                VerificationStatus = producer.IdentityStatus,
-                LicenseVerification = result["LicenseUrls"],
-                SimilarityScore = response.Value.SimilarityScore,
+                UserId = user.Id,
+                VerificationStatus = user.IdentityStatus,
+
+/*                SimilarityScore = response.Value.SimilarityScore,
                 DocumentQuality = response.Value.DocumentQuality,
-                NeedsManualReview = response.Value.NeedsManualReview,
-                Notes = response.Value.Notes,
+               Notes = response.Value.Notes*/
             });
         }
     }

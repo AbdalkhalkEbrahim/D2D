@@ -9,13 +9,14 @@ using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Reflection;
 
 namespace Infrastructure.Data.Context
 {
     public class D2DContext : IdentityDbContext<User>
     {
-        public D2DContext(DbContextOptions<D2DContext> options) : base(options) { }
+        public D2DContext(DbContextOptions<D2DContext> options) : base(options) { this.ChangeTracker.LazyLoadingEnabled = false; }
 
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<ActiveOfferLogs> ActiveOfferLogs { get; set; }
@@ -51,7 +52,7 @@ namespace Infrastructure.Data.Context
             modelBuilder.Entity<ProducerOffer>().UseTpcMappingStrategy();
             modelBuilder.Entity<Design>().UseTpcMappingStrategy();
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-            
+
         }
     }
 }

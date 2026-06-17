@@ -17,14 +17,10 @@ namespace Presentation.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IAuthService _authService;
-        private readonly IUploadService _uploadService;
-        private readonly IIdentityValidationService _identityValidationService;
-        public AuthController(IMediator mediator, IAuthService authService, IUploadService uploadService, IIdentityValidationService identityValidationService)
+        public AuthController(IMediator mediator, IAuthService authService)
         {
             _mediator = mediator;
             _authService = authService;
-            _uploadService = uploadService;
-            _identityValidationService = identityValidationService;
         }
 
         /// <summary>
@@ -96,7 +92,7 @@ namespace Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<IActionResult> CustomerRegisteration([FromForm] CustomerRegisterationCommand dto)
+        public async Task<IActionResult> CustomerRegisteration([FromForm]CustomerRegisterationCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);
@@ -244,7 +240,7 @@ namespace Presentation.Controllers
         [HttpPost("signout")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> SignOut(string refreshToken)
+        public async Task<IActionResult> SignOut([FromBody]string refreshToken)
         {
             var result = await _authService.RevokeRefreshToken(refreshToken);
             return HandleResult(result);
@@ -258,7 +254,7 @@ namespace Presentation.Controllers
                     var result = await _uploadService.UploadFileAsync(file);
                     return HandleResult(result);
                 }*/
-
+/*
         [HttpPost("identity-validation")]
         [ProducesResponseType(typeof(IdentityValidationResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -266,7 +262,7 @@ namespace Presentation.Controllers
         {
             var result = await _identityValidationService.AnalyzeAsync(request.FrontImageUrl, request.BackImageUrl, request.SelfieImageUrl);
             return HandleResult(result);
-        }
+        }*/
         /// <summary>
         /// Sends magic login link to verified users.
         /// </summary>
@@ -296,7 +292,7 @@ namespace Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status410Gone)]
 
-        public async Task<IActionResult> VerifyMagicToken([FromQuery] VerifyMagicTokenCommand dto)
+        public async Task<IActionResult> VerifyMagicToken([FromBody] VerifyMagicTokenCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

@@ -11,11 +11,12 @@ namespace Application.Commands.RegisterationFeature
         //validation
 
         [Required]
-        [StringLength(30)]
+        [RegularExpression("^[a-zA-O-Z-a-z]{1,30}$", ErrorMessage ="Invalid name format")]
         public required string FirstName { get; set; }
 
         [Required]
-        [StringLength(30)]
+        [RegularExpression("^[a-zA-O-Z-a-z]{1,30}$", ErrorMessage = "Invalid name format")]
+
         public required string LastName { get; set; }
 
         [Required]

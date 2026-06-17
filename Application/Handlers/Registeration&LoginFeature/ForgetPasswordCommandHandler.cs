@@ -2,6 +2,7 @@
 using Application.Commands.RegisterationFeature;
 using Application.Response;
 using Domain.Entities.Shared;
+using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
@@ -11,11 +12,12 @@ namespace Application.Handlers
     {
         private readonly UserManager<User> _userManager;
         private readonly IMediator _mediator;
-
-        public ForgetPasswordCommandHandler(UserManager<User> userManager, IMediator mediator)
+        private readonly D2DContext _context;
+        public ForgetPasswordCommandHandler(UserManager<User> userManager, IMediator mediator, D2DContext context)
         {
             _userManager = userManager;
             _mediator = mediator;
+            _context = context;
         }
 
         public async Task<Result<string>> Handle(ForgetPasswordCommand request, CancellationToken cancellationToken)
@@ -26,10 +28,6 @@ namespace Application.Handlers
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
                 return Result<string>.Failure(Messages.NotFound.WithTarget("User"));
-
-            var verifyOtp = await _mediator.Send(new VerifyOtpCommand { UserId = user.Id, Otp = request.Otp });
-            if (verifyOtp.IsSuccess==false)
-                return Result<string>.Failure(Messages.Expired.WithTarget("Otp"));
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, token, request.NewPassword);

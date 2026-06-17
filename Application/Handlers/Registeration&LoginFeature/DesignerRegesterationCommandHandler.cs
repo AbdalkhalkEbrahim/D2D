@@ -8,8 +8,10 @@ using Domain.Entities.Designers;
 using Domain.Entities.Shared;
 using Domain.Enums.Status;
 using Domain.Enums.Types;
+using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
 namespace Application.Handlers
@@ -37,75 +39,25 @@ namespace Application.Handlers
             if (user == null || !user.EmailConfirmed || user.UserType != UserType.Designer)
                 return Result<DesignerRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("InvalidRequest"));
 
-            var stepUrls = new List<DesignVerification>();
+            List<IFormFile> files = request.StepUrls;
+            files.AddRange(new List<IFormFile> { request.FrontImageID, request.BackImageID, request.PersonalImage });
 
-            foreach (var file in request.StepUrls)
-            {
-                var url =await  _uploadService.UploadFileAsync(file);
-                if (url.IsSuccess )
-                 stepUrls.Add(new DesignVerification { StepUrl = url.Value });
-                else
-                    return  Result<DesignerRegisterationResponse>.Failure(Messages.CloudinaryError(url.Error.Message));
-            }
+            var filesToBeUploaded = await _uploadService.ChangeFileFormat(files);
 
-            Designer designer = (Designer)user;
+            List<string> links = new List<string>();
+            BackgroundJob.Enqueue<IUploadService>(uploadService =>
+                uploadService.UploadAndSaveUserDocsAsync(user.Id, user.UserType, filesToBeUploaded)
+                );
 
-            var personalImageResult = await _uploadService.UploadFileAsync(request.PersonalImage);
-            var frontImageResult = await _uploadService.UploadFileAsync(request.FrontImageID);
-            var backImageResult = await _uploadService.UploadFileAsync(request.BackImageID);
-
-            if (!personalImageResult.IsSuccess || !frontImageResult.IsSuccess || !backImageResult.IsSuccess)
-                return Result<DesignerRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("ImageUploadFailed"));
-
-            designer.FrontImageID = personalImageResult.Value;
-            designer.BackImageID = personalImageResult.Value;
-            designer.PersonalImage = personalImageResult.Value;
-            designer.DesignVerifications = stepUrls;
-
-           
-            _context.Designers.Update(designer);
-
-            var result = new Dictionary<string, string>
-            {
-                { "FrontImageID", designer.FrontImageID },
-                { "BackImageID", designer.BackImageID },
-                { "PersonalImage", designer.PersonalImage },
-                { "StepUrls", string.Join(", ", stepUrls.Select(s => s.StepUrl)) }
-            };
-
-        checkIdentityAgain:
-            var identityResponse = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
-            if (identityResponse.Value.SimilarityScore is null)
-                goto checkIdentityAgain;
-
-            if (identityResponse.Value.SimilarityScore >= 0.8)
-            {
-                designer.IdentityStatus = VerificationStatus.Approved;
-                _context.Designers.Update(designer);
-            }
-
-        //CheckDesignAgain:
-        //    var designResponse = await _designValidationService.AnalyzeAsync(designer.DesignVerifications.Select(d => d.StepUrl).ToList());
-        //    if (!designResponse.IsSuccess)
-        //        return Result<DesignerRegisterationResponse>.Failure(new Error("SystemError",designResponse.Error.Message));
-
-        //    if (designResponse.Value.ConfidenceScore is null || designResponse.Value.ProgressScore is null)
-        //        goto CheckDesignAgain;
-
-            await _context.SaveChangesAsync();
-
+            user.IdentityStatus = VerificationStatus.Approved;
             return Result<DesignerRegisterationResponse>.Success(new DesignerRegisterationResponse
             {
-                UserId = designer.Id,
-                FrontImageID = designer.FrontImageID,
-                BackImageID = designer.BackImageID,
-                PersonalImage = designer.PersonalImage,
-                DesignVerification = result["StepUrls"],
-                VerificationStatus = designer.IdentityStatus,
-                SimilarityScore = identityResponse.Value.SimilarityScore,
+                UserId = user.Id,
+                VerificationStatus = user.IdentityStatus,
+/*                SimilarityScore = identityResponse.Value.SimilarityScore,
                 DocumentQuality = identityResponse.Value.DocumentQuality,
                 NeedsManualReview = identityResponse.Value.NeedsManualReview,
-                Notes = identityResponse.Value.Notes,
+                Notes = identityResponse.Value.Notes,*/
             });
         }
 

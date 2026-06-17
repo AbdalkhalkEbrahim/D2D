@@ -4,64 +4,76 @@ using Application.Response;
 using Domain.DTOs.AuthDtos;
 using Domain.Entities.Shared;
 using Domain.Enums.Status;
+using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Handlers
 {
-    public class UserLoginCommandHandler : IRequestHandler<UserLoginCommand, Result<JwtToken>>
+    public class UserLoginCommandHandler : IRequestHandler<UserLoginCommand, Result<object>>
     {
         private readonly UserManager<User> _userManager;
         private readonly IAuthService _authService;
+        private readonly D2DContext _context;
 
-        public UserLoginCommandHandler(UserManager<User> userManager, IAuthService authService)
+        public UserLoginCommandHandler(UserManager<User> userManager, IAuthService authService, D2DContext context)
         {
             _userManager = userManager;
             _authService = authService;
+            _context = context;
         }
 
-        public async Task<Result<JwtToken>> Handle(UserLoginCommand request, CancellationToken cancellationToken)
+        public async Task<Result<object>> Handle(UserLoginCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var user = await _context.Users.FirstOrDefaultAsync(u=>u.Email == request.Email);
 
             if (user == null)
             {
                 return Result<JwtToken>.Failure(Messages.NotFound.WithTarget("User"));
             }
 
-            if (await _userManager.IsLockedOutAsync(user))
+            if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
             {
-                var lockoutEndDate = await _userManager.GetLockoutEndDateAsync(user);
-                var timeLeft = lockoutEndDate.Value.UtcDateTime - DateTime.UtcNow;
-                return Result<JwtToken>.Failure(Messages.AccountLocked(timeLeft.Minutes, timeLeft.Seconds));
+                var timeLeft = user.LockoutEnd.Value - DateTimeOffset.UtcNow;
+
+                int minutesLeft = (int)Math.Ceiling(timeLeft.TotalMinutes);
+                int secondsLeft = timeLeft.Seconds; 
+
+                return Result<JwtToken>.Failure(Messages.AccountLocked(minutesLeft, secondsLeft));
             }
 
-            if (!await _userManager.CheckPasswordAsync(user, request.Password))
+            var passwordHasher = new PasswordHasher<User>();
+            var verificationResult = passwordHasher.VerifyHashedPassword(user,user.PasswordHash,request.Password);
+
+            if (verificationResult == PasswordVerificationResult.Failed)
             {
-                await _userManager.AccessFailedAsync(user);
-                var failedAttempts = await _userManager.GetAccessFailedCountAsync(user);
+
+                var failedAttempts = ++user.AccessFailedCount;
 
                 if (failedAttempts >= 3)
                 {
-                    var previousLockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
-                    int lockoutMinutes = 5;
+                    var previousLockoutEnd = user.LockoutEnd;
 
-                    if (previousLockoutEnd.HasValue && previousLockoutEnd.Value > DateTimeOffset.UtcNow)
-                    {
-                        var previousDuration = previousLockoutEnd.Value - DateTimeOffset.UtcNow;
-                        lockoutMinutes = (int)Math.Ceiling(previousDuration.TotalMinutes) * 2;
-                    }
-
-                    var lockoutEnd = DateTimeOffset.UtcNow.AddMinutes(lockoutMinutes);
-                    await _userManager.SetLockoutEndDateAsync(user, lockoutEnd);
-                    return Result<JwtToken>.Failure(Messages.AccountLocked(lockoutMinutes));
+                    var lockoutEnd = DateTimeOffset.UtcNow.AddMinutes(5);
+                    user.LockoutEnabled = true;
+                    await _context.SaveChangesAsync();
+                    return Result<JwtToken>.Failure(Messages.AccountLocked(5));
                 }
 
                 return Result<JwtToken>.Failure(Messages.BadRequest.WithTarget("InvalidCredentials"));
             }
 
-            await _userManager.ResetAccessFailedCountAsync(user);
-            await _userManager.SetLockoutEndDateAsync(user, null);
+            user.AccessFailedCount = 0;
+            user.LockoutEnd = null;
+            await _context.SaveChangesAsync();
+
+            if (!user.EmailConfirmed)
+                return Result<object>.Success(new {message ="Redirect to sned otp", Id = user.Id});
+
+            if (user.FrontImageID is null)
+                return Result<object>.Success(new { message = "Redirect to identity uploading", Id = user.Id, role = user.UserType });
+
 
             if (user.IdentityStatus == VerificationStatus.Rejected)
             {

@@ -6,9 +6,13 @@ using Domain.Entities.Customers;
 using Domain.Entities.Shared;
 using Domain.Enums.Status;
 using Domain.Enums.Types;
+using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using static System.Net.WebRequestMethods;
 
 
 namespace Application.Handlers
@@ -30,7 +34,7 @@ namespace Application.Handlers
 
         public async Task<Result<CustomerRegisteratonResponse>> Handle(CustomerRegisterationCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByIdAsync(request.CustomerId);
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u=>u.Id == request.CustomerId);
             if (user == null || !user.EmailConfirmed || user.UserType != UserType.Customer)
                 return Result<CustomerRegisteratonResponse>.Failure(Messages.BadRequest.WithTarget("InvalidRequest"));
 
@@ -48,45 +52,16 @@ namespace Application.Handlers
                     Selected = true,
                 }
             };
-            //var personalImageResult = await _uploadService.UploadFileAsync(request.PersonalImage);
-            //var frontImageResult = await _uploadService.UploadFileAsync(request.FrontImageID);
-            //var backImageResult = await _uploadService.UploadFileAsync(request.BackImageID);
 
-            //if (!personalImageResult.IsSuccess || !frontImageResult.IsSuccess || !backImageResult.IsSuccess)
-            //    return Result<CustomerRegisteratonResponse>.Failure(Messages.BadRequest.WithTarget("ImageUploadFailed"));
+            var filesToBeUploaded = await _uploadService.ChangeFileFormat(new List<IFormFile> { request.FrontImageID, request.BackImageID, request.PersonalImage });
 
-            //customer.PersonalImage = personalImageResult.Value;
-            //customer.FrontImageID = frontImageResult.Value;
-            //customer.BackImageID = backImageResult.Value;
-            _context.Customers.Update(customer);
- 
-            //var result = new Dictionary<string, string>
-            //{
-            //    { "FrontImageID", customer.FrontImageID },
-            //    { "BackImageID", customer.BackImageID },
-            //    { "PersonalImage", customer.PersonalImage }
-            //};
-
-        //checkAgain:
-        //    var response = await _identityValidationService.AnalyzeAsync(result["FrontImageID"], result["BackImageID"], result["PersonalImage"]);
-        //    if (!response.IsSuccess)
-        //        return Result<CustomerRegisteratonResponse>.Failure(new Error("SystemError", response.Error.Message));
-        //    if (response.Value.SimilarityScore is null)
-        //        goto checkAgain;
-
-        //    if (response.Value.SimilarityScore >= 0.8)
-        //    {
-        //        customer.IdentityStatus = VerificationStatus.Approved;
-        //        _context.Customers.Update(customer);
-        //    }
-            await _context.SaveChangesAsync();
-
+            BackgroundJob.Enqueue<IUploadService>(uploadService =>
+                uploadService.UploadAndSaveUserDocsAsync(user.Id,user.UserType,filesToBeUploaded)
+                );
+            user.IdentityStatus = VerificationStatus.Approved;
             return Result<CustomerRegisteratonResponse>.Success(new CustomerRegisteratonResponse
             {
                 UserId = customer.Id,
-                FrontImageID=customer.FrontImageID,
-                BackImageID=customer.BackImageID,
-                PersonalImage = customer.PersonalImage,
                 VerificationStatus=customer.IdentityStatus,
                 //SimilarityScore=response.Value.SimilarityScore,
                 //DocumentQuality=response.Value.DocumentQuality,
