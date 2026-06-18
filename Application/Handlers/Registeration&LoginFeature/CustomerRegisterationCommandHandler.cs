@@ -12,7 +12,6 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using static System.Net.WebRequestMethods;
 
 
 namespace Application.Handlers

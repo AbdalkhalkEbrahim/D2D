@@ -34,7 +34,8 @@ namespace Application.Response
 
                 { "Design", "The design layout or blueprint was not found." },
 
-                { "Order", "The specified order does not exist in our records." }
+                { "Order", "The specified order does not exist in our records." },
+                {"Address", "The specified address does not exist in our records." }
             });
 
 
@@ -55,7 +56,8 @@ namespace Application.Response
 
                 { "Sku", "A product with this SKU code already exists." },
 
-                { "Design", "This design title or file has already been uploaded." }
+                { "Design", "This design title or file has already been uploaded." },
+                {"Address","Cannot delete the selected address. Please select another address before deleting this one." }
 
             });
 
@@ -93,7 +95,7 @@ namespace Application.Response
 
                 { "UserCreationFailed", "Failed to create the user account in our identity management system." },
                 { "PasswordChangeFailed", "Failed to update the password. Please verify your current password and try again." },
-                { "ImageUploadFailed", "Failed to upload one or more images. Please try again." }
+                { "ImageUploadFailed", "Failed to upload one or more images. Please try again." },
             });
 
 

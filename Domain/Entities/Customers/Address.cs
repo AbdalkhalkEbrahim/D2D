@@ -23,11 +23,11 @@ namespace Domain.Entities.Customers
             if (obj == null) throw new ArgumentNullException();
             if (ReferenceEquals(this, obj)) return true;
             var address = (Address)obj;
-            return (address.AppartmentNo == this.AppartmentNo && address.Street == this.Street && address.City == this.City && address.Goverate == this.Goverate);
+            return (address.AppartmentNo == this.AppartmentNo && address.Street == this.Street && address.City == this.City && address.Goverate == this.Goverate&&BuildingNumber==address.BuildingNumber&&District==address.District);
         }
         override public int GetHashCode()
         {
-            return HashCode.Combine(AppartmentNo, Street, City, Goverate);
+            return HashCode.Combine(AppartmentNo, Street, City, Goverate,District,BuildingNumber);
         }
         
     }

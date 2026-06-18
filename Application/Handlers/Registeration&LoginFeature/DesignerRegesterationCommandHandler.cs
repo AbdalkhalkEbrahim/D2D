@@ -1,10 +1,7 @@
 ﻿using Application.Commands.RegisterationFeature;
 using Application.Interfaces;
 using Application.Response;
-using CloudinaryDotNet.Actions;
-using Domain.DTOs.ModelDtos;
 using Domain.DTOs.RegisterationDtos;
-using Domain.Entities.Designers;
 using Domain.Entities.Shared;
 using Domain.Enums.Status;
 using Domain.Enums.Types;

@@ -8,6 +8,8 @@ namespace Domain.Entities.Shared
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public DateTime BD { get;  set; }
+        public string? ProfileImageUrl { get; set; }
+        public decimal Balance { get; set; } = 0;
         public bool IsAllowed => DateTime.Now.Year - BD.Year >= 18;
         public UserType UserType { get; set; }
         public string AnonName { get; set; } 

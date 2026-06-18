@@ -28,7 +28,7 @@ namespace Domain.Entities.Customers
             Offers = new List<CustomerOffer>();
 
         }
-        public void SelectSpecificAddress(Address address)
+        public void SelectSpecificAddress( Address address)
         {
             foreach (var addr in Addresses)
             {

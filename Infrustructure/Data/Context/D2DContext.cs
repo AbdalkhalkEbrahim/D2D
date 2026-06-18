@@ -9,7 +9,6 @@ using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using System.Reflection;
 
 namespace Infrastructure.Data.Context

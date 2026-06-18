@@ -1,5 +1,4 @@
 ﻿using Application.Response;
-using Domain.DTOs.AuthDtos;
 using MediatR;
 using System.ComponentModel.DataAnnotations;
 

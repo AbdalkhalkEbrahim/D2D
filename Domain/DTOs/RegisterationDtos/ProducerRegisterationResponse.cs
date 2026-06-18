@@ -1,5 +1,4 @@
-﻿using Domain.Entities.Producers;
-using Domain.Enums.Status;
+﻿using Domain.Enums.Status;
 using System.Text.Json.Serialization;
 
 namespace Domain.DTOs.RegisterationDtos

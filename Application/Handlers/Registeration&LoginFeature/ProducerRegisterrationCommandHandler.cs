@@ -2,7 +2,6 @@
 using Application.Interfaces;
 using Application.Response;
 using Domain.DTOs.RegisterationDtos;
-using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums.Status;
 using Domain.Enums.Types;
@@ -12,7 +11,6 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Bcpg.OpenPgp;
 
 namespace Application.Handlers
 {
