@@ -37,7 +37,7 @@ namespace Application.Handlers.AccountSettingsFeature
             await _context.SaveChangesAsync();
 
 
-            return Result<int>.Success(user.Addresses.Last().ID);
+            return user.Addresses.Last().ID;
         }
     }
 }

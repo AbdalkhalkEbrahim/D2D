@@ -36,6 +36,14 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
         if (user == null)
             return Result<OtpResponse>.Failure(Messages.NotFound.WithTarget("User"));
 
+        if (!request.flag)
+        {
+            var email = await _context.Users.Select(u => u.Email).FirstOrDefaultAsync(e => e == request.Email);
+            if(email != null)
+               return Result<OtpResponse>.Failure(Messages.Conflict.WithTarget("Email"));
+
+        }
+
         if (user.OtpLockoutEnd.HasValue && user.OtpLockoutEnd.Value > DateTimeOffset.UtcNow)
         {
             var timeLeft = user.OtpLockoutEnd.Value.UtcDateTime - DateTime.UtcNow;
@@ -68,6 +76,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
             ExpirationTime = DateTime.UtcNow.AddMinutes(5),
             IsUsed = false
         };
+
         stepWatch.Stop();
         Console.WriteLine($"[PERF] 3. OTP Generation in memory took: {stepWatch.ElapsedMilliseconds}ms");
 
@@ -79,7 +88,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
 
         stepWatch.Restart();
         BackgroundJob.Enqueue<IEmailService>(emailService =>
-            emailService.SendEmailAsync(user.Email, "Your OTP Code", $"Your code is {code}"));
+            emailService.SendEmailAsync(request.Email, "Your OTP Code", $"Your code is {code}"));
         stepWatch.Stop();
         Console.WriteLine($"[PERF] 5. Hangfire Enqueue took: {stepWatch.ElapsedMilliseconds}ms");
 

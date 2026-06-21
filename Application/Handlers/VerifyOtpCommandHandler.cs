@@ -44,8 +44,8 @@ namespace Application.Handlers
                 _context.Users.Attach(user);
                 _context.Entry(user).Property(u => u.EmailConfirmed).IsModified = true;
             }
-
-            await _context.SaveChangesAsync(cancellationToken);
+            if(request.flag)
+                await _context.SaveChangesAsync(cancellationToken);
 
             return Result<OtpResponse>.Success(new OtpResponse { UserId=user.Id,UserType=user.UserType});
         }

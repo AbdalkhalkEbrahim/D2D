@@ -91,5 +91,25 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(new GetProfileQuery { UserId = userId });
             return HandleResult(result);
         }
-    } 
+        [HttpPost("edit-profile")]
+        [ProducesResponseType(typeof(ProfileResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> EditProfile([FromForm]EditProfileCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+        [HttpPost("change-email")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status410Gone)]
+        public async Task<IActionResult> ChangeEmail(ChangeEmailCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+
+
+    }
 }

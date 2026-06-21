@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.Extensions;
+using Application.Interfaces;
 using Application.Response;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
@@ -55,7 +56,39 @@ namespace Application.Services
             return Result<List<string>>.Success(links);
         }
 */
-        
+        public async Task<Result> UploadAndSaveSingleFile<T>(T obj,string property, FileUploadModel file, bool updateOrAdd)
+        {
+            if (file == null)
+                return Result.Failure(Messages.BadRequest.WithTarget("NullValue"));
+
+            using (var stream = new MemoryStream(file.FileBytes))
+            {
+
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(file.FileName, stream),
+                };
+
+                var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+                if (uploadResult.Error != null)
+                    throw new Exception($"Cloudinary Error: {uploadResult.Error.Message}");
+
+                var secureUrl = uploadResult.SecureUrl.ToString();
+
+                obj.Set(property, secureUrl);
+
+            }
+            if (updateOrAdd)
+                _context.Update(obj);
+            else
+                _context.Add(obj);
+
+            await _context.SaveChangesAsync();
+            return Result.Success();
+        }
+
+
         public async Task<Result> UploadAndSaveUserDocsAsync(string userId, UserType userType, List<FileUploadModel> files)
         {
             if (files == null || files.Count == 0)
@@ -64,6 +97,7 @@ namespace Application.Services
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
                 return Result.Failure(Messages.NotFound.WithTarget("User"));
+
             Producer producer = new Producer();
             Designer designer = new Designer();
 
@@ -139,5 +173,7 @@ namespace Application.Services
             }
             return filesToUpload;
         }
+
+       
     }
 }

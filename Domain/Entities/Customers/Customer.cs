@@ -1,5 +1,6 @@
 ﻿using Domain.Entities.Chats;
 using Domain.Entities.Chats.AiModel;
+using Domain.Entities.Designs;
 using Domain.Entities.Offers;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
@@ -15,6 +16,7 @@ namespace Domain.Entities.Customers
     {        
         public virtual HashSet<Address> Addresses { get; set; }
         public virtual ICollection<CustomerOffer> Offers { get; set; }
+        public virtual ICollection<CustomerDesign> Designs { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }
         public virtual ICollection<Chat> Chats { get; set; }
         public virtual ModelChat? ModelChat { get; set; }

@@ -9,6 +9,7 @@ namespace Application.Interfaces
     {
        // public Task<Result<List<string>>> UploadFileAsync(List<FileUploadModel> files);
         public Task<List<FileUploadModel>> ChangeFileFormat(List<IFormFile> files);
+        public Task<Result> UploadAndSaveSingleFile<T>(T obj, string property, FileUploadModel file ,bool updateOrAdd);
         public Task<Result> UploadAndSaveUserDocsAsync(string userId, UserType userType, List<FileUploadModel> files);
 
     }

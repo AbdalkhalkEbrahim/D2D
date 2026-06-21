@@ -12,6 +12,7 @@ namespace Application.Commands
         [Required]
         [RegularExpression("^[A-Za-z0-9!@#$%^&*?]{6}$", ErrorMessage = "Invalid Otp format.")]
         public required string Otp { get; set; }
+        public bool flag { get; set; } 
        
     }
 }

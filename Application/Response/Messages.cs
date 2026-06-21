@@ -96,6 +96,7 @@ namespace Application.Response
                 { "UserCreationFailed", "Failed to create the user account in our identity management system." },
                 { "PasswordChangeFailed", "Failed to update the password. Please verify your current password and try again." },
                 { "ImageUploadFailed", "Failed to upload one or more images. Please try again." },
+                {"Design", "The selected design maybe published or not exsisted " }
             });
 
 

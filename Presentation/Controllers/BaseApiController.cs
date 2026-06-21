@@ -29,7 +29,7 @@ namespace Presentation.Controllers
               return  CreatedAtRoute(
                  methodName,
                  new { id = _id }
-                 ,(object)result.Value==(object)_id ? null : result.Value
+                 ,Equals(result.Value,_id) ? null : result.Value
                  );
             return HandleFailure(result.Error);
         }

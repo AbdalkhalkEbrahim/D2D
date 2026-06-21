@@ -1,7 +1,8 @@
-﻿using Domain.Enums.Status;
+﻿using Domain.Entities.Shared;
+using Domain.Enums.Status;
 namespace Domain.Entities.Designs
 {
-    public abstract class Design
+    public abstract class Design:Audits
     {
         public Guid ID { get; set; }
         public   string Name { get; set; }
