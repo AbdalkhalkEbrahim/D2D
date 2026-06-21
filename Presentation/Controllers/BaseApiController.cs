@@ -8,22 +8,31 @@ namespace Presentation.Controllers
     [Route("api/[controller]")]
     public class BaseApiController : ControllerBase
     {
-        protected ActionResult HandleResult(Result result)
+        protected ActionResult HandleResult(Result result,int statuscode=200)
         {
             if (result.IsSuccess)
-                return Ok();
+                return StatusCode(statuscode);
+            
 
             return HandleFailure(result.Error);
         }
 
-        protected ActionResult HandleResult<T>(Result<T> result)
+        protected ActionResult HandleResult<T>(Result<T> result, int statuscode = 200)
         {
             if (result.IsSuccess)
-                return Ok(result.Value);
-
+                return StatusCode(statuscode,result.Value);
             return HandleFailure(result.Error);
         }
-
+        protected ActionResult HandleaAndCreatedAtActionResult<T1,T2>(Result<T1> result,T2? _id, string methodName)
+        {
+            if (result.IsSuccess)
+              return  CreatedAtRoute(
+                 methodName,
+                 new { id = _id }
+                 ,(object)result.Value==(object)_id ? null : result.Value
+                 );
+            return HandleFailure(result.Error);
+        }
         private ActionResult HandleFailure(Error error)
         {
             return error.StatusCode switch

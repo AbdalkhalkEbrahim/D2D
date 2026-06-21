@@ -1,22 +1,13 @@
 ﻿using Application.Response;
-using Domain.DTOs.RegisterationDtos;
+using Domain.DTOs.AccountSettingsDtos;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
-namespace Application.Commands.RegisterationFeature
+namespace Application.Commands.AccountSettingsFeature
 {
-    public class CustomerRegisterationCommand : IRequest<Result<CustomerRegisteratonResponse>>
+    public class AddNewAddressCommand : IRequest<Result<int>>
     {
-        [Required]
         public required string CustomerId { get; set; }
-        [Required]
-
-        public required IFormFile FrontImageID { get; set; }
-        [Required]
-        public required IFormFile BackImageID { get; set; }
-        [Required]
-        public required IFormFile PersonalImage { get; set; }
         [Required]
         [MaxLength(2)]
         [Range(1, 70, ErrorMessage = "Building number must be between 1 and 70.")]
@@ -41,6 +32,6 @@ namespace Application.Commands.RegisterationFeature
         [Required]
         [MaxLength(30)]
         public required string Goverate { get; set; }
+        public bool Selected { get; set; }=false;
     }
-
 }

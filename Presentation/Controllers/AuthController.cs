@@ -1,10 +1,8 @@
 ﻿using Application.Commands;
 using Application.Commands.RegisterationFeature;
-using Application.Commands.SettingsFeature;
 using Application.Interfaces;
 using Domain.DTOs;
 using Domain.DTOs.AuthDtos;
-using Domain.DTOs.ModelDtos;
 using Domain.DTOs.RegisterationDtos;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -197,22 +195,7 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
-        /// <summary>
-        /// Changes user password.
-        /// </summary>
-        /// <remarks>
-        /// Requires valid reset token or authenticated user.
-        /// </remarks>
-
-        [HttpPost("change-password")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ChangePassword(ChangePasswordCommand dto)
-        {
-            var result = await _mediator.Send(dto);
-            return HandleResult(result);
-        }
+       
         /// <summary>
         /// Refreshes JWT access token.
         /// </summary>

@@ -7,7 +7,6 @@ using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
 
 namespace Application.Handlers
 {

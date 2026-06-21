@@ -4,7 +4,6 @@ using Domain.DTOs.AuthDtos;
 using Domain.Entities.Shared;
 using Domain.Settings;
 using Infrastructure.Data.Context;
-using Infrastructure.Migrations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
