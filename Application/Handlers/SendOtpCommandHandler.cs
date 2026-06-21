@@ -52,6 +52,10 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
                 .SetProperty(u => u.OtpLockoutEnd, newLockoutEnd)
                 .SetProperty(u => u.OtpLockoutCount, currentCount),
                 cancellationToken);
+
+/*        _context.Attach(user);
+        _context.Entry(user).Property(u=>u.OtpLockoutCount).IsModified = true;*/
+
         stepWatch.Stop();
         Console.WriteLine($"[PERF] 2. ExecuteUpdateAsync (Lockout) took: {stepWatch.ElapsedMilliseconds}ms");
 
