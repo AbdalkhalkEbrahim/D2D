@@ -3,6 +3,7 @@ using Application.Response;
 using Domain.DTOs.DesignDtos;
 using Infrastructure.Data.Context;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,42 @@ namespace Application.Handlers.DesignFeature
         }
         public async Task<Result<List<DesignResponse>>> Handle(GetAllDesignsQuery request, CancellationToken cancellationToken)
         {
-            return new List<DesignResponse>();
+           var query= _context.CustomerDesigns.Include(i=>i.DesignImages).AsNoTracking().Where(c=>c.CustomerId==request.CustomerId);
+                ;
+            if (query == null)
+                return Result<List<DesignResponse>>.Failure(Messages.NotFound.WithTarget("User"));
+
+            if (!string.IsNullOrWhiteSpace(request.Name))
+                query = query.Where(d => d.Name == request.Name);
+
+            if (request.Status.HasValue)
+                query = query.Where(d => d.Status == request.Status.Value);
+            if (request.StartDate.HasValue)
+            {
+                if (request.EndDate.HasValue)
+                    query = query.Where(d => d.CreatedAt >= request.StartDate.Value && d.CreatedAt <= request.EndDate.Value);
+                else
+                    query = query.Where(d => d.CreatedAt == request.StartDate.Value);
+            }
+            //query = query.Skip((request.PageNum - 1) * request.PageSize).Take(request.PageSize);
+
+            var result = new List<DesignResponse>();
+            foreach (var item in query)
+            {
+                result.Add
+                    (
+                         new DesignResponse
+                         {
+                             CreatedAt = item.CreatedAt,
+                             Id = item.ID,
+                             Name = item.Name,
+                             Images = item.DesignImages.Select(i => i.ImageUrl).ToList(),
+                             PublishedAt = item.CreatedAt,
+                             Status = item.Status.ToString(),
+                         }
+                    );
+            }
+            return result;
         }
     }
 }
