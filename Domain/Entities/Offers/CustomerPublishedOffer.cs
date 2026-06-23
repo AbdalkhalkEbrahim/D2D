@@ -13,7 +13,6 @@ namespace Domain.Entities.Offers
         public CustomerPublishedOffer()
         {
             ProducerCustomerOffers = new List<ProducerCustomerOffer>();
-
         }
 
 
