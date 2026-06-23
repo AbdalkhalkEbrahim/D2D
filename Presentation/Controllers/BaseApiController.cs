@@ -23,17 +23,8 @@ namespace Presentation.Controllers
                 return StatusCode(statuscode,result.Value);
             return HandleFailure(result.Error);
         }
-        protected ActionResult HandleaAndCreatedAtActionResult<T1,T2>(Result<T1> result,T2? _id, string methodName)
-        {
-            if (result.IsSuccess)
-              return  CreatedAtRoute(
-                 methodName,
-                 new { id = _id }
-                 ,Equals(result.Value,_id) ? null : result.Value
-                 );
-            return HandleFailure(result.Error);
-        }
-        private ActionResult HandleFailure(Error error)
+        
+        protected ActionResult HandleFailure(Error error)
         {
             return error.StatusCode switch
             {
