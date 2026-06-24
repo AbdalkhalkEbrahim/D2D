@@ -23,7 +23,6 @@ namespace Application.Handlers
 
         public async Task<Result<string>> Handle(ForgetPasswordCommand request, CancellationToken cancellationToken)
         {
-            var add = (await _context.Customers.Select(c => c.Addresses).FirstOrDefaultAsync(c => c.Any(a => a.ID == 47))).FirstOrDefault(c=>c.ID == 47);
             var verification = await _mediator.Send(new VerifyOtpCommand { Otp =  request.Otp , UserId = request.Id});
             if(!verification.IsSuccess)
                 return Result<string>.Failure(verification.Error);
