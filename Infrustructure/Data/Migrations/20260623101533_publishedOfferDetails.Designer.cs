@@ -4,6 +4,7 @@ using Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(D2DContext))]
-    partial class D2DContextModelSnapshot : ModelSnapshot
+    [Migration("20260623101533_publishedOfferDetails")]
+    partial class publishedOfferDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -332,10 +335,16 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("ProducerID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("ProducerID");
 
                     b.ToTable((string)null);
 
@@ -583,12 +592,18 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Material")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("MaxPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("PrintingType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Season")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Sizes")
@@ -596,6 +611,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SizesFile")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Style")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TargetAudience")
@@ -978,15 +997,9 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("CustomerPublishedOfferID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ProducerID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasIndex("CustomerCustomOfferID");
 
                     b.HasIndex("CustomerPublishedOfferID");
-
-                    b.HasIndex("ProducerID");
 
                     b.ToTable("ProducerCustomerOffers");
                 });
@@ -1218,6 +1231,17 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.Entities.Offers.ProducerOffer", b =>
+                {
+                    b.HasOne("Domain.Entities.Producers.Producer", "Producer")
+                        .WithMany("ProducerOffers")
+                        .HasForeignKey("ProducerID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Producer");
+                });
+
             modelBuilder.Entity("Domain.Entities.Payment.Escrow", b =>
                 {
                     b.HasOne("Domain.Entities.Offers.ProducerOffer", "ProducerOffer")
@@ -1442,17 +1466,9 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Producers.Producer", "Producer")
-                        .WithMany("ProducerCustomerOffers")
-                        .HasForeignKey("ProducerID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.Navigation("CustomerCustomOffer");
 
                     b.Navigation("CustomerPublishedOffer");
-
-                    b.Navigation("Producer");
                 });
 
             modelBuilder.Entity("Domain.Entities.Offers.ProducerDesignerOffer", b =>
@@ -1652,9 +1668,9 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("LicenseVerifications");
 
-                    b.Navigation("ProducerCustomerOffers");
-
                     b.Navigation("ProducerDesigns");
+
+                    b.Navigation("ProducerOffers");
 
                     b.Navigation("Reports");
 

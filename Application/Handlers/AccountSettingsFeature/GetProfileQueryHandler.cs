@@ -27,7 +27,7 @@ namespace Application.Handlers.AccountSettingsFeature
                 BD=user.BD,
                 ProfileImageUrl = user.ProfileImageUrl
             };
-
+            /*List of designs bought from designer*/
             return Result<ProfileResponse>.Success(profile);
         }
     }

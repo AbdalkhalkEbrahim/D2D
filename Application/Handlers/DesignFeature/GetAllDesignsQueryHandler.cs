@@ -22,9 +22,9 @@ namespace Application.Handlers.DesignFeature
         }
         public async Task<Result<List<DesignResponse>>> Handle(GetAllDesignsQuery request, CancellationToken cancellationToken)
         {
-           var query= _context.CustomerDesigns.Include(i=>i.DesignImages).AsNoTracking().Where(c=>c.CustomerId==request.CustomerId);
-                ;
-            if (query == null)
+           var query = _context.CustomerDesigns.Include(i=>i.DesignImages).AsNoTracking().Where(c=>c.CustomerId==request.CustomerId);
+                
+            if (await query.AnyAsync() == false)//
                 return Result<List<DesignResponse>>.Failure(Messages.NotFound.WithTarget("User"));
 
             if (!string.IsNullOrWhiteSpace(request.Name))
@@ -59,5 +59,6 @@ namespace Application.Handlers.DesignFeature
             }
             return result;
         }
+
     }
 }

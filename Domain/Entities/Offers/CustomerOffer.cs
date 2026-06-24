@@ -8,8 +8,9 @@ namespace Domain.Entities.Offers
     public abstract class CustomerOffer: Offer
     {
         //public bool Discriminator { get; set; } 
+
         public OfferStatus CustomerOfferStatus { get; set; }
-        public required virtual Customer Customer { get; set; }
+        public /*required*/ virtual Customer Customer { get; set; }
         [ForeignKey("Customer")]
         public required string CustomerID { get; set; }
 /*        public virtual ICollection<ProducerCustomerOffer> ProducerCustomerOffer { get; set; }

@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations.Offers
 {
-    public class ProducerOfferConfiguration : IEntityTypeConfiguration<ProducerOffer>
+    public class ProducerOfferConfiguration : IEntityTypeConfiguration<ProducerCustomerOffer>
     {
-        public void Configure(EntityTypeBuilder<ProducerOffer> builder)
+        public void Configure(EntityTypeBuilder<ProducerCustomerOffer> builder)
         {
             //builder.UseTpcMappingStrategy();
 
             builder.HasOne(po => po.Producer)
-                    .WithMany(p => p.ProducerOffers)
+                    .WithMany(p => p.ProducerCustomerOffers)
                     .HasForeignKey(po => po.ProducerID)
                     .OnDelete(DeleteBehavior.NoAction);
         }
