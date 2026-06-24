@@ -7,12 +7,11 @@
         public string Description { get; set; }
         public string TargetAudience { get; set; }
         public bool Gender {  get; set; }
-        public string Season { get; set; }
-        public string Style { get; set; }
         public List<string> Colors { get; set; }
-        public required string Material { get; set; }//
-        public string PrintingType { get; set; }
+        public string? Material { get; set; }
+        public string? PrintingType { get; set; }
         public List<string> Sizes { get; set; }
+        
         public string? SizesFile { get; set; }
         public int Duration { get; set; }
         public int Amount { get; set; }

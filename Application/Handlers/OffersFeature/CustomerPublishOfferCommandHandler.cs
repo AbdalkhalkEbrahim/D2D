@@ -1,6 +1,7 @@
 ﻿using Application.Commands.OffersFeature;
 using Application.Interfaces;
 using Application.Response;
+using Domain.Entities.Designs;
 using Domain.Entities.Offers;
 using Hangfire;
 using Infrastructure.Data.Context;
@@ -15,37 +16,45 @@ using System.Threading.Tasks;
 
 namespace Application.Handlers.OffersFeature
 {
-    public class PublishOfferCommandHandler : IRequestHandler<PublishOfferCommand, Result<Guid>>
+    public class CustomerPublishOfferCommandHandler : IRequestHandler<CustomerPublishOfferCommand, Result<Guid>>
     {
         private readonly D2DContext _context;
         private readonly IUploadService _uploadService;
 
-        public PublishOfferCommandHandler(D2DContext context, IUploadService uploadService)
+        public CustomerPublishOfferCommandHandler(D2DContext context, IUploadService uploadService)
         {
             _context = context;
             _uploadService = uploadService;
         }
-        public async Task<Result<Guid>> Handle(PublishOfferCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> Handle(CustomerPublishOfferCommand request, CancellationToken cancellationToken)
         {
-            
-            var design = await _context.CustomerDesigns.AsNoTracking().FirstOrDefaultAsync(cd => cd.ID == request.DesignId);
-            if (design == null)
+
+            var designData = await _context.CustomerDesigns
+            .Where(cd => cd.ID == request.DesignId)
+            .Select(cd => new
+            {
+                cd.CustomerId,
+                HasAlreadyPublished = _context.CustomerPublishedOffers.Any(cpo => cpo.CustomerDesignID == request.DesignId)
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+           // var design = await _context.CustomerDesigns.AsNoTracking().FirstOrDefaultAsync(cd => cd.ID == request.DesignId);
+           // if (design == null)
+           if(designData == null)
                 return Result<Guid>.Failure(Messages.NotFound.WithTarget("Design"));
 
-            var exsistingOffer = await _context.CustomerPublishedOffers.AnyAsync(cpo => cpo.CustomerDesignID == request.DesignId);
-            if (exsistingOffer)
+           // var exsistingOffer = await _context.CustomerPublishedOffers.AnyAsync(cpo => cpo.CustomerDesignID == request.DesignId);
+           // if (exsistingOffer)
+           if(designData.HasAlreadyPublished)
                 return Result<Guid>.Failure(Messages.Conflict.WithTarget("Offer"));
 
             var offer = new CustomerPublishedOffer
             {
-                CustomerID = design.CustomerId,
+                CustomerID = designData.CustomerId,//design.CustomerId,
                 CustomerDesignID = request.DesignId,
                 Category = request.Category,
                 Description = request.Description,
                 TargetAudience = request.TargetAudience,
                 Gender = request.Gender,
-                Season = request.Season,
-                Style = request.Style,
                 Colors = request.Colors,
                 Material = request.Material,
                 Amount = request.Amount,
@@ -56,16 +65,20 @@ namespace Application.Handlers.OffersFeature
                 CreatedAt = DateTime.UtcNow
             };
 
-            design.UpdatedAt = DateTime.UtcNow;
-            _context.Attach(design);
-            _context.Entry(design).Property(d => d.UpdatedAt).IsModified = true;
+            /*  design.UpdatedAt = DateTime.UtcNow;
+              _context.Attach(design);
+              _context.Entry(design).Property(d => d.UpdatedAt).IsModified = true;*/
+
+            var designStub = new CustomerDesign { ID = request.DesignId, UpdatedAt = DateTime.UtcNow };
+            _context.CustomerDesigns.Attach(designStub);
+            _context.Entry(designStub).Property(d => d.UpdatedAt).IsModified = true;
 
             _context.Add(offer);
 
             if (request.SizesFile != null)
             {
                 var file = await _uploadService.ChangeFileFormat(new List<IFormFile> { request.SizesFile });
-                BackgroundJob.Enqueue<IUploadService>(uploadService => uploadService.UploadAndSaveSingleFile(offer, "SizesFile", file[0], true));
+                BackgroundJob.Enqueue<IUploadService>(uploadService =>  uploadService.UploadAndSaveSingleFile(offer, "SizesFile", file[0], true));
             }
 
             await _context.SaveChangesAsync();

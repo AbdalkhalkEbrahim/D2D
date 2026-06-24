@@ -9,18 +9,16 @@ using System.Threading.Tasks;
 
 namespace Application.Commands.OffersFeature
 {
-    public class PublishOfferCommand:IRequest<Result<Guid>>
+    public class CustomerPublishOfferCommand:IRequest<Result<Guid>>
     {
         public Guid DesignId { get; set; }
         public string Category { get; set; }
         public string Description { get; set; }
         public string TargetAudience { get; set; }
         public bool Gender { get; set; }
-        public string Season { get; set; }
-        public string Style { get; set; }
         public List<string> Colors { get; set; }
-        public required string Material { get; set; }//
-        public string PrintingType { get; set; }
+        public string? Material { get; set; }
+        public string? PrintingType { get; set; }
         public List<string> Sizes { get; set; }
         public IFormFile? SizesFile { get; set; }
         public int Duration { get; set; }
