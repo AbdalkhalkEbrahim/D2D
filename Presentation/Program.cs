@@ -82,6 +82,8 @@ namespace Presentation
             builder.Services.AddScoped<IOtpService, OtpService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUploadService, UploadService>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+
             builder.Services.AddScoped<IDesignValidationService,DesignValidationService>();
             builder.Services.AddScoped<IIdentityValidationService>(provider=>new IdentityValidationService(openAI_APIKey));
             builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -132,8 +134,18 @@ namespace Presentation
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
                 cfg.RegisterServicesFromAssemblies(assemblies);
             });
+            builder.Services.AddSignalR();
             builder.Services.AddControllers();
-
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                          policy.WithOrigins("https://design-to-dress.vercel.app")
+                           .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials(); 
+                });
+            });
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -148,7 +160,7 @@ namespace Presentation
             builder.Services.AddHangfireServer();
 
             var app = builder.Build();
-            app.UseHangfireDashboard("/hangfire");
+            //app.UseHangfireDashboard("/hangfire");
             // Configure the HTTP request pipeline.
             // if (app.Environment.IsDevelopment())
             //{
@@ -164,11 +176,19 @@ namespace Presentation
             //}
 
             app.UseHttpsRedirection();
-            app.UseAuthentication();
-            app.UseAuthorization();
 
+            app.UseRouting();
+
+            app.UseCors("AllowFrontend");
+
+            app.UseAuthentication();
+
+            app.UseAuthorization();
+            app.MapHub<NotificationHub>("/notificationhub");
+            app.UseHangfireDashboard("/hangfire");
 
             app.MapControllers();
+
 
             app.Run();
         }

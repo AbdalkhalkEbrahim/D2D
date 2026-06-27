@@ -8,12 +8,8 @@ namespace Application.Commands.RegisterationFeature
     {
         [Required]
         [EmailAddress]
-        [MaxLength(100)]
         public required string Email { get; set; }
         [Required]
-        [MaxLength(30)]
-        [RegularExpression(@"^(?=.*)(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?]).*$",
-        ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*?).")]
         public required string Password { get; set; }
     }
 }

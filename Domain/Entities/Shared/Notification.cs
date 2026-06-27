@@ -13,7 +13,8 @@ namespace Domain.Entities.Shared
         public string RefrenceUrl { get; set; }
         public virtual User User { get; set; }
         [ForeignKey("User")]
-        public string UserID { get; set; }
+        public string? UserID { get; set; }
+        public string? GroupName { get; set; }
 
 
     }

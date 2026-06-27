@@ -1,12 +1,11 @@
-﻿using Domain.Enums.Status;
+﻿using Domain.Entities.Shared;
+using Domain.Enums.Status;
 namespace Domain.Entities.Offers
 {
-    public class ActiveOfferLogs
+    public class ActiveOfferLogs:Audits
     {
         public Guid ID { get; set; }
         public ActiveOfferStatus Status { get; set; }
-        public DateTime? StartDate { get;private set; }
-        public DateTime? EndDate { get;private set; }
         public string? Notes { get; set; }
        
         public Guid OfferID { get; set; }
@@ -21,10 +20,9 @@ namespace Domain.Entities.Offers
         {
             Status = _status;
             OfferID = _offerID;
-            StartDate = DateTime.Now;
-            EndDate = null;
+           
         }
         public void CloseState() =>
-            EndDate = DateTime.Now;
+            UpdatedAt = DateTime.Now;
     }
 }
