@@ -7,6 +7,7 @@ using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -20,11 +21,13 @@ namespace Application.Handlers.OffersFeature
     {
         private readonly D2DContext _context;
         private readonly IUploadService _uploadService;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public CustomerPublishOfferCommandHandler(D2DContext context, IUploadService uploadService)
+        public CustomerPublishOfferCommandHandler(D2DContext context, IUploadService uploadService,IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _uploadService = uploadService;
+            _hubContext = hubContext;
         }
         public async Task<Result<Guid>> Handle(CustomerPublishOfferCommand request, CancellationToken cancellationToken)
         {
@@ -61,8 +64,7 @@ namespace Application.Handlers.OffersFeature
                 Duration = request.Duration,
                 MaxPrice = request.MaxPrice,
                 PrintingType = request.PrintingType,
-                Sizes = request.Sizes,
-                CreatedAt = DateTime.UtcNow
+                Sizes = request.Sizes
             };
 
             /*  design.UpdatedAt = DateTime.UtcNow;
@@ -80,6 +82,8 @@ namespace Application.Handlers.OffersFeature
                 var file = await _uploadService.ChangeFileFormat(new List<IFormFile> { request.SizesFile });
                 BackgroundJob.Enqueue<IUploadService>(uploadService =>  uploadService.UploadAndSaveSingleFile(offer, "SizesFile", file[0], true));
             }
+            //    await _hubContext.Clients.Group("ProducersGroup").SendAsync("onDesignPuplished", new { Message = "A new offer has been published." });
+            BackgroundJob.Enqueue<INotificationService>(notificationService => notificationService.SendPuplishedDesignNotificationAsync(offer.ID));
 
             await _context.SaveChangesAsync();
             return offer.ID;

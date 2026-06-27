@@ -4,6 +4,7 @@
     {
         DesignVerified,
         DesignUnVerified,
+        PulishDesign,
         RecieveOffer,
         Deposite,
         ActveOfferStatuesChanged,

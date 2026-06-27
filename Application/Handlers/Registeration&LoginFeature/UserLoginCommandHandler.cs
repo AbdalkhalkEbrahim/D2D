@@ -30,7 +30,7 @@ namespace Application.Handlers
 
             if (user == null)
             {
-                return Result<JwtToken>.Failure(Messages.NotFound.WithTarget("User"));
+                return Result<object>.Failure(Messages.BadRequest.WithTarget("InvalidCredentials"));
             }
 
             if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
@@ -40,7 +40,7 @@ namespace Application.Handlers
                 int minutesLeft = (int)Math.Ceiling(timeLeft.TotalMinutes);
                 int secondsLeft = timeLeft.Seconds; 
 
-                return Result<JwtToken>.Failure(Messages.AccountLocked(minutesLeft, secondsLeft));
+                return Result<object>.Failure(Messages.AccountLocked(minutesLeft, secondsLeft));
             }
 
             var passwordHasher = new PasswordHasher<User>();
@@ -58,10 +58,10 @@ namespace Application.Handlers
                     var lockoutEnd = DateTimeOffset.UtcNow.AddMinutes(5);
                     user.LockoutEnabled = true;
                     await _context.SaveChangesAsync();
-                    return Result<JwtToken>.Failure(Messages.AccountLocked(5));
+                    return Result<object>.Failure(Messages.AccountLocked(5));
                 }
 
-                return Result<JwtToken>.Failure(Messages.BadRequest.WithTarget("InvalidCredentials"));
+                return Result<object>.Failure(Messages.BadRequest.WithTarget("InvalidCredentials"));
             }
 
             user.AccessFailedCount = 0;
@@ -69,32 +69,32 @@ namespace Application.Handlers
             await _context.SaveChangesAsync();
 
             if (!user.EmailConfirmed)
-                return Result<object>.Success(new {message ="Redirect to sned otp", Id = user.Id});
+                return new {message ="Redirect to sned otp", Id = user.Id};
 
             if (user.FrontImageID is null)
-                return Result<object>.Success(new { message = "Redirect to identity uploading", Id = user.Id, role = user.UserType });
+                return new { message = "Redirect to identity uploading", Id = user.Id, role = user.UserType };
 
 
             if (user.IdentityStatus == VerificationStatus.Rejected)
             {
-                return Result<JwtToken>.Failure(Messages.AccountStatus.WithTarget("Rejected"));
+                return Result<object>.Failure(Messages.AccountStatus.WithTarget("Rejected"));
             }
             else if (user.IdentityStatus == VerificationStatus.Pending)
             {
-                return Result<JwtToken>.Failure(Messages.AccountStatus.WithTarget("Pending"));
+                return Result<object>.Failure(Messages.AccountStatus.WithTarget("Pending"));
             }
 
             var accessToken = await _authService.GenerateAccessToken(user);
             var refreshToken = await _authService.GenerateRefreshToken(user.Id);
 
-            return Result<JwtToken>.Success(new JwtToken
+            return new JwtToken
             {
                 UserID = user.Id,
                 AccessToken = accessToken.Token,
                 RefreshToken = refreshToken.Value.Token,
                 AccessTokenExpiresAt = accessToken.ExpiresAt,
                 RefreshTokenExpiresAt = refreshToken.Value.ExpiresAt,
-            });
+            };
         }
     }
 }

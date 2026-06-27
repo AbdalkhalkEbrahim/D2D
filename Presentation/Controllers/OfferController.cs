@@ -25,6 +25,7 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+        //GET: PublishedOfferDetails
         [HttpPost("producer-customer-offer")]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> ProducerCustomerOffer(ProducerCustomerOfferCommand dto)
