@@ -138,8 +138,8 @@ namespace Presentation.Controllers
         /// - Account must be Active (not rejected or pending)
         /// </remarks>
         [HttpPost("login")]
-        [ProducesResponseType(typeof(JwtToken), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status423Locked)]

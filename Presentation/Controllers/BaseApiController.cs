@@ -20,7 +20,7 @@ namespace Presentation.Controllers
         protected ActionResult HandleResult<T>(Result<T> result, int statuscode = 200)
         {
             if (result.IsSuccess)
-                return StatusCode(statuscode,result.Value);
+                return StatusCode(statuscode, result.Value);
             return HandleFailure(result.Error);
         }
         

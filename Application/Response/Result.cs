@@ -37,6 +37,6 @@
         public static Result<TValue> Success(TValue value) => new(value, true, Error.None);
         public static new Result<TValue> Failure(Error error) => new(default, false, error);
 
-        public static implicit operator Result<TValue>(TValue value) => Success(value);
+        //public static implicit operator Result<TValue>(TValue value) => Success(value);
     }
 }

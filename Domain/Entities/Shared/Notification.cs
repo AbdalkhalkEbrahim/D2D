@@ -11,7 +11,6 @@ namespace Domain.Entities.Shared
         public string Content { get; set; }
         public bool IsRead { get; set; }
         public string RefrenceUrl { get; set; }
-
         public virtual User User { get; set; }
         [ForeignKey("User")]
         public string UserID { get; set; }
