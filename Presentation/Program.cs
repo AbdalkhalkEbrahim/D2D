@@ -139,15 +139,15 @@ namespace Presentation
                 cfg.RegisterServicesFromAssemblies(assemblies);
             });
             builder.Services.AddSignalR();
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddNewtonsoftJson();
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                          policy.WithOrigins("https://design-to-dress.vercel.app")
-                           .AllowAnyHeader()
-                          .AllowAnyMethod()
-                          .AllowCredentials();
+                    policy.WithOrigins("https://design-to-dress.vercel.app")
+                     .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
                     policy.WithOrigins("http://localhost:4200").AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();

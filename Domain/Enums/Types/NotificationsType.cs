@@ -14,6 +14,7 @@
         RemainingPrice,
         TotalPrice,
         ReviewAdded,
-        SystemAlert
+        SystemAlert,
+        DeclineOffer
     }
 }

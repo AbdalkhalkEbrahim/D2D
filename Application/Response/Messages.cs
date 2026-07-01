@@ -34,8 +34,9 @@ namespace Application.Response
 
                 { "Design", "The design layout or blueprint was not found." },
 
-                { "Order", "The specified order does not exist in our records." },
+                { "Offer", "The specified offer does not exist in our records." },
                 {"Address", "The specified address does not exist in our records." }
+
             });
 
 
@@ -98,7 +99,8 @@ namespace Application.Response
                 { "UserCreationFailed", "Failed to create the user account in our identity management system." },
                 { "PasswordChangeFailed", "Failed to update the password. Please verify your current password and try again." },
                 { "ImageUploadFailed", "Failed to upload one or more images. Please try again." },
-                {"Design", "The selected design maybe published or not exsisted " }
+                {"Design", "The selected design maybe published or not exsisted " },
+                {"DraftedDesign", "The selected design is in drafted state already" }
             });
 
 

@@ -1,4 +1,5 @@
 ﻿using Application.Commands.RegisterationFeature;
+using Application.Interfaces;
 using Application.Response;
 using Domain.DTOs.RegisterationDtos;
 using Domain.Entities.Customers;
@@ -6,6 +7,7 @@ using Domain.Entities.Designers;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums.Types;
+using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -18,11 +20,13 @@ namespace Application.Handlers
         private readonly UserManager<User> _userManager;
         private readonly IMediator _mediator;
         private readonly D2DContext _context;
-        public UserRegisterationCommandHandler(UserManager<User> userManager, IMediator mediator, D2DContext context)
+        private readonly IAuthService _authService;
+        public UserRegisterationCommandHandler(UserManager<User> userManager, IMediator mediator, D2DContext context, IAuthService authService)
         {
             _userManager = userManager;
             _mediator = mediator;
             _context = context;
+            _authService = authService;
         }
 
         public async Task<Result<UserRegisterationResponse>> Handle(UserRegisterationCommand request, CancellationToken cancellationToken)
@@ -47,7 +51,8 @@ namespace Application.Handlers
             user.LastName = request.LastName;
             user.UserType = request.UserType;
             user.BD = new DateTime(request.Year, request.Month, request.Day);
-            user.AnonName = user.AnonymousName(request.UserType);
+
+            user.AnonName = await _authService.AnonymousName(request.UserType);
 
             if (!user.IsAllowed)
                 return Result<UserRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("Underage"));

@@ -15,5 +15,6 @@ namespace Domain.Entities.Shared
         [ForeignKey("User")]
         public string? UserID { get; set; }
 
+
     }
 }

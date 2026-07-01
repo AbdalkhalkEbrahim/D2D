@@ -43,6 +43,8 @@ namespace Infrastructure.Data.Context
         public DbSet<Otp> Otps { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<MagicToken> MagicTokens { get; set; }
+        public DbSet<SystemCounter> SystemCounters { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
