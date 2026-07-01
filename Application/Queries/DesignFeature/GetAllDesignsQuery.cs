@@ -12,7 +12,7 @@ namespace Application.Queries.DesignFeature
         public DateTime? StartDate {  get; set; }
         public DateTime? EndDate { get; set; }
         public DesignStatus? Status { get; set; }
-        //public int PageSize { get; set; } = 10;
-        //public int? PageNum { get; set; } = 1;
+        public int? PageSize { get; set; } = 10;
+        public int? PageNum { get; set; } = 1;
     }
 }

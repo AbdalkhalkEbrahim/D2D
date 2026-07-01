@@ -1,10 +1,9 @@
 ﻿using Application.Commands.OffersFeature;
+using Application.Interfaces;
 using Application.Response;
 using Domain.DTOs.OfferDtos;
-using Domain.Entities.Customers;
 using Domain.Entities.Offers;
-using Domain.Entities.Producers;
-using Domain.Enums.Types;
+using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +39,8 @@ namespace Application.Handlers.OffersFeature
 
             _context.Add(producerOffer);
             await _context.SaveChangesAsync();
+            BackgroundJob.Enqueue<INotificationService>(notificationService => notificationService.SendProducerOfferNotification(request.CustomerId,producerOffer.ID));
+
 
             var producerInfo = await _context.Producers.Include(p => p.Reviews)
                 .Where(p => p.Id == request.ProducerId)
@@ -57,6 +58,7 @@ namespace Application.Handlers.OffersFeature
             return new ProducerOfferResponse
             {
                 ProducerId = producerInfo.Id,
+                ProducerOfferId = producerOffer.ID,
                 Rate = producerInfo.Rate,
                 ProducerAnnonName = producerInfo.AnonName,
                 OfferStatus = producerOffer.OfferStatus.ToString(),

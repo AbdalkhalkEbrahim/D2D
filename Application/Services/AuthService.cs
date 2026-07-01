@@ -2,12 +2,14 @@
 using Application.Response;
 using Domain.DTOs.AuthDtos;
 using Domain.Entities.Shared;
+using Domain.Enums.Types;
 using Domain.Settings;
 using Infrastructure.Data.Context;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics.Metrics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -121,6 +123,22 @@ namespace Application.Services
                 return Result.Failure(Messages.Expired.WithTarget("Token"));
             return Result.Success();
 
+        }
+        public async Task<string> AnonymousName(UserType userType)
+        {
+            var counters = await _context.SystemCounters.FirstOrDefaultAsync();
+            int AnonCounter = (userType) switch
+            {
+                UserType.Customer => counters.CustomerCounter = counters.CustomerCounter + 1,
+                UserType.Producer => counters.ProducerCounter = counters.ProducerCounter + 1,
+                UserType.Designer => counters.DesignerCounter = counters.DesignerCounter + 1,
+                _ => 0
+            };
+            _context.Update(counters);
+            await _context.SaveChangesAsync();
+            AnonCounter++;
+            string leadingZeros = new string('0', 6 - AnonCounter.ToString().Length);
+            return $"Anon{leadingZeros}{AnonCounter}_{userType.ToString()}";
         }
     }
 }

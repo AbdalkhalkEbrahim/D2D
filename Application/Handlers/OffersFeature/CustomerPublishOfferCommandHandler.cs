@@ -3,17 +3,13 @@ using Application.Interfaces;
 using Application.Response;
 using Domain.Entities.Designs;
 using Domain.Entities.Offers;
+using Domain.Enums.Status;
 using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Handlers.OffersFeature
 {
@@ -53,6 +49,7 @@ namespace Application.Handlers.OffersFeature
             var offer = new CustomerPublishedOffer
             {
                 CustomerID = designData.CustomerId,//design.CustomerId,
+                Name = request.Name,
                 CustomerDesignID = request.DesignId,
                 Category = request.Category,
                 Description = request.Description,
@@ -71,21 +68,23 @@ namespace Application.Handlers.OffersFeature
               _context.Attach(design);
               _context.Entry(design).Property(d => d.UpdatedAt).IsModified = true;*/
 
-            var designStub = new CustomerDesign { ID = request.DesignId, UpdatedAt = DateTime.UtcNow };
-            _context.CustomerDesigns.Attach(designStub);
-            _context.Entry(designStub).Property(d => d.UpdatedAt).IsModified = true;
-
             _context.Add(offer);
 
+            var designStub = new CustomerDesign { ID = request.DesignId, UpdatedAt = DateTime.UtcNow, CustomerPublishedOfferID = offer.ID,Status= DesignStatus.Published };
+            _context.CustomerDesigns.Attach(designStub);
+            _context.Entry(designStub).Property(d => d.UpdatedAt).IsModified = true;
+            _context.Entry(designStub).Property(d => d.CustomerPublishedOfferID).IsModified = true;
+            _context.Entry(designStub).Property(d => d.Status).IsModified = true;
             if (request.SizesFile != null)
             {
                 var file = await _uploadService.ChangeFileFormat(new List<IFormFile> { request.SizesFile });
                 BackgroundJob.Enqueue<IUploadService>(uploadService =>  uploadService.UploadAndSaveSingleFile(offer, "SizesFile", file[0], true));
             }
             //    await _hubContext.Clients.Group("ProducersGroup").SendAsync("onDesignPuplished", new { Message = "A new offer has been published." });
-            BackgroundJob.Enqueue<INotificationService>(notificationService => notificationService.SendPuplishedDesignNotificationAsync(offer.ID));
 
             await _context.SaveChangesAsync();
+            BackgroundJob.Enqueue<INotificationService>(notificationService => notificationService.SendPuplishedDesignNotificationAsync(offer.ID));
+
             return offer.ID;
 
         }

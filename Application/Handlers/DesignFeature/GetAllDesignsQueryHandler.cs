@@ -39,7 +39,8 @@ namespace Application.Handlers.DesignFeature
                 else
                     query = query.Where(d => d.CreatedAt == request.StartDate.Value);
             }
-            //query = query.Skip((request.PageNum - 1) * request.PageSize).Take(request.PageSize);
+            if(request.PageNum.HasValue && request.PageNum.Value > 0)
+                 query = query.Skip(((int)request.PageNum - 1) * (int)request.PageSize).Take((int)request.PageSize);
 
             var result = new List<DesignResponse>();
             foreach (var item in query)

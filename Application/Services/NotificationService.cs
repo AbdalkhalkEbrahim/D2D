@@ -4,11 +4,6 @@ using Domain.Enums.Types;
 using Infrastructure.Data.Context;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -46,8 +41,48 @@ namespace Application.Services
             {
                 notifications,
                 publishedOffer
-            }
-                );
+            });
         }
+        public async Task SendProducerOfferNotification(Guid clientId, Guid producerOfferId)
+        {
+            var producerOffer = await _context.ProducerCustomerOffers.Select(po => new { po.ID, po.Price,po.Producer.AnonName,po.Producer.Rate }).FirstOrDefaultAsync(po => po.ID == producerOfferId);
+            if (producerOffer == null)
+            {
+                throw new Exception("Producer offer not found.");
+            }
+            var notification = new Notification
+            {
+                Title = "New Producer Offer",
+                Content = $"A new offer has been made by  {producerOffer.AnonName} with a price of: { producerOffer.Price}",
+                NotificationsType = NotificationsType.RecieveOffer,
+                UserID = clientId.ToString(),
+                IsRead = false,
+                RefrenceUrl = $"/Offers/ProducerOfferDetails/{producerOfferId}"
+            };
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            await _hubContext.Clients.User(clientId.ToString()).SendAsync("ReceiveNotification", new
+            {
+                notification,
+                producerOffer
+            });
+        }
+        public async Task DeclineProducerOfferNotification(string producerId, string offerName)
+        {
+          
+            var notification = new Notification
+            {
+                Title = "New Producer Offer",
+                Content = $"Your offer on {offerName} has been declined",
+                NotificationsType = NotificationsType.DeclineOffer,
+                UserID = producerId.ToString(),
+                IsRead = false,
+                RefrenceUrl = $"/Offers/ProducerOfferDetails/{producerId}"
+            };
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            await _hubContext.Clients.All./*User(producerId.ToString()).*/SendAsync("declineNotification", notification);
+        }
+
     }
 }
