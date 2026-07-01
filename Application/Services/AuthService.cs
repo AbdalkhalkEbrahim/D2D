@@ -136,7 +136,7 @@ namespace Application.Services
             };
             _context.Update(counters);
             await _context.SaveChangesAsync();
-            AnonCounter++;
+=            string leadingZeros = new string('0', 6 - AnonCounter.ToString().Length);
             string leadingZeros = new string('0', 6 - AnonCounter.ToString().Length);
             return $"Anon{leadingZeros}{AnonCounter}_{userType.ToString()}";
         }
