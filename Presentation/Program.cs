@@ -85,7 +85,11 @@ namespace Presentation
             builder.Services.AddScoped<INotificationService, NotificationService>();
 
             builder.Services.AddScoped<IDesignValidationService,DesignValidationService>();
-            builder.Services.AddScoped<IIdentityValidationService>(provider=>new IdentityValidationService(openAI_APIKey));
+            // builder.Services.AddScoped<IIdentityValidationService>(provider=>IdentityValidationService(openAI_APIKey));
+/*            builder.Services.AddScoped<IIdentityValidationService, IdentityValidationService>();
+*/            builder.Services.AddHttpClient<IIdentityValidationService, IdentityValidationService>(client =>
+            {
+            });
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -143,7 +147,10 @@ namespace Presentation
                           policy.WithOrigins("https://design-to-dress.vercel.app")
                            .AllowAnyHeader()
                           .AllowAnyMethod()
-                          .AllowCredentials(); 
+                          .AllowCredentials();
+                    policy.WithOrigins("http://localhost:4200").AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
                 });
             });
 

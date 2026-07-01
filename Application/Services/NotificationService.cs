@@ -42,10 +42,9 @@ namespace Application.Services
             }).ToList();
             _context.Notifications.AddRange(notifications);
             await _context.SaveChangesAsync();
-            await _hubContext.Clients.Group("ProducersGroup").SendAsync("ReceiveNotification",new
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification",new
             {
-                notifications,
-                publishedOffer
+                message = "hello there"
             }
                 );
         }

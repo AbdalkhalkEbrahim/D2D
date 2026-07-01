@@ -57,7 +57,7 @@ namespace Application.Handlers
             BackgroundJob.Enqueue<IUploadService>(uploadService =>
                 uploadService.UploadAndSaveUserDocsAsync(user.Id,user.UserType,filesToBeUploaded)
                 );
-            user.IdentityStatus = VerificationStatus.Approved;
+           // user.IdentityStatus = VerificationStatus.Approved; 
             return Result<CustomerRegisteratonResponse>.Success(new CustomerRegisteratonResponse
             {
                 UserId = customer.Id,

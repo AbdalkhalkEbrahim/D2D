@@ -2,8 +2,8 @@
 {
     public class IdentityValidationRequest
     {
-        public required string FrontImageUrl { get; set; }
-        public required string BackImageUrl { get; set; }
-        public required string SelfieImageUrl { get; set; }
+        public string NationalIdFrontUrl { get; set; }
+        public string NationalIdBackUrl { get; set; }
+        public string SelfieUrl { get; set; }
     }
 }

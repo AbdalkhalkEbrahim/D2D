@@ -6,8 +6,10 @@ using CloudinaryDotNet.Actions;
 using Domain.DTOs;
 using Domain.Entities.Designers;
 using Domain.Entities.Producers;
+using Domain.Enums.Status;
 using Domain.Enums.Types;
 using Domain.Settings;
+using Hangfire;
 using Infrastructure.Data.Context;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -106,6 +108,7 @@ namespace Application.Services
             else if (userType == UserType.Designer)
                 designer = (Designer)user;
 
+            List<string> base64s = new List<string>();
             for (int i = 0; i < files.Count; i++)
             {
                 using (var stream = new MemoryStream(files[i].FileBytes))
@@ -146,6 +149,12 @@ namespace Application.Services
                     }
                 }
             }
+            string base64Front = Convert.ToBase64String(files[0].FileBytes);
+            string base64Back = Convert.ToBase64String(files[1].FileBytes);
+            string base64Selfie = Convert.ToBase64String(files[2].FileBytes);
+            BackgroundJob.Enqueue<IIdentityValidationService>(aiService =>
+            aiService.ValidateAndApproveUserIdentityAsync(user.Id, base64Front, base64Back, base64Selfie));
+
             _context.Update(userType == UserType.Customer ? user : (userType == UserType.Producer ? producer : designer));
             await _context.SaveChangesAsync();
 
