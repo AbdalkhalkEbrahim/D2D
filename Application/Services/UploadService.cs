@@ -30,7 +30,7 @@ namespace Application.Services
             _cloudinary = new Cloudinary(account);
             _context = context;
         }
-/*        public async Task<Result<List<string>>> UploadFileAsync(List<FileUploadModel> files)
+        public async Task<Result<List<string>>> UploadFileAsync(List<FileUploadModel> files)
         {
             List<string> links = new List<string>();
             if (files == null || files.Count == 0)
@@ -55,7 +55,7 @@ namespace Application.Services
             }
             return Result<List<string>>.Success(links);
         }
-*/
+
         public async Task<Result> UploadAndSaveSingleFile<T>(T obj,string property, FileUploadModel file, bool updateOrAdd)
         {
             if (file == null)

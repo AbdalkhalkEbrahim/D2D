@@ -1,3 +1,4 @@
+using Application.Hubs;
 using Application.Interfaces;
 using Application.Services;
 using Domain.Entities.Shared;
@@ -126,6 +127,20 @@ namespace Presentation
                     ValidAudience = jwtSettings.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"]; 
+                        var path = context.HttpContext.Request.Path;
+
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chathub"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
 
@@ -188,6 +203,7 @@ namespace Presentation
 
             app.UseAuthorization();
             app.MapHub<NotificationHub>("/notificationhub");
+            app.MapHub<ChatHub>("/chathub");
             app.UseHangfireDashboard("/hangfire");
 
             app.MapControllers();

@@ -31,7 +31,7 @@ namespace Application.Services
         public async Task<TokenDTO> GenerateAccessToken(User user)
         { 
             var userRoles = await _userManager.GetRolesAsync(user);//
-            var expiration = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes);
+            var expiration = DateTime.UtcNow.AddHours(_jwtSettings.AccessTokenExpirationMinutes);//add minutes
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
             var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
             var claims = new List<Claim>
@@ -136,7 +136,6 @@ namespace Application.Services
             };
             _context.Update(counters);
             await _context.SaveChangesAsync();
-            AnonCounter++;
             string leadingZeros = new string('0', 6 - AnonCounter.ToString().Length);
             return $"Anon{leadingZeros}{AnonCounter}_{userType.ToString()}";
         }
