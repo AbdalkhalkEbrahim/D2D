@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
-//[Authorize] 
+[Authorize] 
 public class NotificationHub : Hub
 {
     public override async Task OnConnectedAsync()

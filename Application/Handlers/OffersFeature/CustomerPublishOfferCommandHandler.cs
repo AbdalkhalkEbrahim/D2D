@@ -69,6 +69,8 @@ namespace Application.Handlers.OffersFeature
               _context.Entry(design).Property(d => d.UpdatedAt).IsModified = true;*/
 
             _context.Add(offer);
+            BackgroundJob.Enqueue<INotificationService>(notificationService => notificationService.SendPuplishedDesignNotificationAsync(offer.ID));//
+
 
             var designStub = new CustomerDesign { ID = request.DesignId, UpdatedAt = DateTime.UtcNow, CustomerPublishedOfferID = offer.ID,Status= DesignStatus.Published };
             _context.CustomerDesigns.Attach(designStub);
@@ -83,7 +85,6 @@ namespace Application.Handlers.OffersFeature
             //    await _hubContext.Clients.Group("ProducersGroup").SendAsync("onDesignPuplished", new { Message = "A new offer has been published." });
 
             await _context.SaveChangesAsync();
-            BackgroundJob.Enqueue<INotificationService>(notificationService => notificationService.SendPuplishedDesignNotificationAsync(offer.ID));
 
             return offer.ID;
 

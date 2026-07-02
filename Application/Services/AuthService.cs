@@ -31,7 +31,7 @@ namespace Application.Services
         public async Task<TokenDTO> GenerateAccessToken(User user)
         { 
             var userRoles = await _userManager.GetRolesAsync(user);//
-            var expiration = DateTime.UtcNow.AddHours(_jwtSettings.AccessTokenExpirationMinutes);//add minutes
+            var expiration = DateTime.UtcNow.AddDays(_jwtSettings.AccessTokenExpirationMinutes);//add minutes
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
             var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
             var claims = new List<Claim>

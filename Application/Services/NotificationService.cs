@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services
 {
+
     public class NotificationService : INotificationService
     {
         private readonly IHubContext<NotificationHub> _hubContext;
@@ -43,6 +44,7 @@ namespace Application.Services
                 publishedOffer
             });
         }
+
         public async Task SendProducerOfferNotification(Guid clientId, Guid producerOfferId)
         {
             var producerOffer = await _context.ProducerCustomerOffers.Select(po => new { po.ID, po.Price,po.Producer.AnonName,po.Producer.Rate }).FirstOrDefaultAsync(po => po.ID == producerOfferId);
@@ -67,9 +69,9 @@ namespace Application.Services
                 producerOffer
             });
         }
+
         public async Task DeclineProducerOfferNotification(string producerId, string offerName)
         {
-          
             var notification = new Notification
             {
                 Title = "New Producer Offer",
@@ -82,6 +84,21 @@ namespace Application.Services
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
             await _hubContext.Clients.All./*User(producerId.ToString()).*/SendAsync("declineNotification", notification);
+        }
+
+        public async Task SendMessage(Notification notification, Notification? limit)
+        {
+            var sendTasks = new List<Task>
+            {
+                 _hubContext.Clients.User(notification.UserID).SendAsync("ReceiveNotification", notification)
+            };
+
+            if (limit != null)
+            {
+                sendTasks.Add(_hubContext.Clients.User(limit.UserID).SendAsync("ReceiveNotification", limit));
+            }
+
+            await Task.WhenAll(sendTasks);
         }
 
     }

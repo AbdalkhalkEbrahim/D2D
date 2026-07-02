@@ -21,7 +21,7 @@ namespace Infrastructure.Data.Configurations.Offers
 
             builder.HasMany<ActiveOfferLogs>()
                       .WithOne()
-                      .HasForeignKey(l => new { l.OfferID, l.IsOfferActive })
+                      .HasForeignKey(l => new { l.PublishedOfferID, l.IsPublishedOfferActive })
                       .HasPrincipalKey(o => new { o.ID, o.IsActive })
                       .OnDelete(DeleteBehavior.NoAction);
 

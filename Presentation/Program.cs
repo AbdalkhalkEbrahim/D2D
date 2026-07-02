@@ -63,7 +63,10 @@ namespace Presentation
             #endregion
             builder.Services.AddDbContextPool<D2DContext>(options =>
             {
-                options.UseSqlServer(dbConn);
+                options.UseSqlServer(dbConn, sqlOption =>sqlOption.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null));
             });
 
             builder.Services.AddSwaggerGen(options =>
@@ -84,7 +87,7 @@ namespace Presentation
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUploadService, UploadService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
-
+            builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<IDesignValidationService,DesignValidationService>();
             // builder.Services.AddScoped<IIdentityValidationService>(provider=>IdentityValidationService(openAI_APIKey));
 /*            builder.Services.AddScoped<IIdentityValidationService, IdentityValidationService>();
@@ -138,7 +141,8 @@ namespace Presentation
                         var accessToken = context.Request.Query["access_token"]; 
                         var path = context.HttpContext.Request.Path;
 
-                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chathub"))
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            (path.StartsWithSegments("/chathub") || path.StartsWithSegments("/notificationhub")))
                         {
                             context.Token = accessToken;
                         }

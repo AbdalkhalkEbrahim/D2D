@@ -7,8 +7,9 @@ namespace Domain.Entities.Chats
     public class Message:Audits
     {
         public int ID { get; set; }
-        public string? Content { get; set; }
+        public List<string> Content { get; set; }
         public MessageSender Sender { get; set; }
+        public bool IsRead { get; set; }
         public Chat Chat { get; set; }
         [ForeignKey("Chat")]
         public int ChatID { get; set; }

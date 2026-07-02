@@ -9,7 +9,7 @@
         QualityControlAndPackaging,
         FinshedByProducer,
         PindingFinalPayment,
-        SeliveringOTP,
+        DeliveringOTP,
         Completed,
         Canceled,
     }

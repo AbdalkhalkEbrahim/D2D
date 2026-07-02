@@ -4,6 +4,7 @@ using Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(D2DContext))]
-    partial class D2DContextModelSnapshot : ModelSnapshot
+    [Migration("20260702165245_producerCountAndListOfMessageContent")]
+    partial class producerCountAndListOfMessageContent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -159,9 +162,6 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
                     b.Property<int>("Sender")
                         .HasColumnType("int");
 
@@ -296,25 +296,16 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ChatID")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("CustomOfferID")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool?>("IsCustomOfferActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("IsPublishedOfferActive")
+                    b.Property<bool>("IsOfferActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("PublishedOfferID")
+                    b.Property<Guid>("OfferID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Status")
@@ -325,11 +316,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("ChatID");
-
-                    b.HasIndex("CustomOfferID", "IsCustomOfferActive");
-
-                    b.HasIndex("PublishedOfferID", "IsPublishedOfferActive");
+                    b.HasIndex("OfferID", "IsOfferActive");
 
                     b.ToTable("ActiveOfferLogs");
                 });
@@ -1244,25 +1231,19 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Offers.ActiveOfferLogs", b =>
                 {
-                    b.HasOne("Domain.Entities.Chats.Chat", "Chat")
-                        .WithMany()
-                        .HasForeignKey("ChatID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Entities.Offers.CustomerCustomOffer", null)
                         .WithMany()
-                        .HasForeignKey("CustomOfferID", "IsCustomOfferActive")
+                        .HasForeignKey("OfferID", "IsOfferActive")
                         .HasPrincipalKey("ID", "IsActive")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.Offers.CustomerPublishedOffer", null)
                         .WithMany()
-                        .HasForeignKey("PublishedOfferID", "IsPublishedOfferActive")
+                        .HasForeignKey("OfferID", "IsOfferActive")
                         .HasPrincipalKey("ID", "IsActive")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("Chat");
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.Payment.Escrow", b =>

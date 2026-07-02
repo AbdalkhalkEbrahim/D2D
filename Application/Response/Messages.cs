@@ -35,7 +35,8 @@ namespace Application.Response
                 { "Design", "The design layout or blueprint was not found." },
 
                 { "Offer", "The specified offer does not exist in our records." },
-                {"Address", "The specified address does not exist in our records." }
+                {"Address", "The specified address does not exist in our records." },
+                {"Chat", "The specified chat does not exist in our records." }
 
             });
 
@@ -119,7 +120,9 @@ namespace Application.Response
 
                 { "DesignNotApproved", "This design cannot be produced or purchased because it hasn't been approved by the platform yet." },
 
-                { "InsufficientWalletBalance", "The user's wallet balance is insufficient to complete this transaction." }
+                { "InsufficientWalletBalance", "The user's wallet balance is insufficient to complete this transaction." },
+
+                {"ChatLimit","You've exceeded the allowed messages limit" }
 
             });
 
