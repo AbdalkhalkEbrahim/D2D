@@ -59,7 +59,7 @@ namespace Application.Handlers.OffersFeature
                 Material = request.Material,
                 Amount = request.Amount,
                 Duration = request.Duration,
-                MaxPrice = request.MaxPrice,
+                MaxPrice = request.TargetPrice,
                 PrintingType = request.PrintingType,
                 Sizes = request.Sizes
             };

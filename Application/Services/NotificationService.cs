@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.Hubs;
+using Application.Interfaces;
 using Domain.Entities.Shared;
 using Domain.Enums.Types;
 using Infrastructure.Data.Context;
@@ -10,12 +11,12 @@ namespace Application.Services
 
     public class NotificationService : INotificationService
     {
-        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IHubContext<NotificationHub> _notificationHub;
         private readonly D2DContext _context;
 
-        public NotificationService(IHubContext<NotificationHub> hubContext, D2DContext context)
+        public NotificationService(IHubContext<NotificationHub> notificationHub, D2DContext context)
         {
-            _hubContext = hubContext;
+            _notificationHub = notificationHub;
             _context = context;
         }
        
@@ -38,7 +39,7 @@ namespace Application.Services
             }).ToList();
             _context.Notifications.AddRange(notifications);
             await _context.SaveChangesAsync();
-            await _hubContext.Clients.All.SendAsync("ReceiveNotification",new
+            await _notificationHub.Clients.All.SendAsync("ReceiveNotification",new
             {
                 notifications,
                 publishedOffer
@@ -63,7 +64,7 @@ namespace Application.Services
             };
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
-            await _hubContext.Clients.User(clientId.ToString()).SendAsync("ReceiveNotification", new
+            await _notificationHub.Clients.User(clientId.ToString()).SendAsync("ReceiveNotification", new
             {
                 notification,
                 producerOffer
@@ -83,22 +84,31 @@ namespace Application.Services
             };
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
-            await _hubContext.Clients.All./*User(producerId.ToString()).*/SendAsync("declineNotification", notification);
+            await _notificationHub.Clients.All./*User(producerId.ToString()).*/SendAsync("declineNotification", notification);
         }
 
         public async Task SendMessage(Notification notification, Notification? limit)
         {
             var sendTasks = new List<Task>
             {
-                 _hubContext.Clients.User(notification.UserID).SendAsync("ReceiveNotification", notification)
+                 _notificationHub.Clients.User(notification.UserID).SendAsync("ReceiveNotification", notification)
             };
 
             if (limit != null)
             {
-                sendTasks.Add(_hubContext.Clients.User(limit.UserID).SendAsync("ReceiveNotification", limit));
+                sendTasks.Add(_notificationHub.Clients.User(limit.UserID).SendAsync("ReceiveNotification", limit));
             }
 
             await Task.WhenAll(sendTasks);
+        }
+        public async Task ChangeStatus(Notification cNotification, Notification pNotification)
+        {
+            var task = new List<Task>
+            {
+               _notificationHub.Clients.User(cNotification.UserID).SendAsync("notifyChangeStatus", cNotification),
+               _notificationHub.Clients.User(pNotification.UserID).SendAsync("notifyChangeStatus",pNotification)
+            };
+            await Task.WhenAll(task);
         }
 
     }

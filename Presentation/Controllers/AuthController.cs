@@ -275,7 +275,7 @@ namespace Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status410Gone)]
 
-        public async Task<IActionResult> VerifyMagicToken([FromBody] VerifyMagicTokenCommand dto)
+        public async Task<IActionResult> VerifyMagicToken([FromQuery] VerifyMagicTokenCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

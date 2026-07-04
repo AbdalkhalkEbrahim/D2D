@@ -1,0 +1,51 @@
+﻿using Application.Commands.ChatFeature;
+using Application.Response;
+using Domain.DTOs.Chat;
+using Domain.Entities.Chats;
+using Domain.Enums.Types;
+using Infrastructure.Data.Context;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
+namespace Application.Handlers.ChatFeature
+{
+    public class GetChatMessagesCommandHandler : IRequestHandler<GetChatMessagesCommand, ChatWithMessagesResponse>
+    {
+        private readonly D2DContext _context;
+
+        public GetChatMessagesCommandHandler(D2DContext context)
+        {
+            _context = context;
+        }
+        public async Task<Result<ChatWithMessagesResponse>> Handle(GetChatMessagesCommand request, CancellationToken cancellationToken)
+        {
+            var chat = await _context.Chats.Select(ch=>new {ch.ID, AllMessages = ch.Messages.OrderByDescending(m=>m.CreatedAt), pName = ch.Producer.AnonName, cName = ch.Customer.AnonName}).FirstOrDefaultAsync(c => c.ID == request.ChatId);
+            if(chat == null)
+                return Result<ChatWithMessagesResponse>.Failure(Messages.NotFound.WithTarget("Chat"));
+            if(chat.AllMessages.First().Sender.ToString() != request.UserType.ToString())
+            {
+                var message = new Message { ID = chat.AllMessages.First().ID, IsRead = true };
+                _context.Attach(message);
+                _context.Entry(message).Property(m => m.IsRead).IsModified = true;
+                await _context.SaveChangesAsync();
+            }
+            var response = new ChatWithMessagesResponse
+            {
+                Messages = chat.AllMessages.Select(m => new MessagesResponse
+                {
+                    ID = m.ID,
+                    Message = m.Content,
+                    Sender = m.Sender,
+                    IsRead = m.IsRead,
+                    CreatedAt = m.CreatedAt
+                }).ToList(),
+                AnonName = request.UserType == UserType.Customer? chat.pName:chat.cName,
+            };
+
+            return response;
+
+            }
+
+        }
+    }
+}

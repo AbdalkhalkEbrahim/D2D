@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.DTOs
+namespace Domain.DTOs.Chat
 {
     public class ChatsResponse
     {
@@ -16,7 +16,7 @@ namespace Domain.DTOs
         public string AnonName { get; set; }
         public DateTime LastMessageAgo { get; set; }
         public string LastMessage { get; set; }
-        public ActiveOfferStatus OfferStatus { get; set; }
+        public string OfferStatus { get; set; }
         public bool IsRead { get; set; }
     }
 }

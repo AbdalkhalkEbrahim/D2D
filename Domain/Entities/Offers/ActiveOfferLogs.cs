@@ -7,14 +7,16 @@ namespace Domain.Entities.Offers
     public class ActiveOfferLogs:Audits
     {
         public Guid ID { get; set; }
-        public ActiveOfferStatus Status { get; set; }
+        public string Step { get; set; }
         public string? Notes { get; set; }
-       
+        [ForeignKey(nameof(CustomerPublishedOffer))]
         public Guid? PublishedOfferID { get; set; }
+        public virtual CustomerPublishedOffer? CustomerPublishedOffer { get; set; }
+        [ForeignKey(nameof(CustomerCustomOffer))]
         public Guid? CustomOfferID { get; set; }
+        public virtual CustomerCustomOffer? CustomerCustomOffer { get; set; }
         public bool? IsPublishedOfferActive { get; set; }
         public bool? IsCustomOfferActive { get; set; }
-
         public Chat Chat { get; set; }
         [ForeignKey("Chat")]
         public int ChatID { get; set; }

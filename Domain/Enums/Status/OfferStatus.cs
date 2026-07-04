@@ -4,5 +4,6 @@
     {
         OnHold,
         Accepted,//pay deposite
-        Declined    }
+        Declined    
+    }
 }

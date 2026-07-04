@@ -7,6 +7,7 @@ namespace Domain.Entities.Producers
     public class Review:Audits
     {
         public int ID { get; set; }
+        public int Rate { get; set; }
         public string Content { get; set; }
         public virtual Customer Customer { get; set; }
 

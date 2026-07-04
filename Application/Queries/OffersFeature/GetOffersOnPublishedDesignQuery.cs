@@ -16,7 +16,7 @@ namespace Application.Queries.OffersFeature
         public bool NewestOffer { get; set; }
         public bool BestMatch { get; set; }
         public bool HighestRate { get; set; }
-        public int? PageSize { get; set; } = 10;
+        public int? PageSize { get; set; } = 5;
         public int? PageNum { get; set; } = 1;
     }
 }

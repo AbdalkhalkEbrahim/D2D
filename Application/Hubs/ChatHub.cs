@@ -22,16 +22,6 @@ namespace Application.Hubs
             _uploadService = uploadService;
         }
 
-        [Authorize(Roles = "Producer")]
-        public async Task ChangeStatus(string senderId, string recieverId, string status) 
-        {
-            var task = new List<Task>
-            {
-               Clients.User(recieverId).SendAsync("requestChangeStatus", new {senderId, status}),
-               Clients.User(senderId).SendAsync("requestChangeStatus", new {senderId, status})
-            };
-            await Task.WhenAll(task);
-        }
 
         [Authorize(Roles = "Producer, Customer")]
         public async Task CancelOffer(string senderId, string recieverId, string status) 

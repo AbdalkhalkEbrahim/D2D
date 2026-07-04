@@ -35,9 +35,10 @@ namespace Application.Handlers.OffersFeature
                 pdo.CreatedAt,
                 pdo.UpdatedAt,
                 pdo.Price,
-
-                 pdo.Producer.AnonName,
-                 pdo.Producer.Rate,
+                pdo.Diposit,
+                pdo.Duration,
+                pdo.Producer.AnonName,
+                pdo.Producer.Rate,
 
                 DesignImages = pdo.CustomerPublishedOffer.CustomerDesign.DesignImages
                     .Select(di => di.ImageUrl).ToList()
@@ -83,7 +84,9 @@ namespace Application.Handlers.OffersFeature
                         Name = item.Name,
                         ProducerAnnonName = item.AnonName,
                         ProducerId = item.ProducerID,
-                        OfferStatus = item.OfferStatus.ToString()
+                        OfferStatus = item.OfferStatus.ToString(),
+                        DeliveryTime = item.Duration,
+                        Diposit = item.Diposit
                     }
                     );
             }

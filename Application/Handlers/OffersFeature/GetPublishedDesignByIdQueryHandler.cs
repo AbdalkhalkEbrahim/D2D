@@ -23,12 +23,18 @@ namespace Application.Handlers.OffersFeature
         }
         public async Task<Result<CustomerOfferResponse>> Handle(GetPublishedDesignByIdQuery request, CancellationToken cancellationToken)
         {
-            var offer = await _context.CustomerPublishedOffers.AsNoTracking().Include(cpo=>cpo.ProducerCustomerOffers).Include(cpo=>cpo.CustomerDesign).Include(cpo=>cpo.CustomerDesign.DesignImages).Where(cpo=>cpo.ProducerCustomerOffers!=null).FirstOrDefaultAsync(o => o.ID == request.OfferId, cancellationToken);
+            var offer = await _context.CustomerPublishedOffers.AsNoTracking()
+                .Include(cpo=>cpo.ProducerCustomerOffers)
+                .Include(cpo=>cpo.CustomerDesign)
+                .Include(cpo=>cpo.CustomerDesign.DesignImages)
+                .Where(cpo=>cpo.ProducerCustomerOffers!=null)
+                .FirstOrDefaultAsync(o => o.ID == request.PublishedOfferId, cancellationToken);
+
             if (offer == null) 
                 return Result<CustomerOfferResponse>.Failure(Messages.NotFound.WithTarget("Offer"));
             return new CustomerOfferResponse
             {
-                ID = request.OfferId,
+                ID = request.PublishedOfferId,
                 DesignImages = offer.CustomerDesign.DesignImages.Select(di => di.ImageUrl).ToList(),
                 Name = offer.Name,
                 Category = offer.Category,
