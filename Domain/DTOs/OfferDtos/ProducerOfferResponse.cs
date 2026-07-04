@@ -10,9 +10,11 @@
         public string OfferStatus { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public Dictionary<string,string> Reviews { get; set; }
+        public Dictionary<string,Tuple<string,int>> Reviews { get; set; }
         public double Rate { get; set; }
         public string Name { get; set; }
-
+        public decimal Diposit { get; set; }
+        public int DeliveryTime { get; set; }
+        public Dictionary<string, Tuple<int, int>> Steps { get; set; }
     }
 }

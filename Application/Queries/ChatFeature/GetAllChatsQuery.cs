@@ -1,5 +1,5 @@
 ﻿using Application.Response;
-using Domain.DTOs;
+using Domain.DTOs.Chat;
 using Domain.Enums.Types;
 using MediatR;
 using System;
@@ -16,7 +16,6 @@ namespace Application.Queries.ChatFeature
         public UserType Type { get; set; }
         public bool Unread { get; set; } = false;
         public bool Completed { get; set; } = false;
-        public bool OnHold { get; set; } = false;
 
     }
 }

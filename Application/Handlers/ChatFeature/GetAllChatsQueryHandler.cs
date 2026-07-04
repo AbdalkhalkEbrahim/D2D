@@ -1,6 +1,6 @@
 ﻿using Application.Queries.ChatFeature;
 using Application.Response;
-using Domain.DTOs;
+using Domain.DTOs.Chat;
 using Domain.Enums.Status;
 using Domain.Enums.Types;
 using Infrastructure.Data.Context;
@@ -45,7 +45,7 @@ namespace Application.Handlers.ChatFeature
                  OfferStatus = _context.ActiveOfferLogs
                      .Where(ao => ao.ChatID == ch.ID)
                      .OrderByDescending(ao => ao.CreatedAt)
-                     .Select(ao => ao.Status)
+                     .Select(ao => ao.Step)
                      .FirstOrDefault(),
                  DesignImageUrl = ch.Customer.Designs
                      .Where(d => d.Status == DesignStatus.Published && d.CustomerPublishedOffer.IsActive)
@@ -53,28 +53,22 @@ namespace Application.Handlers.ChatFeature
                      .FirstOrDefault()
              });
 
-            if (!chats.Any())
+            if (!chats.Any() || chats.All(ch=>ch.OfferStatus == ActiveOfferStatus.Canceled.ToString()))
             {
                 return Result<List<ChatsResponse>>.Failure(Messages.NotFound.WithTarget("Chat"));
             }
 
             if (request.Unread)
             {
-                chats = chats.Where(ch => !ch.LastMessageInfo.IsRead);
+                chats = chats.Where(ch => !ch.LastMessageInfo.IsRead && ch.OfferStatus != ActiveOfferStatus.Canceled.ToString());
             }
 
             else if (request.Completed)
             {
-                chats = chats.Where(ch => ch.OfferStatus == ActiveOfferStatus.Completed);
+                chats = chats.Where(ch => ch.OfferStatus == ActiveOfferStatus.Completed.ToString() && ch.OfferStatus != ActiveOfferStatus.Canceled.ToString());
             }
 
-            else if (request.OnHold)
-            {
-                chats = chats.Where(ch => ch.OfferStatus != ActiveOfferStatus.Completed && ch.OfferStatus != ActiveOfferStatus.Canceled);
-            }
             chats.OrderByDescending(ch => ch.LastMessageInfo.CreatedAt);
-
-            
 
             var response = chats.Select(ch => new ChatsResponse
             {

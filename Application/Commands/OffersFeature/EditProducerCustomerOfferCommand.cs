@@ -13,5 +13,8 @@ namespace Application.Commands.OffersFeature
         public Guid OfferId { get; set; }
         public string ProducerId { get; set; }
         public decimal Price { get; set; }
+        public decimal Diposit { get; set; }
+        public int DeliveryTime { get; set; }
+        public Dictionary<string, Tuple<int, int>> Steps { get; set; }
     }
 }

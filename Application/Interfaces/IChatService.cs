@@ -10,6 +10,8 @@ namespace Application.Interfaces
     public interface IChatService
     {
         public Task SendMessage(string senderId, string recieverId, string message = "", string imageUrl = "");
+        public Task ChangeStatus(string senderId, string recieverId, string status);
+
 
     }
 }

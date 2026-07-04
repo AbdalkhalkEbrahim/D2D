@@ -25,6 +25,6 @@ namespace Application.Commands.OffersFeature
         public IFormFile? SizesFile { get; set; }
         public int Duration { get; set; }
         public int Amount { get; set; }
-        public decimal MaxPrice { get; set; }
+        public decimal TargetPrice { get; set; }
     }
 }

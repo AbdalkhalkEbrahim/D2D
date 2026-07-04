@@ -8,14 +8,14 @@ namespace Application.Commands.RegisterationFeature
     {
         [Required]
         public string Id { get; set; }
-        [Required]
+/*        [Required]
         [EmailAddress]
         [MaxLength(100)]
-        public required string Email { get; set; }
-        [Required]
+        public required string Email { get; set; }*/
+/*        [Required]
         [RegularExpression("^[A-Za-z0-9!@#$%^&*?]{6}$", ErrorMessage = "Invalid Otp format.")]
         public required string Otp { get; set; }
-        /*[Required]
+        *//*[Required]*//*
         [MaxLength(30)]
         [RegularExpression(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?]).*$",
             ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*?).")]

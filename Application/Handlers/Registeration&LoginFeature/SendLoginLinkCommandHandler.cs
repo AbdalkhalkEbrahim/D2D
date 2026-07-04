@@ -47,7 +47,7 @@ namespace Application.Handlers
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            string link = $"https://d2dplatformv2.runasp.net/api/auth/verify-magic-token?token={tokenString}";
+            string link = $"https://design-to-dress.vercel.app/verify-magic-token?token={tokenString}";
 
             BackgroundJob.Enqueue(() => _emailService.SendEmailAsync(user.Email!, "Your Login Link", $"Click the link to login: {link}"));
 
