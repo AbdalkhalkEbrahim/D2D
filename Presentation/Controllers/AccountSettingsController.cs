@@ -40,9 +40,7 @@ namespace Presentation.Controllers
         public async Task<IActionResult> AddNewAddress(AddNewAddressCommand dto)
         {
             var result = await _mediator.Send(dto);
-            if (result.IsSuccess)
-                return CreatedAtRoute("get-address", result.Value, result);
-            return HandleFailure(result.Error);
+            return HandleResult(result);
         }
 
 

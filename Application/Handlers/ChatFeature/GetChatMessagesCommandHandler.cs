@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Handlers.ChatFeature
 {
-    public class GetChatMessagesCommandHandler : IRequestHandler<GetChatMessagesCommand, ChatWithMessagesResponse>
+    public class GetChatMessagesCommandHandler : IRequestHandler<GetChatMessagesCommand, Result<ChatWithMessagesResponse>>
     {
         private readonly D2DContext _context;
 
@@ -46,6 +46,6 @@ namespace Application.Handlers.ChatFeature
 
             }
 
-        }
+        
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Domain.DTOs.PublishedDesignDtos
 {
-    public class PublishedDesign
+    public class PublishedDesignRequest
     {
         public string Category { get; set; }
         public string Description { get; set; }
