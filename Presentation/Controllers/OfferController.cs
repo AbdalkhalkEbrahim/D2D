@@ -70,7 +70,7 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
-        [HttpPost("edit-producer-customer-offer")]
+        [HttpPatch("edit-producer-customer-offer")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> EditProducerCustomerOffer([FromBody] EditProducerCustomerOfferCommand dto)

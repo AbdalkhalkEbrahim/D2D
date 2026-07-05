@@ -9,7 +9,7 @@ namespace Application.Commands.OffersFeature
 {
     public class EditPublishedDesignCommand:IRequest<Result<Guid>>
     {
-        public Guid DesignId { get; set; }
-        public JsonPatchDocument<PublishedDesign> data { get; set; }
+        public Guid CustomerPublishedOfferId { get; set; }
+        public JsonPatchDocument<PublishedDesignRequest> data { get; set; }
     }
 }
