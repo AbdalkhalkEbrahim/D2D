@@ -12,6 +12,7 @@ namespace Application.Queries.OffersFeature
 {
     public class GetPublishedDesignByIdQuery:IRequest<Result<CustomerOfferResponse>>
     {
-        public Guid PublishedOfferId { get; set; }
+        public Guid? DesignId { get; set; }
+        public Guid? PublishedOfferId { get; set; }
     }
 }

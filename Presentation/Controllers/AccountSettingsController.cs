@@ -53,6 +53,14 @@ namespace Presentation.Controllers
             return HandleResult(result);
         }
 
+        [HttpPatch("edit-address")]
+        [ProducesResponseType(typeof(AddressResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> EditAddress(EditAddressCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
 
         [HttpGet("get-customer-addresses/{customerId:guid}")]
         [ProducesResponseType(typeof(List<AddressResponse>), StatusCodes.Status200OK)]
@@ -91,10 +99,10 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(new GetProfileQuery { UserId = userId });
             return HandleResult(result);
         }
-        [HttpPost("edit-profile")]
+        [HttpPatch("edit-profile")]
         [ProducesResponseType(typeof(ProfileResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> EditProfile([FromForm] EditProfileCommand dto)
+        public async Task<IActionResult> EditProfile([FromBody] EditProfileCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

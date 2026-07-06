@@ -27,7 +27,7 @@ namespace Application.Handlers.ChatFeature
         {
 
             var chats = _context.Chats
-             .Where(ch => ch.CustomerID == request.UserId || ch.ProducerID == request.UserId)
+             .Where(ch => (ch.CustomerID == request.UserId || ch.ProducerID == request.UserId) && !ch.IsClosed)
              .Select(ch => new
              {
                  ChatId = ch.ID,
