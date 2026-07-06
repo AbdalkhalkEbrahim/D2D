@@ -14,6 +14,8 @@ namespace Application.Interfaces
         public Task SendProducerOfferNotification(Guid clientId, Guid producerOfferId);
         public Task DeclineProducerOfferNotification(string producerId, string offerName);
         public Task ChangeStatus(Notification cNotification, Notification pNotification);
+        public Task SendRrequest(Notification cNotification, Notification pNotification);
+
 
     }
 }

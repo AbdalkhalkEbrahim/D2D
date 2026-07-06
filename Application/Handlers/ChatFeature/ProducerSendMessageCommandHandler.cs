@@ -31,14 +31,21 @@ namespace Application.Handlers.ChatFeature
                 return Result.Failure(Messages.BadRequest.WithTarget("NullValue"));
 
             var chat = await _context.Chats.Where(c => c.ID == request.ChatId)
-               .Select(ch => new { ch.ProducerCount, ch.ProducerLimit, ch.ID, customerAnonName = ch.Customer.AnonName, producerAnonName = ch.Producer.AnonName, ch.ProducerID, ch.CustomerID })
+               .Select(ch => new { ch.ProducerCount, ch.ProducerLimit, ch.ID, customerAnonName = ch.Customer.AnonName, producerAnonName = ch.Producer.AnonName, ch.ProducerID, ch.CustomerID, ch.IsClosed })
                .FirstOrDefaultAsync();
 
             if (chat == null)
                 return Result.Failure(Messages.NotFound.WithTarget("Chat"));
-            
+
             if (chat.ProducerCount >= chat.ProducerLimit)
+            {
+                var endedChat = new Chat { ID = chat.ID, IsClosed = true };
+                _context.Attach(endedChat);
+                _context.Entry(endedChat).Property(ch => ch.IsClosed).IsModified = true;
+                await _context.SaveChangesAsync();
+
                 return Result.Failure(Messages.Forbidden.WithTarget("ChatLimit"));
+            }
 
             Notification? limit = null;
             if ((chat.ProducerCount * 1.0 / chat.ProducerLimit) * 100 > 90)

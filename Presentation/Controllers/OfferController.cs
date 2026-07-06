@@ -18,6 +18,7 @@ namespace Presentation.Controllers
             _mediator = mediator;
         }
 
+
         [HttpPost("customer-publish-design")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -27,6 +28,8 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+
+
         //GET: PublishedOfferDetails
         [HttpPost("producer-customer-offer")]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -38,6 +41,7 @@ namespace Presentation.Controllers
         /// <summary>
         /// for customer to get published design details by id
         /// </summary>
+
 
         [HttpGet("get-published-design-details")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
@@ -51,6 +55,7 @@ namespace Presentation.Controllers
         /// for producer to get all published designs by customers
         /// </summary>
 
+
         [HttpGet("get-all-published-designs")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -59,6 +64,7 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+
         /// <summary>
         /// for customer to edit published design details by id
         /// </summary>
@@ -70,6 +76,8 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+
+
         [HttpPatch("edit-producer-customer-offer")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -78,6 +86,8 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+
+
         [HttpGet("get-producer-offer-details")]
         [ProducesResponseType(typeof(ProducerOfferResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -86,6 +96,8 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+
+
         [HttpGet("get-Published-design-offers")]
         [ProducesResponseType(typeof(List<ProducerOfferResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -94,6 +106,8 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+
+
         [HttpPost("decline-producer-offer")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

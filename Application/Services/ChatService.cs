@@ -36,5 +36,10 @@ namespace Application.Services
             };
             await Task.WhenAll(task);
         }
+        public async Task SendRequest(string senderId, string recieverId, string status)
+        {
+           await _chatHub.Clients.User(senderId).SendAsync("requestChangeStatus", new { senderId, status });
+           
+        }
     }
 }

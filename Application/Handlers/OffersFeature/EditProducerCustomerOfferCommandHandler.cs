@@ -20,7 +20,8 @@ namespace Application.Handlers.OffersFeature
         }
         public async Task<Result<Guid>> Handle(EditProducerCustomerOfferCommand request, CancellationToken cancellationToken)
         {
-           var producerOffer= await _context.ProducerCustomerOffers.Include(pco=>pco.CustomerPublishedOffer).FirstOrDefaultAsync(po=>po.ID == request.OfferId && po.ProducerID == request.ProducerId && (po.OfferStatus == OfferStatus.OnHold ||(po.OfferStatus == OfferStatus.Accepted && po.CustomerPublishedOffer.ActiveOfferLogs.Count() == 1)  ));
+           var producerOffer= await _context.ProducerCustomerOffers.Include(pco=>pco.CustomerPublishedOffer)
+                .FirstOrDefaultAsync(po=>po.ID == request.OfferId && po.ProducerID == request.ProducerId && (po.OfferStatus == OfferStatus.OnHold ||(po.OfferStatus == OfferStatus.Accepted && po.CustomerPublishedOffer.ActiveOfferLogs.Count() == 1)  ));
             if (producerOffer == null)
                 return Result<Guid>.Failure(Messages.NotFound.WithTarget("Offer"));
 

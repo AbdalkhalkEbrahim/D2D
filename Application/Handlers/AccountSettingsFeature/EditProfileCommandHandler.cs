@@ -2,11 +2,18 @@
 using Application.Interfaces;
 using Application.Response;
 using Domain.DTOs.AccountSettingsDtos;
+using Domain.Entities.Customers;
+using Domain.Entities.Designs;
+using Domain.Entities.Offers;
+using Domain.Entities.Shared;
 using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
+using jsonPatch = Microsoft.AspNetCore.JsonPatch.Operations;
+
 
 namespace Application.Handlers.AccountSettingsFeature
 {
@@ -26,15 +33,6 @@ namespace Application.Handlers.AccountSettingsFeature
             if (user == null)
                 return Result<ProfileResponse>.Failure(Messages.NotFound.WithTarget("User"));
 
-            if(request.FirstName != null)
-                user.FirstName = request.FirstName;
-
-            if(request.LastName != null)
-                user.LastName = request.LastName;
-
-            if(request.PhoneNumber != null)
-                user.PhoneNumber = request.PhoneNumber;
-
             if(request.ProfileImageUrl != null)
             {
                 var fileToBeUploaded = await _uploadService.ChangeFileFormat(new List<IFormFile> { request.ProfileImageUrl });
@@ -43,7 +41,12 @@ namespace Application.Handlers.AccountSettingsFeature
                 uploadService.UploadAndSaveSingleFile(user,"ProfileImageUrl", fileToBeUploaded[0], true));
             }
 
-            _context.Update(user);
+            var entityPatch = new JsonPatchDocument<User>();
+            request.data.Operations.ForEach(op => entityPatch.Operations.Add(new jsonPatch.Operation<User>(op.op, op.path, op.from, op.value)));
+            // Console.WriteLine(request.data.Operations.Count);
+            entityPatch.ApplyTo(user);
+
+            //_context.Update(user);
             await _context.SaveChangesAsync();
 
             return new ProfileResponse

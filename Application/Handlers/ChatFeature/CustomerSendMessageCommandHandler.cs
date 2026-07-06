@@ -31,14 +31,20 @@ namespace Application.Handlers.ChatFeature
         public async Task<Result> Handle(CustomerSendMessageCommand request, CancellationToken cancellationToken)
         {
             var chat = await _context.Chats.Where(c => c.ID == request.ChatId)
-                .Select(ch => new {ch.CustomerLimit, ch.CustomerCount, ch.ID, customerAnonName = ch.Customer.AnonName,producerAnonName = ch.Producer.AnonName, ch.ProducerID, ch.CustomerID})
+                .Select(ch => new {ch.CustomerLimit, ch.CustomerCount, ch.ID, customerAnonName = ch.Customer.AnonName,producerAnonName = ch.Producer.AnonName, ch.ProducerID, ch.CustomerID, ch.IsClosed})
                 .FirstOrDefaultAsync();
 
             if (chat == null)
                 return Result.Failure(Messages.NotFound.WithTarget("Chat"));
 
-            if(chat.CustomerCount >= chat.CustomerLimit)
+            if (chat.CustomerCount >= chat.CustomerLimit)
+            {
+                var endedChat = new Chat { ID = chat.ID, IsClosed = true };
+                _context.Attach(endedChat);
+                _context.Entry(endedChat).Property(ch => ch.IsClosed).IsModified = true;
+                await _context.SaveChangesAsync();
                 return Result.Failure(Messages.Forbidden.WithTarget("ChatLimit"));
+            }
 
             Notification? limit = null;
             if((chat.CustomerCount * 1.0 / chat.CustomerLimit) * 100 > 90)

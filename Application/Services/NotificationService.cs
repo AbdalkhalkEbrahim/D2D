@@ -110,6 +110,14 @@ namespace Application.Services
             };
             await Task.WhenAll(task);
         }
-
+        public async Task SendRrequest(Notification cNotification, Notification pNotification)
+        {
+            var task = new List<Task>
+            {
+               _notificationHub.Clients.User(cNotification.UserID).SendAsync("notifyChangeStatus", cNotification),
+               _notificationHub.Clients.User(pNotification.UserID).SendAsync("notifyChangeStatus",pNotification)
+            };
+            await Task.WhenAll(task);
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Domain.Entities.Customers;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
+using Domain.Enums.Status;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities.Chats
@@ -15,6 +16,8 @@ namespace Domain.Entities.Chats
         public int CustomerLimit { get; private set; } = 100;
         public int ProducerCount { get; set; }
         public int CustomerCount { get; set; }
+        public ICollection<RequestsLogs> RequestsLogs { get; set; }
+        public bool IsClosed { get; set; }
        
         [ForeignKey(nameof(Customer))]
         public string CustomerID { get; set; }
