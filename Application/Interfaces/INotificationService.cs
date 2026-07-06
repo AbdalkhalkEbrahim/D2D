@@ -11,10 +11,12 @@ namespace Application.Interfaces
     {
         public Task SendMessage(Notification notification, Notification? limit);
         public Task SendPuplishedDesignNotificationAsync(Guid customerPOfferId);
-        public Task SendProducerOfferNotification(Guid clientId, Guid producerOfferId);
+        public Task SendProducerOfferNotification(string clientId, Guid producerOfferId);
         public Task DeclineProducerOfferNotification(string producerId, string offerName);
         public Task ChangeStatus(Notification cNotification, Notification pNotification);
-        public Task SendRrequest(Notification cNotification, Notification pNotification);
+        public Task SendRequest(Notification cNotification, Notification pNotification);
+        public Task CompleteDeal(Notification cNotification, Notification pNotification);
+        
 
 
     }

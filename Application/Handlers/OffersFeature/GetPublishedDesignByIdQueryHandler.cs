@@ -5,11 +5,6 @@ using Domain.Entities.Shared;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Handlers.OffersFeature
 {
@@ -29,7 +24,7 @@ namespace Application.Handlers.OffersFeature
             var offer = await _context.CustomerPublishedOffers.AsNoTracking()
                 .Include(cpo=>cpo.ProducerCustomerOffers)
                 .Include(cpo=>cpo.CustomerDesign)
-                .Include(cpo=>cpo.CustomerDesign.DesignImages)
+                .ThenInclude(cpo=>cpo.DesignImages)
                 .Where(cpo=> cpo.ProducerCustomerOffers!=null)
                 .FirstOrDefaultAsync(o => (request.DesignId != null && request.DesignId == o.CustomerDesignID) || (request.PublishedOfferId != null && o.ID == request.PublishedOfferId), cancellationToken);
 

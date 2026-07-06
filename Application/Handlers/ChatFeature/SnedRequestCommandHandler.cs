@@ -31,6 +31,8 @@ namespace Application.Handlers.ChatFeature
                
             if (chat == null)
                 return Result<bool>.Failure(Messages.NotFound.WithTarget("Chat"));
+            if ((request.request == CancelationRequest.Accepted && chat.RequestsLogs.OrderByDescending(rl => rl.CreatedAt).First().request != CancelationRequest.Requested)||(request.request == CancelationRequest.Declined && chat.RequestsLogs.OrderByDescending(rl => rl.CreatedAt).First().request != CancelationRequest.Requested) )
+                return Result<bool>.Failure(Messages.Conflict.WithTarget("Chat"));
 
             string reciever = request.UserId == chat.ProducerID ? chat.CustomerID : chat.ProducerID;
             string sender = request.UserId == chat.ProducerID ? chat.ProducerID : chat.CustomerID;
@@ -54,7 +56,7 @@ namespace Application.Handlers.ChatFeature
 
             var task = new List<Task>
             {
-               _notificationService.SendRrequest(Notification1, Notification2),
+               _notificationService.SendRequest(Notification1, Notification2),
                _chatService.SendRequest(sender, reciever, request.request.ToString())
             };
             await Task.WhenAll(task);
@@ -66,9 +68,9 @@ namespace Application.Handlers.ChatFeature
             if(request.request == CancelationRequest.Accepted)
             {
                 chat.IsClosed = true;
-                _context.Update(chat);
             }
-            await _context.AddAsync(chat);
+            _context.Update(chat);
+
             await _context.SaveChangesAsync();
             
             return chat.IsClosed;

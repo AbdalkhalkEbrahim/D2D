@@ -11,7 +11,7 @@ namespace Application.Commands.OffersFeature
 {
     public class ProducerCustomerOfferCommand:IRequest<Result<ProducerOfferResponse>>
     {
-        public Guid CustomerId { get; set; }
+        public string CustomerId { get; set; }
         public string ProducerId { get; set; }
         public Guid CustomerPublishedOfferId { get; set; }
         public decimal Price { get; set; }

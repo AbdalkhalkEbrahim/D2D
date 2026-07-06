@@ -7,5 +7,6 @@ namespace Domain.DTOs
         public required string UserId { get; set; }
         public UserType UserType { get; set; }
         public string Code { get; set; }
+        public DateTime ExpirationTime { get; set; }
     }
 }

@@ -22,17 +22,13 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
 
     public async Task<Result<OtpResponse>> Handle(SendOtpCommand request, CancellationToken cancellationToken)
     {
-        var totalWatch = Stopwatch.StartNew();
-        var stepWatch = Stopwatch.StartNew();
-
+        
         var user = await _context.Users
             .AsNoTracking()
             .Select(u => new { u.Id, u.Email, u.UserType, u.OtpLockoutEnd, u.OtpLockoutCount })
             .FirstOrDefaultAsync(u => u.Id == request.ID, cancellationToken);
 
-        stepWatch.Stop();
-        Console.WriteLine($"[PERF] 1. Fetch User took: {stepWatch.ElapsedMilliseconds}ms");
-
+       
         if (user == null)
             return Result<OtpResponse>.Failure(Messages.NotFound.WithTarget("User"));
 
@@ -53,7 +49,6 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
         var currentCount = user.OtpLockoutCount ?? 1;
         var newLockoutEnd = DateTimeOffset.UtcNow.AddMinutes((double)currentCount);
 
-        stepWatch.Restart();
         await _context.Users
             .Where(u => u.Id == user.Id)
             .ExecuteUpdateAsync(setters => setters
@@ -64,10 +59,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
 /*        _context.Attach(user);
         _context.Entry(user).Property(u=>u.OtpLockoutCount).IsModified = true;*/
 
-        stepWatch.Stop();
-        Console.WriteLine($"[PERF] 2. ExecuteUpdateAsync (Lockout) took: {stepWatch.ElapsedMilliseconds}ms");
 
-        stepWatch.Restart();
         var code = _otpService.GenerateOtp();
         var otp = new Otp
         {
@@ -77,24 +69,13 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpR
             IsUsed = false
         };
 
-        stepWatch.Stop();
-        Console.WriteLine($"[PERF] 3. OTP Generation in memory took: {stepWatch.ElapsedMilliseconds}ms");
-
-        stepWatch.Restart();
+       
         await _context.Otps.AddAsync(otp, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
-        stepWatch.Stop();
-        Console.WriteLine($"[PERF] 4. SaveChangesAsync (Insert OTP) took: {stepWatch.ElapsedMilliseconds}ms");
-
-        stepWatch.Restart();
+       
         BackgroundJob.Enqueue<IEmailService>(emailService =>
-            emailService.SendEmailAsync(request.Email, "Your OTP Code", $"Your code is {code}"));
-        stepWatch.Stop();
-        Console.WriteLine($"[PERF] 5. Hangfire Enqueue took: {stepWatch.ElapsedMilliseconds}ms");
-
-        totalWatch.Stop();
-        Console.WriteLine($"[PERF] === TOTAL HANDLER TIME: {totalWatch.ElapsedMilliseconds}ms ===");
-
-        return Result<OtpResponse>.Success(new OtpResponse { UserId = user.Id, UserType = user.UserType,Code = code});
+            emailService.SendEmailAsync(request.Email, "Your OTP Code", $"Your code is {code}, and it's expired at {otp.ExpirationTime}"));
+        
+        return Result<OtpResponse>.Success(new OtpResponse { UserId = user.Id, UserType = user.UserType,Code = code, ExpirationTime = otp.ExpirationTime});
     }
 }

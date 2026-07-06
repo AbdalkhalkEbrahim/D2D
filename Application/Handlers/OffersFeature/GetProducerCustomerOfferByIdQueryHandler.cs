@@ -5,6 +5,7 @@ using Domain.Enums.Status;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Application.Handlers.OffersFeature
 {
@@ -19,12 +20,29 @@ namespace Application.Handlers.OffersFeature
         {
             var offer =await _context.ProducerCustomerOffers.
                 Include(po=>po.Producer).
-                Select(po=>new {po.OfferStatus,po.ProducerID, po.Producer.AnonName , po.Producer.Reviews , po.Producer.Rate , po.Price , po.ID,po.CreatedAt,po.UpdatedAt })
+                Select(po=>new {po.OfferStatus,po.ProducerID, po.Producer.AnonName , po.Producer.Reviews , po.Producer.Rate , po.Price , po.ID,po.CreatedAt,po.UpdatedAt, po.Diposit, po.Duration, po.CustomerPublishedOffer.Name, po.Steps, ImagesUrls = po.CustomerPublishedOffer.CustomerDesign.DesignImages.Select(im=>im.ImageUrl) })
                 .FirstOrDefaultAsync(po => po.ID == request.OfferId &&po.OfferStatus != OfferStatus.Declined);
 
             if(offer == null)
                 return Result<ProducerOfferResponse>.Failure(Messages.NotFound.WithTarget("Offer"));
-          
+
+            var Reviews = await _context.Reviews
+            .AsNoTracking()
+           .Where(r => r.ProducerID == offer.ProducerID)
+           .Select(r => new
+           {
+               r.Customer.AnonName,
+               r.Content,
+               r.Rate
+           })
+           .ToDictionaryAsync(
+               d => d.AnonName,
+               d => new Tuple<string, int>(d.Content, d.Rate),
+               cancellationToken
+           );
+
+
+
             return new ProducerOfferResponse
             {
                 CreatedAt = offer.CreatedAt,
@@ -35,8 +53,12 @@ namespace Application.Handlers.OffersFeature
                 Rate = offer.Rate,
                 Price = offer.Price,
                 ProducerAnnonName = offer.AnonName,
-               // Reviews = offer.Reviews.ToDictionary(r => _context.Customers.Where(c => c.Id == r.CustomerID).Select(c => c.AnonName).FirstOrDefault(), r => r.Content)
-                Reviews = _context.Customers.Select(c => new { c.AnonName, Review = c.Reviews.Select(r=>new {r.ProducerID, r.Content, r.Rate}).FirstOrDefault(r => r.ProducerID == offer.ProducerID) }).ToDictionary(d => d.AnonName, d => new Tuple<string,int>(d.Review.Content, d.Review.Rate))
+                DeliveryTime = offer.Duration,
+                Diposit = offer.Diposit,
+                Name = offer.Name,
+                Steps = offer.Steps.ToDictionary(s => s.StepName, s => new Tuple<int, int>(s.MinDuration, s.MaxDuration)),
+                ImageUrl = offer.ImagesUrls.ToList(),
+                Reviews = Reviews//_context.Customers.Select(c => new { c.AnonName, Review = c.Reviews.Select(r=>new {r.ProducerID, r.Content, r.Rate}).FirstOrDefault(r => r.ProducerID == offer.ProducerID) }).ToDictionary(d => d.AnonName, d => new Tuple<string,int>(d.Review.Content, d.Review.Rate))
             };
         }
     }

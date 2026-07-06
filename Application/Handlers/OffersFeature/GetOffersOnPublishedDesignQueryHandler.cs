@@ -39,7 +39,8 @@ namespace Application.Handlers.OffersFeature
                 pdo.Duration,
                 pdo.Producer.AnonName,
                 pdo.Producer.Rate,
-
+                pdo.Steps,
+                
                 DesignImages = pdo.CustomerPublishedOffer.CustomerDesign.DesignImages
                     .Select(di => di.ImageUrl).ToList()
             });
@@ -86,7 +87,8 @@ namespace Application.Handlers.OffersFeature
                         ProducerId = item.ProducerID,
                         OfferStatus = item.OfferStatus.ToString(),
                         DeliveryTime = item.Duration,
-                        Diposit = item.Diposit
+                        Diposit = item.Diposit,
+                        Steps = item.Steps.ToDictionary(s => s.StepName, s => new Tuple<int, int>(s.MinDuration, s.MaxDuration)),
                     }
                     );
             }

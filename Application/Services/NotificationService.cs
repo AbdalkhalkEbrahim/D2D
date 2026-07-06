@@ -46,7 +46,7 @@ namespace Application.Services
             });
         }
 
-        public async Task SendProducerOfferNotification(Guid clientId, Guid producerOfferId)
+        public async Task SendProducerOfferNotification(string clientId, Guid producerOfferId)
         {
             var producerOffer = await _context.ProducerCustomerOffers.Select(po => new { po.ID, po.Price,po.Producer.AnonName,po.Producer.Rate }).FirstOrDefaultAsync(po => po.ID == producerOfferId);
             if (producerOffer == null)
@@ -110,7 +110,16 @@ namespace Application.Services
             };
             await Task.WhenAll(task);
         }
-        public async Task SendRrequest(Notification cNotification, Notification pNotification)
+        public async Task SendRequest(Notification cNotification, Notification pNotification)
+        {
+            var task = new List<Task>
+            {
+               _notificationHub.Clients.User(cNotification.UserID).SendAsync("notifyChangeStatus", cNotification),
+               _notificationHub.Clients.User(pNotification.UserID).SendAsync("notifyChangeStatus",pNotification)
+            };
+            await Task.WhenAll(task);
+        }
+        public async Task CompleteDeal(Notification cNotification, Notification pNotification)
         {
             var task = new List<Task>
             {

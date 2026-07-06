@@ -55,7 +55,7 @@ namespace Application.Handlers.ChatFeature
 
             if (!chats.Any() || chats.All(ch=>ch.OfferStatus == ActiveOfferStatus.Canceled.ToString()))
             {
-                return Result<List<ChatsResponse>>.Failure(Messages.NotFound.WithTarget("Chat"));
+                return new List<ChatsResponse> { };
             }
 
             if (request.Unread)

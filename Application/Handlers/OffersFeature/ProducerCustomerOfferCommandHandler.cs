@@ -61,8 +61,21 @@ namespace Application.Handlers.OffersFeature
                         CustomerAnnonName = _context.Customers.Where(c => c.Id == r.CustomerID).Select(c=>c.AnonName).FirstOrDefault() }).ToList()
                 }).FirstOrDefaultAsync();
 
-            var reviews = producerInfo.Reviews.ToDictionary(r => r.CustomerAnnonName, r => r.Content);
-
+            //var reviews = producerInfo.Reviews.ToDictionary(r => r.CustomerAnnonName, r => r.Content);
+            var Reviews = await _context.Reviews
+            .AsNoTracking()
+            .Where(r => r.ProducerID == producerInfo.Id)
+            .Select(r => new
+            {
+                r.Customer.AnonName,
+                r.Content,
+                r.Rate
+            })
+            .ToDictionaryAsync(
+                d => d.AnonName,
+                d => new Tuple<string,int>(d.Content, d.Rate), 
+                cancellationToken
+            );
             return new ProducerOfferResponse
             {
                 ProducerId = producerInfo.Id,
@@ -71,7 +84,7 @@ namespace Application.Handlers.OffersFeature
                 ProducerAnnonName = producerInfo.AnonName,
                 OfferStatus = producerOffer.OfferStatus.ToString(),
                 Price = request.Price,
-                Reviews = _context.Customers.Select(c => new { c.AnonName, Review = c.Reviews.Select(r => new { r.ProducerID, r.Content, r.Rate }).FirstOrDefault(r => r.ProducerID == producerInfo.Id) }).ToDictionary(d => d.AnonName, d => new Tuple<string, int>(d.Review.Content, d.Review.Rate)),
+                Reviews = Reviews,
                 CreatedAt = DateTime.UtcNow,
             };
         }
