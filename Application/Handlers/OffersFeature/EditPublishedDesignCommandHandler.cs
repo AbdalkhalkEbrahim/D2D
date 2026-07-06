@@ -20,7 +20,7 @@ namespace Application.Handlers.OffersFeature
         }
         public async Task<Result<Guid>> Handle(EditPublishedDesignCommand request, CancellationToken cancellationToken)
         {
-            var design = await _context.CustomerPublishedOffers.Include(cpo=>cpo.ActiveOfferLogs).FirstOrDefaultAsync(d => d.ID == request.CustomerPublishedOfferId && (!d.IsActive || (d.IsActive && d.ActiveOfferLogs.Count() == 1 )));
+            var design = await _context.CustomerPublishedOffers.Include(cpo=>cpo.ActiveOfferLogs).FirstOrDefaultAsync(d => d.ID == request.CustomerPublishedOfferId&& (!d.IsActive || (d.IsActive && d.ActiveOfferLogs.Count() == 1 )));
             if (design == null)
                 return Result<Guid>.Failure(Messages.NotFound.WithTarget("Design"));
 

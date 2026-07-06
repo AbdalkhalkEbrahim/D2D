@@ -22,7 +22,7 @@ namespace Application.Handlers.AccountSettingsFeature
             //    return Result<AddressResponse>.Failure(Messages.NotFound.WithTarget("Address"));
 
             //var address = user.Addresses.FirstOrDefault(a => a.ID == request.AddressId);
-            var address=_context.Customers.AsNoTracking().SelectMany(c => c.Addresses).FirstOrDefault(a => a.ID == request.AddressId);
+            var address=await _context.Customers.AsNoTracking().SelectMany(c => c.Addresses).FirstOrDefaultAsync(a => a.ID == request.AddressId);
 
             if (address == null)
                 return Result<AddressResponse>.Failure(Messages.NotFound.WithTarget("Address"));
