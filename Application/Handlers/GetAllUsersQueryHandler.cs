@@ -22,7 +22,7 @@ namespace Application.Handlers
 
             var users = _context.Users.Select(u => new { u.Id, u.FirstName, u.LastName, u.Email, u.ProfileImageUrl, u.NumOfReports, u.NumOfCollaborations, u.UserType, u.JoinDate,u.IdentityStatus });
 
-            var counts = users.GroupBy(u => u.UserType)
+            var counts = users.GroupBy(_=>1)
                .Select(u => new
                {
                    AllUsersCntt = u.Count(),
@@ -33,27 +33,34 @@ namespace Application.Handlers
             AllUsersCount = counts.AllUsersCntt;
             CustomerCount = counts.CustomerCnt;
             ProducerCount = counts.ProducerCnt;
+            //AllUsersCount = users.Count();
+            //CustomerCount = users.Count(u => u.UserType == UserType.Customer);
+            //ProducerCount = users.Count(u => u.UserType == UserType.Producer);
 
             if (request.isCustomer)
                users= users.Where(u => u.UserType == UserType.Customer);
             else if (request.isProducer)
                 users= users.Where(u => u.UserType == UserType.Producer);
 
-            var status = users.GroupBy(u => u.IdentityStatus)
+            var status = users.GroupBy(_=>1)
                 .Select(u => new
                 {
                     AllStatusCntt = u.Count(),
                     ActiveStatusCnt = u.Count(a => a.IdentityStatus == VerificationStatus.Approved),
                     PendingStatusCnt = u.Count(p => p.IdentityStatus == VerificationStatus.Pending),
-                    SusbendedStatusCnt=u.Count(s=>s.IdentityStatus==VerificationStatus.Suspended)
+                    SusbendedStatusCnt = u.Count(s => s.IdentityStatus == VerificationStatus.Suspended)
                 }).FirstOrDefault();
 
             AllStatusCount = status.AllStatusCntt;
             ActiveStatusCount = status.ActiveStatusCnt;
-            PendingStatusCount=status.PendingStatusCnt;
+            PendingStatusCount = status.PendingStatusCnt;
             SusbendingStatusCoount = status.SusbendedStatusCnt;
+            //AllStatusCount = users.Count();
+            //ActiveStatusCount = users.Count(u => u.IdentityStatus == VerificationStatus.Approved);
+            //PendingStatusCount = users.Count(u => u.IdentityStatus == VerificationStatus.Pending);
+            //SusbendingStatusCoount = users.Count(u => u.IdentityStatus == VerificationStatus.Suspended);
 
-            if(request.isActive)
+            if (request.isActive)
                 users=users.Where(u=>u.IdentityStatus==VerificationStatus.Approved);
             else if(request.isPending)
                 users=users.Where(u=>u.IdentityStatus==VerificationStatus.Pending);
