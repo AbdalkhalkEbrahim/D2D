@@ -1,5 +1,6 @@
 ﻿using Domain.Entities.Chats;
 using Domain.Entities.Chats.AiModel;
+using Domain.Entities.Designers;
 using Domain.Entities.Designs;
 using Domain.Entities.Offers;
 using Domain.Entities.Producers;
@@ -19,6 +20,7 @@ namespace Domain.Entities.Customers
         public virtual ICollection<CustomerDesign> Designs { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }
         public virtual ICollection<Chat> Chats { get; set; }
+        public virtual ICollection<Report>? Reports { get; set; }
         public virtual ModelChat? ModelChat { get; set; }
 
 
@@ -28,6 +30,7 @@ namespace Domain.Entities.Customers
             Reviews = new List<Review>();
             Chats = new List<Chat>();
             Offers = new List<CustomerOffer>();
+            Reports = new List<Report>();
 
         }
         public void SelectSpecificAddress( Address address)
