@@ -63,7 +63,8 @@ namespace Application.Handlers.OffersFeature
                     (
                          new CustomerOfferResponse
                          {
-                             ID =(Guid) item.CustomerPublishedOfferID,
+                             PublishedOfferID =(Guid) item.CustomerPublishedOffer.ID,
+                             CustomerId = item.CustomerId,
                              DesignImages = item.DesignImages.Select(di => di.ImageUrl).ToList(),
                              Name = item.Name,
                              Category = item.CustomerPublishedOffer.Category,

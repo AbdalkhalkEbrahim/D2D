@@ -33,7 +33,7 @@ namespace Application.Handlers.OffersFeature
 
             return new CustomerOfferResponse
             {
-                ID = offer.ID,
+                PublishedOfferID = offer.ID,
                 DesignImages = offer.CustomerDesign.DesignImages.Select(di => di.ImageUrl).ToList(),
                 Name = offer.Name,
                 Category = offer.Category,

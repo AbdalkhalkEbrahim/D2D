@@ -8,8 +8,9 @@ namespace Domain.DTOs.OfferDtos
 {
     public class CustomerOfferResponse
     {
-        public Guid ID { get; set; }
+        public Guid PublishedOfferID { get; set; }
         public List<string> DesignImages { get; set; }
+        public string? CustomerId { get; set; } 
         public string Name { get; set; }
 
         public string Category { get; set; }
