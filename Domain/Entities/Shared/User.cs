@@ -13,9 +13,11 @@ namespace Domain.Entities.Shared
         public bool IsAllowed => DateTime.Now.Year - BD.Year >= 18;
         public UserType UserType { get; set; }
         public string AnonName { get; set; } 
-        public int ReportsCounter { get; set; }
         public DateTimeOffset? OtpLockoutEnd { get; set; }
+        public DateTime JoinDate { get; set; }
         public int? OtpLockoutCount { get; set; }
+        public int NumOfCollaborations { get; set; }
+        public int NumOfReports { get; set; }
         #region IdentityVerification
         public string? FrontImageID { get; set; }
         public string? BackImageID { get; set; }
