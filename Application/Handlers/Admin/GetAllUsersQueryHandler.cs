@@ -1,28 +1,32 @@
-﻿using Application.Queries;
+﻿using Application.Queries.Admin;
 using Application.Response;
-using Domain.DTOs;
+using Domain.DTOs.Admin;
 using Domain.Enums.Status;
 using Domain.Enums.Types;
 using Infrastructure.Data.Context;
 using MediatR;
 
-namespace Application.Handlers
+namespace Application.Handlers.Admin
 {
     public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, Result<GetUserAndStatusCount>>
     {
         private readonly D2DContext _context;
         public GetAllUsersQueryHandler(D2DContext context)
         {
-            _context = context; 
+            _context = context;
         }
         public async Task<Result<GetUserAndStatusCount>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
-            int AllStatusCount=0, ActiveStatusCount = 0, PendingStatusCount, SusbendingStatusCoount, AllUsersCount = 0, CustomerCount = 0, ProducerCount = 0;
-           
+            int AllStatusCount = 0, ActiveStatusCount = 0, PendingStatusCount, SusbendingStatusCoount, AllUsersCount = 0, CustomerCount = 0, ProducerCount = 0;
 
-            var users = _context.Users.Select(u => new { u.Id, u.FirstName, u.LastName, u.Email, u.ProfileImageUrl, u.NumOfReports, u.NumOfCollaborations, u.UserType, u.JoinDate,u.IdentityStatus });
 
-            var counts = users.GroupBy(_=>1)
+            var users = _context.Users.Select(u => new { u.Id, u.FirstName, u.LastName, u.Email, u.ProfileImageUrl, u.NumOfReports, u.NumOfCollaborations, u.UserType, u.JoinDate, u.IdentityStatus, u.AnonName });
+
+            if (request.UserAnnonNameTextSearch != null)
+                users = users.Where(u => (u.FirstName + " " + u.LastName).Contains(request.UserAnnonNameTextSearch) || u.AnonName.Contains(request.UserAnnonNameTextSearch));
+
+
+            var counts = users.GroupBy(_ => 1)
                .Select(u => new
                {
                    AllUsersCntt = u.Count(),
@@ -38,11 +42,11 @@ namespace Application.Handlers
             //ProducerCount = users.Count(u => u.UserType == UserType.Producer);
 
             if (request.isCustomer)
-               users= users.Where(u => u.UserType == UserType.Customer);
+                users = users.Where(u => u.UserType == UserType.Customer);
             else if (request.isProducer)
-                users= users.Where(u => u.UserType == UserType.Producer);
+                users = users.Where(u => u.UserType == UserType.Producer);
 
-            var status = users.GroupBy(_=>1)
+            var status = users.GroupBy(_ => 1)
                 .Select(u => new
                 {
                     AllStatusCntt = u.Count(),
@@ -61,19 +65,21 @@ namespace Application.Handlers
             //SusbendingStatusCoount = users.Count(u => u.IdentityStatus == VerificationStatus.Suspended);
 
             if (request.isActive)
-                users=users.Where(u=>u.IdentityStatus==VerificationStatus.Approved);
-            else if(request.isPending)
-                users=users.Where(u=>u.IdentityStatus==VerificationStatus.Pending);
-            else if(request.isSusbending)
-                users=users.Where(u=>u.IdentityStatus!=VerificationStatus.Suspended);
+                users = users.Where(u => u.IdentityStatus == VerificationStatus.Approved);
+            else if (request.isPending)
+                users = users.Where(u => u.IdentityStatus == VerificationStatus.Pending);
+            else if (request.isSusbending)
+                users = users.Where(u => u.IdentityStatus != VerificationStatus.Suspended);
+
 
             users = request.isNewst ? users.OrderByDescending(u => u.JoinDate).ThenBy(u => u.Id) : users.OrderBy(u => u.JoinDate).ThenBy(u => u.Id);
+            users = request.ReportNumTextSearch ? users.OrderByDescending(u => u.NumOfReports).ThenBy(u => u.Id) : users.OrderBy(u => u.NumOfReports).ThenBy(u => u.Id);
 
-            //if (request.PageNum<=0 && request.PageSize <= 0)
-            //{
-            //    request.PageNum = 1;
-            //    request.PageSize = 6;
-            //}
+            if (request.PageNum <= 0)
+                request.PageNum = 1;
+            if (request.PageSize <= 0)
+                request.PageSize = 6;
+
 
             users = users.Skip((request.PageNum - 1) * request.PageSize).Take(request.PageSize);
 
@@ -92,8 +98,7 @@ namespace Application.Handlers
                                       (u => new GetAllUsersResponse
                                       {
                                           Id = u.Id,
-                                          FirstName = u.FirstName,
-                                          LastName = u.LastName,
+                                          Name = u.FirstName+" "+u.LastName,
                                           Email = u.Email,
                                           JoinDate = u.JoinDate,
                                           NumOfCollations = u.NumOfCollaborations,

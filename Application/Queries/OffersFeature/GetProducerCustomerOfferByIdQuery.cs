@@ -11,6 +11,6 @@ namespace Application.Queries.OffersFeature
 {
     public class GetProducerCustomerOfferByIdQuery:IRequest<Result<ProducerOfferResponse>>
     {
-        public Guid OfferId { get; set; }
+        public Guid ProducerOfferId { get; set; }
     }
 }

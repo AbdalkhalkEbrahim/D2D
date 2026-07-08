@@ -21,7 +21,7 @@ namespace Application.Handlers.OffersFeature
             var offer =await _context.ProducerCustomerOffers.
                 Include(po=>po.Producer).
                 Select(po=>new {po.OfferStatus,po.ProducerID, po.Producer.AnonName , po.Producer.Reviews , po.Producer.Rate , po.Price , po.ID,po.CreatedAt,po.UpdatedAt, po.Diposit, po.Duration, po.CustomerPublishedOffer.Name, po.Steps, ImagesUrls = po.CustomerPublishedOffer.CustomerDesign.DesignImages.Select(im=>im.ImageUrl) })
-                .FirstOrDefaultAsync(po => po.ID == request.OfferId &&po.OfferStatus != OfferStatus.Declined);
+                .FirstOrDefaultAsync(po => po.ID == request.ProducerOfferId &&po.OfferStatus != OfferStatus.Declined);
 
             if(offer == null)
                 return Result<ProducerOfferResponse>.Failure(Messages.NotFound.WithTarget("Offer"));
