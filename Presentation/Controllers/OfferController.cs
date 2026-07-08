@@ -1,5 +1,7 @@
 ﻿using Application.Commands.OffersFeature;
+using Application.Commands.ReviewFeature;
 using Application.Queries.OffersFeature;
+using Domain.DTOs;
 using Domain.DTOs.OfferDtos;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -136,5 +138,13 @@ namespace Presentation.Controllers
             return HandleResult(result);
         }
 
+        [HttpPost("add-review")]
+        [ProducesResponseType(typeof(ReviewResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> AddReview([FromBody] AddReviewCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
     }
 }

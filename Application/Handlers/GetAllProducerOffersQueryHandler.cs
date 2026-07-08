@@ -55,10 +55,15 @@ namespace Application.Handlers
             if (!request.Newest)
                 offer = offer.Reverse();
 
-            request.PageNum = Math.Min(1,request.PageNum);
-            request.PageSize = Math.Min(6, request.PageSize);
+/*            request.PageNum = Math.Min(1,request.PageNum);
+            request.PageSize = Math.Min(1, request.PageSize);
+*/
+            if(request.PageSize < 6)
+                request.PageSize = 6;
+            if(request.PageNum < 1)
+                request.PageNum = 1; 
 
-            offer = offer.Skip((request.PageNum-1)*request.PageSize);
+            offer = offer.Skip((request.PageNum-1)*request.PageSize).Take(request.PageSize);
 
             var responses = new CollaborationsWithCounts
             {
