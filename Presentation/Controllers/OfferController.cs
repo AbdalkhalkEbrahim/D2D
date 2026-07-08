@@ -152,7 +152,7 @@ namespace Presentation.Controllers
         [HttpGet("get-all-reviews")]
         [ProducesResponseType(typeof(ReviewAndRateResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetAllReviews([FromBody] GetAllReviewsQuery dto)
+        public async Task<IActionResult> GetAllReviews([FromQuery]GetAllReviewsQuery dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);
