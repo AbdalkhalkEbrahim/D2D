@@ -21,6 +21,7 @@ namespace Application.Handlers.Admin
         }
         public async Task<Result> Handle(ChangeTicketStatusCommand request, CancellationToken cancellationToken)
         {
+            
             var ticket =await _context.Tickets.Select(t => new { t.Id, t.Status }).FirstOrDefaultAsync(t => t.Id == request.TicketId);
 
             if (ticket == null)

@@ -45,6 +45,9 @@ namespace Infrastructure.Data.Context
         public DbSet<MagicToken> MagicTokens { get; set; }
         public DbSet<SystemCounter> SystemCounters { get; set; }
         public DbSet<Tickets> Tickets { get; set; }
+        public DbSet<Image> Images { get; set; }
+        public DbSet<ModelGeneratedDesign> ModelGeneratedDesigns { get; set; }
+        public DbSet<DesignState> DesignStates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
