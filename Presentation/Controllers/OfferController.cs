@@ -127,5 +127,14 @@ namespace Presentation.Controllers
             return HandleResult(result);
         }
 
+        [HttpPost("accept-offer")]
+        [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> AcceptOffer([FromBody] AcceptOfferCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
     }
 }
