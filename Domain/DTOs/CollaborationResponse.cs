@@ -15,16 +15,13 @@ namespace Domain.DTOs
         public string ProducerName { get; set; }
         public string CustomerImage { get; set; }
         public string ProducerImage { get; set; }
-        public string Deposit {  get; set; }
-        public decimal Amount { get; set; }
+        public decimal Deposit {  get; set; }
+        public int Amount { get; set; }
         public Dictionary<string,Tuple<int,int>> Steps { get; set; }
         public DateTime CreatedAt { get; set; }
         public int ChatId { get; set; }
         public string Status { get; set; }
-        public int  AllCount {get; set;}
-        public int  CompletedCount {get; set;}
-        public int  ClosedCount {get; set;}
-        public int  PendingCount {get; set;}
+
 
     }
 }
