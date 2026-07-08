@@ -117,6 +117,16 @@ namespace Presentation.Controllers
             return HandleResult(result);
         }
 
+        [HttpPost("add-balance")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> AddBalance(AddBalanceCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
 
 
     }

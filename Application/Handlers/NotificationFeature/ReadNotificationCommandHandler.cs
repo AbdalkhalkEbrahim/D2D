@@ -34,6 +34,7 @@ namespace Application.Handlers.NotificationFeature
                 Title = notification.Title,
                 Message = notification.Content,
                 CreatedAt = notification.CreatedAt,
+                referenceUrl = notification.RefrenceUrl,
                 IsRead = notification.IsRead
             };
         }

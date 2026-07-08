@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 
 namespace Application.Commands.AccountSettingsFeature
 {
-    public class AddBalanceCommand:IRequest<Result<int>>
+    public class AddBalanceCommand:IRequest<Result<decimal>>
     {
         public string UserId { get; set; }
-        public int Amount { get; set; }
+        public string UserType { get; set; }
+        public decimal Amount { get; set; }
 
     }
 }

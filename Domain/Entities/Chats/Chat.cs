@@ -17,7 +17,7 @@ namespace Domain.Entities.Chats
         public int ProducerCount { get; set; }
         public int CustomerCount { get; set; }
         public ICollection<RequestsLogs> RequestsLogs { get; set; }
-        public bool IsClosed { get; set; }
+        public bool IsClosed { get; set; } = false;
        
         [ForeignKey(nameof(Customer))]
         public string CustomerID { get; set; }

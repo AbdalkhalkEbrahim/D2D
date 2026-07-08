@@ -22,6 +22,7 @@ namespace Application.Handlers.NotificationFeature
                Title = n.Title,
                Message = n.Content,
                CreatedAt = n.CreatedAt,
+               referenceUrl = n.RefrenceUrl,
                IsRead = n.IsRead
            }).OrderByDescending(n => n.CreatedAt).ToListAsync();
 
