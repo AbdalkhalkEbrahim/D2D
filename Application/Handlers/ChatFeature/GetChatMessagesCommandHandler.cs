@@ -19,7 +19,7 @@ namespace Application.Handlers.ChatFeature
         }
         public async Task<Result<ChatWithMessagesResponse>> Handle(GetChatMessagesCommand request, CancellationToken cancellationToken)
         {
-            var chat = await _context.Chats.Select(ch=>new {ch.ID, AllMessages = ch.Messages.OrderByDescending(m=>m.CreatedAt), pName = ch.Producer.AnonName, cName = ch.Customer.AnonName, ch.ProducerID, ch.CustomerID}).FirstOrDefaultAsync(c => c.ID == request.ChatId);
+            var chat = await _context.Chats.Select(ch=>new {ch.ID, AllMessages = ch.Messages, pName = ch.Producer.AnonName, cName = ch.Customer.AnonName, ch.ProducerID, ch.CustomerID}).FirstOrDefaultAsync(c => c.ID == request.ChatId);
             if(chat == null)
                 return Result<ChatWithMessagesResponse>.Failure(Messages.NotFound.WithTarget("Chat"));
             if(chat.AllMessages.First().Sender.ToString() != request.UserType.ToString())
@@ -38,7 +38,7 @@ namespace Application.Handlers.ChatFeature
                     Sender = m.Sender,
                     IsRead = m.IsRead,
                     CreatedAt = m.CreatedAt
-                }).ToList(),
+                }).OrderByDescending(m => m.CreatedAt).ToList(),
                 AnonName = request.UserType == UserType.Customer ? chat.pName : chat.cName,
                 OtherId = request.UserType == UserType.Customer ? chat.ProducerID : chat.CustomerID
             };

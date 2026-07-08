@@ -56,6 +56,16 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+
+        [HttpPost("get-chat-messages")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetChatMessages(GetChatMessagesCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
         [HttpPost("send-request")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
