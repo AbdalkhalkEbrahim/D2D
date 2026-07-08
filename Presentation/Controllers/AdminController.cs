@@ -5,6 +5,7 @@ using Domain.DTOs.Admin;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
+
 namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
@@ -19,7 +20,7 @@ namespace Presentation.Controllers
 
         [HttpGet("get-all-users")]
         [ProducesResponseType(typeof(List<GetAllUsersResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetCustomerAddresses([FromQuery] GetAllUsersQuery dto)
+        public async Task<IActionResult> GetAllUsers([FromQuery] GetAllUsersQuery dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);
@@ -50,7 +51,7 @@ namespace Presentation.Controllers
 
         [HttpGet("get-all-producers-offers")]
         [ProducesResponseType(typeof(List<CollaborationResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetCustomerAddresses([FromQuery] GetAllProducerOffersQuery dto)
+        public async Task<IActionResult> GetAllProducersOffers([FromQuery] GetAllProducerOffersQuery dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);
@@ -100,9 +101,9 @@ namespace Presentation.Controllers
         }
         [HttpGet("get-recent-tickets")]
         [ProducesResponseType(typeof(List<TicketResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetRecentTickets([FromQuery] GetRecentTicketsQuery dto)
+        public async Task<IActionResult> GetRecentTickets()
         {
-            var result = await _mediator.Send(dto);
+            var result = await _mediator.Send(new GetRecentTicketsQuery());
             return HandleResult(result);
 
         }

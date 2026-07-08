@@ -6,7 +6,6 @@ using Domain.DTOs;
 using Domain.DTOs.OfferDtos;
 using Domain.DTOs.Review_RateDtos;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers
