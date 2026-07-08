@@ -1,6 +1,7 @@
 ﻿using Application.Queries.ReviewFeature;
 using Application.Response;
 using Domain.DTOs;
+using Domain.DTOs.OfferDtos;
 using Domain.DTOs.Review_RateDtos;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;

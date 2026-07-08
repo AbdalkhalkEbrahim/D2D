@@ -1,6 +1,7 @@
 ﻿using Application.Commands.ReviewFeature;
 using Application.Response;
 using Domain.DTOs.OfferDtos;
+using Domain.DTOs.Review_RateDtos;
 using Domain.Entities.Producers;
 using Infrastructure.Data.Context;
 using MediatR;
@@ -45,6 +46,7 @@ namespace Application.Handlers.ReviewFeature
             await _context.SaveChangesAsync();
             return new ReviewResponse
             {
+                ID = review.ID,
                 Content = request.Content,
                 Rate = request.Rate,
                 ProducerRate = updatedProducer.Rate/updatedProducer.RateCount,
