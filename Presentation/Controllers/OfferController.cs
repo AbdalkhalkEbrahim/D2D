@@ -65,6 +65,16 @@ namespace Presentation.Controllers
             return HandleResult(result);
         }
 
+        [HttpGet("get-all-producer-offer")]
+        [ProducesResponseType(typeof(GetAllProducerOffersQuery), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAllProducerOffers([FromQuery] GetAllProducerOffersQuery dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+
         /// <summary>
         /// for customer to edit published design details by id
         /// </summary>
