@@ -100,9 +100,9 @@ namespace Presentation.Controllers
         }
         [HttpGet("get-recent-tickets")]
         [ProducesResponseType(typeof(List<TicketResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetRecentTickets([FromQuery] GetRecentTicketsQuery dto)
+        public async Task<IActionResult> GetRecentTickets()
         {
-            var result = await _mediator.Send(dto);
+            var result = await _mediator.Send(new GetRecentTicketsQuery());
             return HandleResult(result);
 
         }

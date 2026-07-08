@@ -32,6 +32,8 @@ namespace Application.Handlers.AccountSettingsFeature
                 Status = request.Status,
                 CreatedAt = DateTime.UtcNow
             };
+            _context.Add(ticket);
+            await _context.SaveChangesAsync();
             return Result.Success();
         }
     }
