@@ -1,8 +1,11 @@
 ﻿using Application.Commands.OffersFeature;
+using Application.Commands.ReviewFeature;
 using Application.Queries.OffersFeature;
+using Application.Queries.ReviewFeature;
+using Domain.DTOs;
 using Domain.DTOs.OfferDtos;
+using Domain.DTOs.Review_RateDtos;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers
@@ -131,6 +134,24 @@ namespace Presentation.Controllers
         [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> AcceptOffer([FromBody] AcceptOfferCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpPost("add-review")]
+        [ProducesResponseType(typeof(ReviewResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> AddReview([FromBody] AddReviewCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpGet("get-all-reviews")]
+        [ProducesResponseType(typeof(ReviewAndRateResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAllReviews([FromBody] GetAllReviewsQuery dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

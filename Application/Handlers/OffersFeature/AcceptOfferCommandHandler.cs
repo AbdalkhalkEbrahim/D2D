@@ -30,7 +30,7 @@ namespace Application.Handlers.OffersFeature
             if (producerOffer == null)
                 return Result<int>.Failure(Messages.NotFound.WithTarget("Offer"));
 
-            if (Math.Floor(request.Amount) != Math.Floor(producerOffer.Diposit * producerOffer.Price))
+            if (Math.Floor(request.Amount) < Math.Floor(producerOffer.Diposit * producerOffer.Price))
                 return Result<int>.Failure(Messages.BadRequest.WithTarget("Balance"));
 
             producerOffer.OfferStatus = OfferStatus.Accepted;
