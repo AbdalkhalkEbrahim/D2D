@@ -1,6 +1,7 @@
 ﻿using Application.Queries;
 using Application.Response;
 using Domain.DTOs;
+using Domain.DTOs.Admin;
 using Domain.Enums.Types;
 using Google.Apis.Util;
 using Infrastructure.Data.Context;
@@ -12,7 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Handlers
+namespace Application.Handlers.Admin
 {
     public class GetReadOnlyChatQueryHandler : IRequestHandler<GetReadOnlyChatQuery, Result<ReadOnlyChatResponse>>
     {
@@ -37,11 +38,11 @@ namespace Application.Handlers
                     {
                         Content = m.Content,
                         SentAt = m.CreatedAt,
-                        ProfileImage = m.Sender == MessageSender.Customer ? c.Chat.Customer.ProfileImageUrl 
+                        ProfileImage = m.Sender == MessageSender.Customer ? c.Chat.Customer.ProfileImageUrl
                         : c.Chat.Producer.ProfileImageUrl,
 
-                        Name = m.Sender == MessageSender.Customer ? (c.Chat.Customer.FirstName + " " + c.Chat.Customer.LastName) 
-                        : (c.Chat.Producer.FirstName + " " + c.Chat.Producer.LastName)
+                        Name = m.Sender == MessageSender.Customer ? c.Chat.Customer.FirstName + " " + c.Chat.Customer.LastName
+                        : c.Chat.Producer.FirstName + " " + c.Chat.Producer.LastName
                     }).ToList()
                 })
                 .FirstOrDefaultAsync(cancellationToken);

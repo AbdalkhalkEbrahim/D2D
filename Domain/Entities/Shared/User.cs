@@ -14,7 +14,7 @@ namespace Domain.Entities.Shared
         public UserType UserType { get; set; }
         public string AnonName { get; set; } 
         public DateTimeOffset? OtpLockoutEnd { get; set; }
-        public DateTime JoinDate { get; set; }
+        public DateTime JoinDate { get; set; } = DateTime.UtcNow;
         public int? OtpLockoutCount { get; set; }
         public int NumOfCollaborations { get; set; }
         public int NumOfReports { get; set; }
@@ -27,8 +27,6 @@ namespace Domain.Entities.Shared
         #endregion
         public virtual ICollection<Notification>? Notifications { get; set; } = new List<Notification>();
         public virtual ICollection<RefreshToken>? RefreshTokens { get; set; } = new List<RefreshToken>();
-
-
-      
+        public virtual ICollection<Tickets>? Tickets { get; set; } = new List<Tickets>();
     }
 }

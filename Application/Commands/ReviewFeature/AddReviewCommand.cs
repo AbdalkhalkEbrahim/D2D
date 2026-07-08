@@ -1,5 +1,6 @@
 ﻿using Application.Response;
-using Domain.DTOs;
+using Domain.DTOs.OfferDtos;
+using Domain.DTOs.Review_RateDtos;
 using MediatR;
 using System;
 using System.Collections.Generic;

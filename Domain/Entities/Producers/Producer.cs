@@ -9,6 +9,7 @@ namespace Domain.Entities.Producers
     public class Producer:User
     {
         public double Rate { get; set; }
+        public int RateCount { get; set; }
         public virtual ICollection<LicenseVerification> LicenseVerifications { get; set; }
         //public virtual ICollection<ProducerOffer> ProducerOffers { get; set; }
         public virtual ICollection<ProducerCustomerOffer> ProducerCustomerOffers { get; set; }

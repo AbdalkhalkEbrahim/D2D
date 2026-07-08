@@ -7,10 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Queries
+namespace Application.Queries.Admin
 {
-    public class GetReadOnlyChatQuery:IRequest<Result<ReadOnlyChatResponse>>
+    public class GetUsersCountQuery : IRequest<Result<UserCountResponse>>
     {
-        public int ChatId { get; set; }
     }
 }

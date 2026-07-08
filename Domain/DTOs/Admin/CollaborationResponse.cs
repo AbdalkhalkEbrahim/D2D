@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.DTOs
+namespace Domain.DTOs.Admin
 {
     public class CollaborationResponse
     {
@@ -15,9 +15,9 @@ namespace Domain.DTOs
         public string ProducerName { get; set; }
         public string CustomerImage { get; set; }
         public string ProducerImage { get; set; }
-        public decimal Deposit {  get; set; }
+        public decimal Deposit { get; set; }
         public int Amount { get; set; }
-        public Dictionary<string,Tuple<int,int>> Steps { get; set; }
+        public Dictionary<string, Tuple<int, int>> Steps { get; set; }
         public DateTime CreatedAt { get; set; }
         public int ChatId { get; set; }
         public string Status { get; set; }
