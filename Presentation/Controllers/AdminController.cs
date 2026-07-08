@@ -1,5 +1,7 @@
 ﻿using Application.Commands.Admin;
+using Application.Queries;
 using Application.Queries.Admin;
+using Domain.DTOs;
 using Domain.DTOs.AccountSettingsDtos;
 using Domain.DTOs.Admin;
 using MediatR;
