@@ -117,7 +117,14 @@ namespace Presentation.Controllers
             return HandleResult(result);
         }
 
-
+        [HttpPost("add-ticket")]
+        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> AddTicket(AddTicketCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
 
     }
 }

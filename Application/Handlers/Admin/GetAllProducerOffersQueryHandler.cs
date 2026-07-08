@@ -1,6 +1,6 @@
 ﻿using Application.Queries;
 using Application.Response;
-using Domain.DTOs;
+using Domain.DTOs.Admin;
 using Domain.DTOs.OfferDtos;
 using Domain.Enums.Status;
 using Infrastructure.Data.Context;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Handlers
+namespace Application.Handlers.Admin
 {
     public class GetAllProducerOffersQueryHandler : IRequestHandler<GetAllProducerOffersQuery, Result<CollaborationsWithCounts>>
     {
@@ -26,9 +26,26 @@ namespace Application.Handlers
         {
             int AllCount, CompletedCount, ClosedCount, PendingCount = ClosedCount = CompletedCount = AllCount = 0;
             var offer = _context.ProducerCustomerOffers
-                .Select(po => new {OfferId = po.CustomerPublishedOffer.ID, OfferName = po.CustomerPublishedOffer.Name, ProducerFName = po.Producer.FirstName, ProducerLName = po.Producer.LastName, CustomerFName = po.CustomerPublishedOffer.Customer.FirstName, CustomerLName = po.CustomerPublishedOffer.Customer.LastName,
-                    ProducerProfileImage = po.Producer.ProfileImageUrl, CustomerProfileImage = po.CustomerPublishedOffer.Customer.ProfileImageUrl, po.Price, po.Diposit, po.CustomerPublishedOffer.Amount, po.OfferStatus, po.CreatedAt, ChatId = po.CustomerPublishedOffer.ActiveOfferLogs,
-                    po.Steps, DesignImages = po.CustomerPublishedOffer.CustomerDesign.DesignImages.Select(im=>im.ImageUrl), DesignId = po.CustomerPublishedOffer.CustomerDesign.ID });
+                .Select(po => new
+                {
+                    OfferId = po.CustomerPublishedOffer.ID,
+                    OfferName = po.CustomerPublishedOffer.Name,
+                    ProducerFName = po.Producer.FirstName,
+                    ProducerLName = po.Producer.LastName,
+                    CustomerFName = po.CustomerPublishedOffer.Customer.FirstName,
+                    CustomerLName = po.CustomerPublishedOffer.Customer.LastName,
+                    ProducerProfileImage = po.Producer.ProfileImageUrl,
+                    CustomerProfileImage = po.CustomerPublishedOffer.Customer.ProfileImageUrl,
+                    po.Price,
+                    po.Diposit,
+                    po.CustomerPublishedOffer.Amount,
+                    po.OfferStatus,
+                    po.CreatedAt,
+                    ChatId = po.CustomerPublishedOffer.ActiveOfferLogs,
+                    po.Steps,
+                    DesignImages = po.CustomerPublishedOffer.CustomerDesign.DesignImages.Select(im => im.ImageUrl),
+                    DesignId = po.CustomerPublishedOffer.CustomerDesign.ID
+                });
 
             if (request.OfferName != null)
                 offer = offer.Where(o => o.OfferName.Contains(request.OfferName));
@@ -43,7 +60,7 @@ namespace Application.Handlers
 
             if (request.IsCompleted)
                 offer = offer.Where(o => o.OfferStatus == OfferStatus.Completed);
-            else if(request.IsAccepted)
+            else if (request.IsAccepted)
                 offer = offer.Where(po => po.OfferStatus == OfferStatus.Accepted);
 
             else if (request.IsPending)
@@ -55,10 +72,10 @@ namespace Application.Handlers
             if (!request.Newest)
                 offer = offer.Reverse();
 
-            request.PageNum = Math.Min(1,request.PageNum);
+            request.PageNum = Math.Min(1, request.PageNum);
             request.PageSize = Math.Min(6, request.PageSize);
 
-            offer = offer.Skip((request.PageNum-1)*request.PageSize);
+            offer = offer.Skip((request.PageNum - 1) * request.PageSize);
 
             var responses = new CollaborationsWithCounts
             {
@@ -69,7 +86,7 @@ namespace Application.Handlers
                 collaborationResponses = new List<CollaborationResponse>()
             };
 
-            foreach(var o in offer)
+            foreach (var o in offer)
             {
                 responses.collaborationResponses.Add(new CollaborationResponse
                 {
@@ -84,7 +101,7 @@ namespace Application.Handlers
                     Amount = o.Amount,
                     Steps = o.Steps.ToDictionary(s => s.StepName, d => new Tuple<int, int>(d.MinDuration, d.MaxDuration)),
                     CreatedAt = o.CreatedAt,
-                    ChatId = o.ChatId.Count() == 0 ? 0: o.ChatId.First().ChatID,
+                    ChatId = o.ChatId.Count() == 0 ? 0 : o.ChatId.First().ChatID,
                     Status = o.OfferStatus.ToString()
                 });
             }

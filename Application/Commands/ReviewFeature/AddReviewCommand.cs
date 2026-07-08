@@ -1,5 +1,5 @@
 ﻿using Application.Response;
-using Domain.DTOs;
+using Domain.DTOs.OfferDtos;
 using MediatR;
 using System;
 using System.Collections.Generic;

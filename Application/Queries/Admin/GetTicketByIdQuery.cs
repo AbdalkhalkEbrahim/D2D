@@ -7,10 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Queries
+namespace Application.Queries.Admin
 {
-    public class GetReadOnlyChatQuery:IRequest<Result<ReadOnlyChatResponse>>
+    public class GetTicketByIdQuery:IRequest<Result<TicketResponse>>
     {
-        public int ChatId { get; set; }
+        public int TicketId { get; set; }
     }
 }

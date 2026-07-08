@@ -69,7 +69,7 @@ namespace Application.Handlers.Admin
             else if (request.isPending)
                 users = users.Where(u => u.IdentityStatus == VerificationStatus.Pending);
             else if (request.isSusbending)
-                users = users.Where(u => u.IdentityStatus != VerificationStatus.Suspended);
+                users = users.Where(u => u.IdentityStatus == VerificationStatus.Suspended);
 
 
             users = request.isNewst ? users.OrderByDescending(u => u.JoinDate).ThenBy(u => u.Id) : users.OrderBy(u => u.JoinDate).ThenBy(u => u.Id);
