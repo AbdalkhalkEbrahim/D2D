@@ -19,19 +19,18 @@ namespace Application.Handlers.ChatFeature
         }
         public async Task<Result<ChatWithMessagesResponse>> Handle(GetChatMessagesCommand request, CancellationToken cancellationToken)
         {
-            var chat = await _context.Chats.Select(ch=>new {ch.ID, AllMessages = ch.Messages, pName = ch.Producer.AnonName, cName = ch.Customer.AnonName, ch.ProducerID, ch.CustomerID}).FirstOrDefaultAsync(c => c.ID == request.ChatId);
-            if(chat == null)
+            var chat =  _context.Chats.Select(ch=>new {ch.ID, AllMessages = ch.Messages, pName = ch.Producer.AnonName, cName = ch.Customer.AnonName, ch.ProducerID, ch.CustomerID}).Where(c => c.ID == request.ChatId);
+            if(!chat.Any() )
                 return Result<ChatWithMessagesResponse>.Failure(Messages.NotFound.WithTarget("Chat"));
-            if(chat.AllMessages.First().Sender.ToString() != request.UserType.ToString())
+            if(chat.First().AllMessages.First().Sender.ToString() != request.UserType.ToString())
             {
-                var message = new Message { ID = chat.AllMessages.First().ID, IsRead = true };
-                _context.Attach(message);
-                _context.Entry(message).Property(m => m.IsRead).IsModified = true;
-                await _context.SaveChangesAsync();
+               await chat.ExecuteUpdateAsync(s => s
+                .SetProperty(c => c.AllMessages.First().IsRead, true));  
             }
+            var chatWithMessages = await chat.FirstOrDefaultAsync(cancellationToken);
             var response = new ChatWithMessagesResponse
             {
-                Messages = chat.AllMessages.Select(m => new MessagesResponse
+                Messages = chatWithMessages.AllMessages.Select(m => new MessagesResponse
                 {
                     ID = m.ID,
                     Message = m.Content,
@@ -39,8 +38,8 @@ namespace Application.Handlers.ChatFeature
                     IsRead = m.IsRead,
                     CreatedAt = m.CreatedAt
                 }).OrderByDescending(m => m.CreatedAt).ToList(),
-                AnonName = request.UserType == UserType.Customer ? chat.pName : chat.cName,
-                OtherId = request.UserType == UserType.Customer ? chat.ProducerID : chat.CustomerID
+                AnonName = request.UserType == UserType.Customer ? chatWithMessages.pName : chatWithMessages.cName,
+                OtherId = request.UserType == UserType.Customer ? chatWithMessages.ProducerID : chatWithMessages.CustomerID
             };
 
             return response;
