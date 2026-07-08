@@ -1,8 +1,10 @@
-﻿using Domain.Entities.Shared;
+﻿using Domain.Entities.Chats.AiModel;
+using Domain.Entities.Shared;
 using Domain.Enums.Status;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace Domain.Entities.Designs
 {
-    public abstract class Design:Audits
+    public class Design:Audits
     {
         public Guid ID { get; set; }
         public   string Name { get; set; }
