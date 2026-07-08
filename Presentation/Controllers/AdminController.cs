@@ -1,7 +1,7 @@
-﻿using Application.Queries;
-using Application.Queries.AccountSettings;
-using Domain.DTOs;
+﻿using Application.Commands.Admin;
+using Application.Queries.Admin;
 using Domain.DTOs.AccountSettingsDtos;
+using Domain.DTOs.Admin;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +25,31 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+        [HttpGet("get-customer-profile")]
+        [ProducesResponseType(typeof(GetUserProfileAdminResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetUserProfile([FromQuery] GetCustomerProfileQuery dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpGet("get-producer-profile")]
+        [ProducesResponseType(typeof(GetUserProfileAdminResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetProducerProfile([FromQuery] GetProducerProfileQuery dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpPost("change-user-status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> ChangeUserStatus([FromBody] ChangeUserStatusCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+
         [HttpGet("get-all-producers-offers")]
         [ProducesResponseType(typeof(List<CollaborationResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCustomerAddresses([FromQuery] GetAllProducerOffersQuery dto)

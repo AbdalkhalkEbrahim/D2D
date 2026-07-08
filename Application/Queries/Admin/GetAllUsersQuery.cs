@@ -1,5 +1,5 @@
 ﻿using Application.Response;
-using Domain.DTOs;
+using Domain.DTOs.Admin;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Queries
+namespace Application.Queries.Admin
 {
-    public class GetAllUsersQuery:IRequest<Result<GetUserAndStatusCount>>
+    public class GetAllUsersQuery : IRequest<Result<GetUserAndStatusCount>>
     {
         public bool isCustomer { get; set; } = false;
         public bool isProducer { get; set; } = false;
@@ -20,6 +20,8 @@ namespace Application.Queries
         public bool isPending { get; set; } = false;
         public bool isSusbending { get; set; } = false;
         public bool isNewst { get; set; } = true;
+        public bool ReportNumTextSearch { get; set; } = true;
+        public string? UserAnnonNameTextSearch { get; set; }
         public int PageNum { get; set; } = 1;
         public int PageSize { get; set; } = 6;
     }
