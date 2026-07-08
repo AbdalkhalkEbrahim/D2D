@@ -19,12 +19,12 @@ namespace Application.Handlers.ChatFeature
         }
         public async Task<Result<ChatWithMessagesResponse>> Handle(GetChatMessagesCommand request, CancellationToken cancellationToken)
         {
-            var chat = await _context.Chats.AsNoTracking().Select(ch=>new {ch.ID, AllMessages = ch.Messages, pName = ch.Producer.AnonName, cName = ch.Customer.AnonName, ch.ProducerID, ch.CustomerID}).FirstOrDefaultAsync(c => c.ID == request.ChatId);
-            if(chat == null)
+            var chat = await _context.Chats.AsNoTracking().Select(ch => new { ch.ID, AllMessages = ch.Messages, pName = ch.Producer.AnonName, cName = ch.Customer.AnonName, ch.ProducerID, ch.CustomerID }).FirstOrDefaultAsync(c => c.ID == request.ChatId);
+            if (chat == null)
                 return Result<ChatWithMessagesResponse>.Failure(Messages.NotFound.WithTarget("Chat"));
-            if(chat.AllMessages.OrderByDescending(m=>m.CreatedAt).First().Sender.ToString() != request.UserType.ToString())
+            if (chat.AllMessages.OrderByDescending(m => m.CreatedAt).First().Sender.ToString() != request.UserType.ToString())
             {
-                var message = new Message { ID = chat.AllMessages.OrderByDescending(m=>m.CreatedAt).First().ID,Content = chat.AllMessages.OrderByDescending(m=>m.CreatedAt).First().Content, IsRead = true };
+                var message = new Message { ID = chat.AllMessages.OrderByDescending(m => m.CreatedAt).First().ID, Content = chat.AllMessages.OrderByDescending(m => m.CreatedAt).First().Content, IsRead = true };
                 _context.Attach(message);
                 _context.Entry(message).Property(m => m.IsRead).IsModified = true;
                 await _context.SaveChangesAsync();
@@ -47,6 +47,6 @@ namespace Application.Handlers.ChatFeature
 
         }
 
-        
+
     }
 }

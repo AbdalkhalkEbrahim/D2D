@@ -1,6 +1,6 @@
 ﻿using Application.Commands.ReviewFeature;
 using Application.Response;
-using Domain.DTOs;
+using Domain.DTOs.OfferDtos;
 using Domain.Entities.Producers;
 using Infrastructure.Data.Context;
 using MediatR;
