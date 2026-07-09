@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Queries
+namespace Application.Queries.Admin
 {
     public class GetAllProducerOffersQuery:IRequest<Result<CollaborationsWithCounts>>
     {

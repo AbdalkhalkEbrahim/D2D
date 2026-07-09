@@ -134,5 +134,14 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+
+        [HttpGet("get-balance")]
+        [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetBalance([FromQuery]GetUserBalanceQuery dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
     }
 }

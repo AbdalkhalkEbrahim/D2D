@@ -30,7 +30,7 @@ namespace Application.Handlers.OffersFeature
             if (producerOffer == null)
                 return Result<int>.Failure(Messages.NotFound.WithTarget("Offer"));
 
-            if (Math.Floor(request.Amount) < Math.Floor(producerOffer.Diposit * producerOffer.Price))
+            if (Math.Floor(request.Amount) < Math.Floor(producerOffer.Diposit))
                 return Result<int>.Failure(Messages.BadRequest.WithTarget("Balance"));
 
             producerOffer.OfferStatus = OfferStatus.Accepted;
@@ -49,7 +49,9 @@ namespace Application.Handlers.OffersFeature
                     u => u.Balance,
                     u => u.Balance + request.Amount
                 ), cancellationToken);
-
+            await _context.ProducerCustomerOffers.Where(po => po.ID != request.ProducerOfferId && po.CustomerPublishedOfferID == producerOffer.CustomerPublishedOfferID).ExecuteUpdateAsync(s => s.SetProperty(
+                    u => u.OfferStatus,
+                    u => OfferStatus.Declined));
             var chat = new Chat
             {
                 CustomerID = producerOffer.CustomerPublishedOffer.CustomerID,
@@ -70,7 +72,7 @@ namespace Application.Handlers.OffersFeature
             await _context.SaveChangesAsync(cancellationToken);
 
 
-            return Result<int>.Success(chat.ID);
+            return chat.ID;
 
 
 

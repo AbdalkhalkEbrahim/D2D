@@ -16,12 +16,20 @@ namespace Application.Handlers.DesignFeature
         }
         public async Task<Result<Guid>> Handle(PublishedToDraftedCommand request, CancellationToken cancellationToken)
         {
-           var design =await _context.CustomerDesigns.Include(d=>d.CustomerPublishedOffer).FirstOrDefaultAsync(d => d.ID == request.DesignId && d.Status==DesignStatus.Published);
+           var design =await _context.CustomerDesigns.Include(d=>d.CustomerPublishedOffer).ThenInclude(c=>c.ProducerCustomerOffers).FirstOrDefaultAsync(d => d.ID == request.DesignId && d.Status==DesignStatus.Published);
             if (design == null)
                 return Result<Guid>.Failure(Messages.BadRequest.WithTarget("DraftedDesign"));
 
             design.Status = DesignStatus.Drafted;
-            _context.Remove(design.CustomerPublishedOffer); 
+            if(!_context.ActiveOfferLogs.Any(al=>al.CustomOfferID == design.CustomerPublishedOfferID))
+                return Result<Guid>.Failure(Messages.Conflict.WithTarget("ActiveDesign"));
+
+            foreach (var d in design.CustomerPublishedOffer.ProducerCustomerOffers)
+            {
+                _context.Attach(d);
+                d.OfferStatus = OfferStatus.Declined;
+                _context.Entry(d).Property(pco=>pco.OfferStatus).IsModified = true;
+            }
             _context.SaveChanges();
 
             return request.DesignId;

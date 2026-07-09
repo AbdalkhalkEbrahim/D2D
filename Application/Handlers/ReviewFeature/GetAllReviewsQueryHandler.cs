@@ -37,6 +37,10 @@ namespace Application.Handlers.ReviewFeature
                 CountRate = p.RateCount
             }).FirstOrDefaultAsync(p => p.Id == request.ProducerId);
 
+            if(producerReviews == null)
+                return Result<ReviewAndRateResponse>.Failure(Messages.NotFound.WithTarget("User"));
+
+
             if (request.PageSize < 6)
                 request.PageSize = 6;
 
@@ -45,8 +49,9 @@ namespace Application.Handlers.ReviewFeature
 
             //offer = offer.Skip((request.PageNum - 1) * request.PageSize).Take(request.PageSize);
 
-            var response = new ReviewAndRateResponse { ProducerRate = producerReviews.SumRate/producerReviews.CountRate, TotalRates = producerReviews.CountRate };
-            response.Reviews = new List<ReviewResponse>();
+            var response = new ReviewAndRateResponse { ProducerRate =(producerReviews.CountRate == 0? 0:  producerReviews.SumRate/producerReviews.CountRate), TotalRates = producerReviews.CountRate, 
+            Reviews = new List<ReviewResponse>()
+            };
             foreach(var r in producerReviews.Reviews)
             {
                 response.Reviews.Add(new ReviewResponse
@@ -55,7 +60,7 @@ namespace Application.Handlers.ReviewFeature
                     Content = r.Content,
                     Rate = r.Rate,
                     CreatedAt = r.CreatedAt,
-                    UpdatedAt = (DateTime)r.UpdatedAt,
+                    UpdatedAt = r.UpdatedAt??r.CreatedAt,
                     CustomerAnonName = r.CName,
                     ProducerAnonName = r.PName,
                     ProducerId = request.ProducerId

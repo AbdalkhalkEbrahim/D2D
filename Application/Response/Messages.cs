@@ -119,6 +119,7 @@ namespace Application.Response
                 { "Default", "You do not have permission to perform this action." },
 
                 { "DesignNotApproved", "This design cannot be produced or purchased because it hasn't been approved by the platform yet." },
+                {"ActiveDesign", "This design already active, so it can't be drafted" },
 
                 { "InsufficientWalletBalance", "The user's wallet balance is insufficient to complete this transaction." },
 

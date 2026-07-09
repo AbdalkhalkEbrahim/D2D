@@ -41,6 +41,7 @@ namespace Application.Handlers.ReviewFeature
             var updatedProducer = new Producer { Id = request.ProducerId, RateCount = producer.RateCount + 1, Rate = producer.Rate + request.Rate };
             _context.Attach(updatedProducer);
             _context.Entry(updatedProducer).Property(p => p.RateCount).IsModified = true;
+            _context.Entry(updatedProducer).Property(p => p.Rate).IsModified = true;
 
             _context.Reviews.Add(review);
             await _context.SaveChangesAsync();
@@ -49,7 +50,7 @@ namespace Application.Handlers.ReviewFeature
                 ID = review.ID,
                 Content = request.Content,
                 Rate = request.Rate,
-                ProducerRate = updatedProducer.Rate/updatedProducer.RateCount,
+                ProducerRate = (updatedProducer.RateCount == 0 ? 0 : updatedProducer.Rate/updatedProducer.RateCount),
                 ProducerAnonName = producer.ProducerAnonName,
                 CustomerAnonName = producer.CustomerAnonName,
                 ProducerId = request.ProducerId,

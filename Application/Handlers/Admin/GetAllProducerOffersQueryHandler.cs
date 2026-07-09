@@ -1,4 +1,4 @@
-﻿using Application.Queries;
+﻿using Application.Queries.Admin;
 using Application.Response;
 using Domain.DTOs.Admin;
 using Domain.DTOs.OfferDtos;

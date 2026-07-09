@@ -7,8 +7,6 @@ using System.Web;
 
 namespace V02.Services
 {
-
-
     public class ImageGenerationService : IImageGenerationService
     {
         private readonly HttpClient _httpClient;
@@ -23,7 +21,6 @@ namespace V02.Services
         {
             try
             {
-
                 string encodedPrompt = HttpUtility.UrlEncode(enhancedPrompt);
 
                 string imageUrl = $"https://image.pollinations.ai/p/{encodedPrompt}?width=1024&height=1024&model=flux&nologo=true";

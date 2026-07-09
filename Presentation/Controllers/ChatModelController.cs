@@ -98,9 +98,6 @@ namespace Presentation.Controllers
                     };
                 }
 
-               
-               
-
                 var prompt = _promptBuilder.Build(state);//convert the design state to prompt for image generation
 
                 var images = await _imageGenerationService.GenerateImageAsync(prompt);//generate the image from the prompt

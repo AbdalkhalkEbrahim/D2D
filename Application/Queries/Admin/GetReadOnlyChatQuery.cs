@@ -2,7 +2,7 @@
 using Domain.DTOs.Admin;
 using MediatR;
 
-namespace Application.Queries
+namespace Application.Queries.Admin
 {
     public class GetReadOnlyChatQuery:IRequest<Result<ReadOnlyChatResponse>>
     {
