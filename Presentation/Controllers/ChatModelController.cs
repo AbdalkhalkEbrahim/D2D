@@ -1,15 +1,17 @@
-﻿using Domain.Entities.Chats.AiModel;
+﻿using Application.Services.zena;
+using Domain.Entities.Chats.AiModel;
 using Domain.Entities.Designs;
-using Hangfire.MemoryStorage.Database;
-using Microsoft.AspNetCore.Http;
+using Domain.Enums.Types;
+using Infrastructure.Data.Context;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using V02;
 using V02.DTOs;
 using V02.Services;
-using V02;
-using Infrastructure.Data.Context;
-using Microsoft.EntityFrameworkCore;
-using Domain.Enums.Types;
-using Application.Services.zena;
 
 namespace Presentation.Controllers
 {
@@ -19,24 +21,17 @@ namespace Presentation.Controllers
     {
         private readonly IModelChatService _chatService;
         private readonly IImageGenerationService _imageGenerationService;
-        //private readonly IItiImageService _itiImageService;
         private readonly IPromptBuilder _promptBuilder;
         private readonly D2DContext _context;
 
-        public ChatModelController(IModelChatService chatService, IImageGenerationService imageGenerationService, /*IItiImageService itiImageService*/ IPromptBuilder promptBuilder, D2DContext context)
+        public ChatModelController(IModelChatService chatService, IImageGenerationService imageGenerationService, IPromptBuilder promptBuilder, D2DContext context)
         {
-            //_itiImageService = itiImageService;
             _imageGenerationService = imageGenerationService;
             _context = context;
             _chatService = chatService;
             _promptBuilder = promptBuilder;
         }
 
-
-        // Enhance user prompt with fashion vesion
-        
-
-        // Generate Design with Flux API with state management
         [HttpPost("Create-design")]
         public async Task<IActionResult> CreateDesignwithState([FromBody] GenerateDesignRequestdto request)
         {
@@ -45,139 +40,102 @@ namespace Presentation.Controllers
                 DesignState state;
                 ModelGeneratedDesign design;
                 ModelChat chat;
-                GeneratedDesignResponse response=new GeneratedDesignResponse();
-                bool flag = false;
-               
-                if (request.DesignId == null)//check if the designId is null, if yes then create a new design, else update the existing design
+                GeneratedDesignResponse response = new GeneratedDesignResponse();
+                bool isNewDesign = false;
+
+                if (request.DesignId == null)
                 {
-                    // First time creation
+                    // 1. الدورة الأولى: إنشاء تصميم جديد وحساب حالة الـ State لأول مرة عبر Claude
                     state = await _chatService.EnhancePromptAsync(request.UserMessage);
 
                     design = new ModelGeneratedDesign
                     {
                         Id = Guid.NewGuid(),
-                        CustomerId = request.UserId,//56f7be28-39ca-4c6a-990c-9afabdd6352d
-                        DesignState = state,  // EF will serialize this to JSON automatically
+                        CustomerId = request.UserId,
+                        DesignState = state,
                     };
-                     chat = new ModelChat
+                    chat = new ModelChat
                     {
                         CustomerID = request.UserId,
-                        Title = "Chat Model",
+                        Title = "D2D AI Designer Hub",
                         Message = new List<ModelChatMessage>
                         {
                             new ModelChatMessage
                             {
-                                Sender= MessageSender.Customer,
-                                Text=request.UserMessage,
+                                Sender = MessageSender.Customer,
+                                Text = request.UserMessage,
                             }
                         }
                     };
                     _context.Add(chat);
                     response.ModelChat = chat;
                     _context.Add(design);
-                    flag = true;
+                    isNewDesign = true;
                 }
                 else
                 {
-                    response = await _context.ModelGeneratedDesigns.Select(m => new GeneratedDesignResponse
-                    {
-                        GeneratedDesignId=m.Id,CustomerId=m.CustomerId,ModelChat=m.Customer.ModelChat,DesignState=m.DesignState,
-                    }).FirstOrDefaultAsync(d =>
-                    d.GeneratedDesignId == request.DesignId && d.CustomerId == request.UserId);
+                    // 2. دورة التعديل: جلب السياق الحالي وحقن آخر صورة تم إنتاجها كمستند مرجعي للـ Inpaint
+                    var existingDesign = await _context.ModelGeneratedDesigns
+                        .Include(m => m.Customer)
+                        .ThenInclude(c => c.ModelChat)
+                        .ThenInclude(ch => ch.Message)
+                        .FirstOrDefaultAsync(d => d.Id == request.DesignId && d.CustomerId == request.UserId);
 
-                    if (response == null)
-                        return NotFound();
+                    if (existingDesign == null)
+                        return NotFound("Requested design setup context does not exist.");
 
-                    state = await _chatService.UpdateDesignStateAsync(response.DesignState!, request.UserMessage);
-                    design = new ModelGeneratedDesign
+                    var lastAssistantMessage = existingDesign.Customer.ModelChat.Message
+                        .LastOrDefault(m => m.Sender == MessageSender.Assistant && !string.IsNullOrEmpty(m.ImgUrl));
+
+                    var currentState = existingDesign.DesignState!;
+                    if (lastAssistantMessage != null)
                     {
-                        CustomerId = request.UserId,
-                        DesignState = state,
-                        Id = response.GeneratedDesignId,
-                        
-                    };
+                        // تمرير رابط الصورة الحالية ليتم التعديل عليها بداخل الموديل
+                        currentState.OriginalImageReference = lastAssistantMessage.ImgUrl;
+                    }
+
+                    // تحديث الحالة وتعيين ميزات المنطقة والـ Mask المراد تغييرها عبر Claude
+                    state = await _chatService.UpdateDesignStateAsync(currentState, request.UserMessage);
+                    existingDesign.DesignState = state;
+
+                    design = existingDesign;
+                    response.ModelChat = existingDesign.Customer.ModelChat;
+
+                    response.ModelChat.Message.Add(new ModelChatMessage
+                    {
+                        Sender = MessageSender.Customer,
+                        Text = request.UserMessage
+                    });
                 }
 
-                var prompt = _promptBuilder.Build(state);//convert the design state to prompt for image generation
+                // بناء الـ Prompt النصي المحسن من كائن الـ JSON المتكامل
+                var prompt = _promptBuilder.Build(state);
 
-                var images = await _imageGenerationService.GenerateImageAsync(prompt);//generate the image from the prompt
+                // استدعاء محرك رسم الصور المدمج (توجيه تلقائي لنوفا كانفاس أو ستابل إنبينت)
+                var serviceExtended = (ImageGenerationService)_imageGenerationService;
+                var images = await serviceExtended.GenerateOrEditImageAsync(prompt, state);
+
                 response.ModelChat.Message.Add(new ModelChatMessage
                 {
-                    ImgUrl=images,
-                    Sender= MessageSender.Assistant,
-                    
+                    ImgUrl = images,
+                    Sender = MessageSender.Assistant,
                 });
-                if(!flag)
+
+                if (!isNewDesign)
                     _context.Update(response.ModelChat);
 
                 await _context.SaveChangesAsync();
+
                 return Ok(new
                 {
-
                     designId = design.Id,
                     images
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal error has occurred: {ex.Message}");
+                return StatusCode(500, $"Internal execution error occurred: {ex.Message}");
             }
         }
-
-        // Generate Design with ITI API with State Management
-        //[HttpPost("ITI-generate-image")]
-        //public async Task<IActionResult> ITIFashionDesign2([FromBody] GenerateDesignRequestdto request)
-        //{
-        //    try
-        //    {
-        //        DesignState state;
-        //        Design design = null;
-
-        //        if (request.DesignId == null)//check if the designId is null, if yes then create a new design, else update the existing design
-        //        {
-        //            // First time creation
-        //            state = await _chatService.EnhancePromptAsync(request.UserMessage);//return the design state as json object
-
-        //            ///create a new design and save it to the database **TODO**
-        //            //design = new Design
-        //            //{
-        //            //    StateJson = JsonSerializer.Serialize(state)
-        //            //};
-
-        //            //_context.Designs.Add(design);
-        //        }
-        //        else
-        //        {
-        //            //// Update existing design  **TODO**
-        //            design = await _context.CustomerDesigns
-        //                .FirstOrDefaultAsync(d => d.ID == request.DesignId && d.CustomerId == request.UserId);  //get the design from the database by designId and userId
-
-        //            if (design == null)
-        //                return NotFound();
-
-        //            var currentState = design.DesignState!;
-
-        //            state = await _chatService.UpdateDesignStateAsync(currentState, request.UserMessage);//update the design state with the new user message
-
-        //            design.DesignState = state;
-        //        }
-
-        //        await _context.SaveChangesAsync();
-
-        //        var prompt = _promptBuilder.Build(state);//convert the design state to prompt for image generation
-
-        //        var images = await _itiImageService.GenerateImageAsync(prompt); //generate the image from the prompt
-
-        //        return Ok(new
-        //        {
-        //            designId = design.Id,
-        //            images
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"Internal error has occurred: {ex.Message}");
-        //    }
-        //}
     }
 }

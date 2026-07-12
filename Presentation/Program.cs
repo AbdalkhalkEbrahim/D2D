@@ -195,7 +195,7 @@ namespace Presentation
             app.UseHangfireDashboard("/hangfire");
             app.MapControllers();
 
-            using (var scope = app.Services.CreateScope())
+          /*  using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 try
@@ -209,7 +209,7 @@ namespace Presentation
                     var logger = services.GetRequiredService<ILogger<Program>>();
                     logger.LogError(ex, "An error occurred during database seeding.");
                 }
-            }
+            }*/
 
             await app.RunAsync();
         }
