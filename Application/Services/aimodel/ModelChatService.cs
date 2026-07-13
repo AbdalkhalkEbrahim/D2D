@@ -24,7 +24,7 @@ namespace V02.Services
 
             var itiRequest = new ItiChatRequest
             {
-                Model_id = _configuration["AiKey:Model_chat"]!, // anthropic.claude-3-5-sonnet-v2:0
+                Model_id = _configuration["AiKey:Model_chat"]!,
                 System_prompt = """
                 You are an expert Fashion Design State Generator driven by Claude Sonnet.
                 You MUST return a valid, pure JSON object matching EXACTLY the following schema.

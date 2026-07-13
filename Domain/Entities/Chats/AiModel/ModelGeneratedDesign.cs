@@ -5,13 +5,11 @@ namespace Domain.Entities.Chats.AiModel
     public class ModelGeneratedDesign
     {
         public Guid Id { get; set; }
+        public string UserId { get; set; } = string.Empty;
         public Customer Customer { get; set; }
-        [ForeignKey(nameof(Customer))]
-        public string CustomerId { get; set; }
-
-        public List<Image> Images { get; set; } = new();
-        public DesignState? DesignState { get; set; }
-        [ForeignKey("DesignState")]
-        public Guid DesignStateId { get; set; }
+        public string ImageUrl { get; set; } = string.Empty; // سيخزن رابط FLUX الفريد
+        public string PromptUsed { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? LastUpdatedAt { get; set; }
     }
 }

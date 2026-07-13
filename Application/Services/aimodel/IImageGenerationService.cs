@@ -1,7 +1,9 @@
-﻿namespace V02.Services
+﻿using Domain.Entities.Chats.AiModel;
+
+namespace V02.Services
 {
     public interface IImageGenerationService
     {
-        Task<string> GenerateImageAsync(string enhancedPrompt);
+        public Task<string> GenerateOrEditImageAsync(string prompt, DesignState state);
     }
 }

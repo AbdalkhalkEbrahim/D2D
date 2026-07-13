@@ -5,5 +5,6 @@
         public string UserId { get; set; } 
         public Guid? DesignId { get; set; } 
         public string UserMessage { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
     }
 }
