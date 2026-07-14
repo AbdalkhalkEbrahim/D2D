@@ -245,12 +245,12 @@ namespace V02.Controllers
                 };
 
                 var client = _httpClientFactory.CreateClient();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _configuration["AiKey:ApiKey"]);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _configuration["AiKey:hugingface_key"]);
 
                 string jsonString = JsonSerializer.Serialize(requestPayload);
                 var stringContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
-                string endpoint = _configuration["AiKey:EndPoint_generate_image"] ?? "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell";
+                string endpoint = _configuration["AiKey:EndPoint_generate_image"];
                 HttpResponseMessage response = await client.PostAsync(endpoint, stringContent);
 
                 if (!response.IsSuccessStatusCode)
