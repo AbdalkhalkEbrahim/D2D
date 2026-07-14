@@ -11,12 +11,12 @@ using System.Threading.Tasks;
 
 namespace Application.Commands.DesignFeature
 {
-    public class SaveDesignCommand:IRequest<Result<Guid>>
+    public class SaveDesignCommand:IRequest<Result<List<Guid>>>
     {
         public string Id {  get; set; }
         [Required]
         [MaxLength(50)]
         public string Name {  get; set; }
-        public IFormFile DesignImage { get; set; }
+        public List<IFormFile> DesignImage { get; set; }
     }
 }

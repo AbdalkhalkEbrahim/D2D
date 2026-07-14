@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Application.Interfaces;
+using Domain.DTOs;
+using Domain.Entities.Chats.AiModel;
+using Hangfire;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -19,6 +23,7 @@ namespace V02.Controllers
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        private readonly IUploadService _uploadService;
 
         private const string SystemGenerationPrompt =
             "Describe this image in detailes, seperate the description into 2 section, " +
@@ -29,10 +34,11 @@ namespace V02.Controllers
             "and how it looks and the positions of everything the size and thickness of " +
             "any printed logo or lines or drawings, descriping how it looks detailly";
 
-        public ChatModelController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public ChatModelController(IHttpClientFactory httpClientFactory, IConfiguration configuration, IUploadService uploadService)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
+            _uploadService = uploadService;
         }
 
         [HttpPost("analyze-design")]
@@ -221,6 +227,9 @@ namespace V02.Controllers
                     }
                 }
 
+                if (payload.IsSimpleImagination)
+                    summariesList.Add(payload.Description.Trim());
+
                 return Ok(summariesList);
             }
             catch (Exception ex)
@@ -230,7 +239,7 @@ namespace V02.Controllers
         }
 
         [HttpPost("generate-design-image")]
-        public async Task<IActionResult> GenerateDesignImage([FromBody] string summaryDescription)
+        public async Task<IActionResult> GenerateDesignImage([FromBody] string summaryDescription, string userId)
         {
             if (string.IsNullOrWhiteSpace(summaryDescription))
             {
@@ -262,6 +271,21 @@ namespace V02.Controllers
                 byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
                 string contentType = response.Content.Headers.ContentType?.MediaType ?? "image/png";
 
+                var stream = new MemoryStream(imageBytes);
+                IFormFile fileToUpload = new FormFile(stream, 0, imageBytes.Length, "file", "generated_design.png")
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = contentType
+                };
+                var modelGeneratedDesign = new ModelGeneratedDesign
+                {
+                    UserId = userId,
+                    PromptUsed = summaryDescription,
+                    CreatedAt = DateTime.UtcNow,
+
+                };
+                var file = await _uploadService.ChangeFileFormat(new List<IFormFile> { fileToUpload });
+                BackgroundJob.Enqueue<IUploadService>(service => service.UploadAndSaveSingleFile(modelGeneratedDesign, "ImageUrl", file[0],true));
                 return File(imageBytes, contentType);
             }
             catch (Exception ex)

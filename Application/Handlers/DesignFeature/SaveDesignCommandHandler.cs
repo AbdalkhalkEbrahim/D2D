@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Application.Handlers.DesignFeature
 {
-    public class SaveDesignCommandHandler : IRequestHandler<SaveDesignCommand, Result<Guid>>
+    public class SaveDesignCommandHandler : IRequestHandler<SaveDesignCommand, Result<List<Guid>>>
     {
         private readonly D2DContext _context;
         private readonly IUploadService _uploadService;
@@ -28,32 +28,37 @@ namespace Application.Handlers.DesignFeature
             _uploadService = uploadService;
         }
 
-        public async Task<Result<Guid>> Handle(SaveDesignCommand request, CancellationToken cancellationToken)
+        public async Task<Result<List<Guid>>> Handle(SaveDesignCommand request, CancellationToken cancellationToken)
         {
             var customer = await _context.Customers.Include(c=>c.Designs).FirstOrDefaultAsync(c => c.Id == request.Id);
             if (customer == null)
-                return Result<Guid>.Failure(Messages.NotFound.WithTarget("User"));
+                return Result<List<Guid>>.Failure(Messages.NotFound.WithTarget("User"));
 
             if (customer.Designs.Any(d => d.Name == request.Name))
-                return Result<Guid>.Failure(Messages.Conflict.WithTarget("Design"));
+                return Result<List<Guid>>.Failure(Messages.Conflict.WithTarget("Design"));
 
-            var design = new CustomerDesign
+            var designToBeUploaded = await _uploadService.ChangeFileFormat(request.DesignImage);
+            var Ids = new List<Guid>();
+            foreach (var d in designToBeUploaded)
             {
-                Name = request.Name,
-                CustomerId = customer.Id,
-            };
 
-            await _context.AddAsync(design);
-            await _context.SaveChangesAsync();
+                var design = new CustomerDesign
+                {
+                    Name = request.Name,
+                    CustomerId = customer.Id,
+                };
 
-            var designImage = new DesignImage { CustomerDesignID = design.ID };
+                await _context.AddAsync(design);
+                await _context.SaveChangesAsync();
 
-            var designToBeUploaded = await _uploadService.ChangeFileFormat(new List<IFormFile> { request.DesignImage });
-            BackgroundJob.Enqueue<IUploadService>(uploadService =>
-               uploadService.UploadAndSaveSingleFile(designImage, "ImageUrl", designToBeUploaded[0],false));
+                Ids.Add(design.ID);
 
+                var designImage = new DesignImage { CustomerDesignID = design.ID };
+                BackgroundJob.Enqueue<IUploadService>(uploadService =>
+                    uploadService.UploadAndSaveSingleFile(designImage, "ImageUrl", d, false));
+            }
             
-            return design.ID;
+            return Ids;
         }
     }
 }
