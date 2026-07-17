@@ -19,8 +19,11 @@ namespace Application.Handlers.OffersFeature
         public async Task<Result<ProducerOfferResponse>> Handle(GetProducerCustomerOfferByIdQuery request, CancellationToken cancellationToken)
         {
             var offer =await _context.ProducerCustomerOffers.
-                Include(po=>po.Producer).
-                Select(po=>new {po.OfferStatus,po.ProducerID, po.Producer.AnonName , po.Producer.Reviews , po.Producer.Rate , po.Price , po.ID,po.CreatedAt,po.UpdatedAt, po.Diposit, po.Duration, po.CustomerPublishedOffer.Name, po.Steps, ImagesUrls = po.CustomerPublishedOffer.CustomerDesign.DesignImages.Select(im=>im.ImageUrl) })
+                Select(po=>new {po.OfferStatus,po.ProducerID, po.Producer.AnonName , po.Producer.Reviews , po.Producer.Rate , po.Price , po.ID,
+                    po.CreatedAt,po.UpdatedAt, po.Diposit, po.Duration, po.CustomerPublishedOffer.Name, po.Steps, 
+                    ImagesUrls = po.CustomerPublishedOffer.CustomerDesign.DesignImages.Select(im=>im.ImageUrl),
+                    
+                })
                 .FirstOrDefaultAsync(po => po.ID == request.ProducerOfferId &&po.OfferStatus != OfferStatus.Declined);
 
             if(offer == null)
@@ -40,7 +43,12 @@ namespace Application.Handlers.OffersFeature
                d => new Tuple<string, int>(d.Content, d.Rate),
                cancellationToken
            );
-
+            var gallery = _context.ProducersGallery.Where(g => g.ProducerId == offer.ProducerID)
+                .Select(g => new
+                {
+                    g.Description,
+                    g.ImageUrl
+                }).ToDictionary(g=>g.Description,g=>g.ImageUrl);
 
 
             return new ProducerOfferResponse
@@ -58,6 +66,7 @@ namespace Application.Handlers.OffersFeature
                 Name = offer.Name,
                 Steps = offer.Steps.ToDictionary(s => s.StepName, s => new Tuple<int, int>(s.MinDuration, s.MaxDuration)),
                 ImageUrl = offer.ImagesUrls.ToList(),
+                Gallery = gallery,
                 Reviews = Reviews//_context.Customers.Select(c => new { c.AnonName, Review = c.Reviews.Select(r=>new {r.ProducerID, r.Content, r.Rate}).FirstOrDefault(r => r.ProducerID == offer.ProducerID) }).ToDictionary(d => d.AnonName, d => new Tuple<string,int>(d.Review.Content, d.Review.Rate))
             };
         }

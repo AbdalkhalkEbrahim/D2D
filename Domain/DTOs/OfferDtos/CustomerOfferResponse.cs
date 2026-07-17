@@ -12,7 +12,7 @@ namespace Domain.DTOs.OfferDtos
         public List<string> DesignImages { get; set; }
         public string? CustomerId { get; set; } 
         public string Name { get; set; }
-
+        public string City { get; set; }
         public string Category { get; set; }
         public string Description { get; set; }
         public string TargetAudience { get; set; }
@@ -27,7 +27,7 @@ namespace Domain.DTOs.OfferDtos
         public int Amount { get; set; }
         public decimal MaxPrice { get; set; }
         public bool IsActive { get; set; }
-        public List<Guid> ProducersOffersIDs { get; set; }
+        public List<Guid>? ProducersOffersIDs { get; set; }
         public DateTime PublishedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

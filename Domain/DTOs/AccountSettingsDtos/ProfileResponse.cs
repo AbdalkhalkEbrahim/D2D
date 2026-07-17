@@ -18,6 +18,8 @@ namespace Domain.DTOs.AccountSettingsDtos
         public string? PhoneNumber { get; set; }
         public string AnonName { get; set; }
         public DateTime BD { get; set; }
+
+        public Dictionary<string, string> Gallery { get; set; }
        
     }
 }

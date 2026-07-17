@@ -16,7 +16,7 @@ namespace Domain.Entities.Producers
         //public virtual ICollection<ProducerDesignerOffer> ProducerDesignerOffers { get; set; }
 
         public virtual ICollection<Chat> Chats { get; set; }
-
+        public virtual List<ProducerGallery> Gallery {  get; set; }
         public virtual ICollection<Review> Reviews { get;  set; }
         public virtual ICollection<ProducerDesign> ProducerDesigns { get; set; }
         public virtual ICollection<Report> Reports { get; private set; }

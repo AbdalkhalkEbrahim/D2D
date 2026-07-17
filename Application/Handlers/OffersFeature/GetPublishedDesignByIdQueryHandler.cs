@@ -22,11 +22,33 @@ namespace Application.Handlers.OffersFeature
                 return Result<CustomerOfferResponse>.Failure(Messages.BadRequest.WithTarget("Default"));
 
             var offer = await _context.CustomerPublishedOffers.AsNoTracking()
-                .Include(cpo=>cpo.ProducerCustomerOffers)
-                .Include(cpo=>cpo.CustomerDesign)
-                .ThenInclude(cpo=>cpo.DesignImages)
-                .Where(cpo=> cpo.ProducerCustomerOffers!=null)
-                .FirstOrDefaultAsync(o => (request.DesignId != null && request.DesignId == o.CustomerDesignID) || (request.PublishedOfferId != null && o.ID == request.PublishedOfferId), cancellationToken);
+                .Select(cpo=>new
+                {
+                    cpo.CustomerDesignID,
+                    cpo.ID,
+                    DesignImages = cpo.CustomerDesign.DesignImages.Select(di => di.ImageUrl),
+                    cpo.Name,
+                    cpo.Customer.Addresses.FirstOrDefault(add=>add.Selected).City,
+                    cpo.Description,
+                    cpo.Category,
+                    cpo.Amount,
+                    cpo.Duration,
+                    cpo.Colors,
+                    cpo.Gender,
+                    cpo.Material,
+                    cpo.MaxPrice,
+                    cpo.PrintingType,
+                    cpo.Sizes,
+                    cpo.SizesFile,
+                    cpo.TargetAudience,
+                    cpo.IsActive,
+                    cpo.CreatedAt,
+                    cpo.UpdatedAt,
+                    ProducersOffers = cpo.ProducerCustomerOffers.Select(pco => pco.ID)
+                      
+                })
+                .FirstOrDefaultAsync(o => (request.DesignId != null && request.DesignId == o.CustomerDesignID) ||
+                (request.PublishedOfferId != null && o.ID == request.PublishedOfferId), cancellationToken);
 
             if (offer == null) 
                 return Result<CustomerOfferResponse>.Failure(Messages.NotFound.WithTarget("Offer"));
@@ -34,8 +56,9 @@ namespace Application.Handlers.OffersFeature
             return new CustomerOfferResponse
             {
                 PublishedOfferID = offer.ID,
-                DesignImages = offer.CustomerDesign.DesignImages.Select(di => di.ImageUrl).ToList(),
+                DesignImages = offer.DesignImages.ToList(),
                 Name = offer.Name,
+                City = offer.City,
                 Category = offer.Category,
                 Description = offer.Description,
                 Amount = offer.Amount,
@@ -51,7 +74,7 @@ namespace Application.Handlers.OffersFeature
                 IsActive = offer.IsActive,
                 PublishedAt = offer.CreatedAt,
                 UpdatedAt = offer.UpdatedAt,
-                ProducersOffersIDs=offer.ProducerCustomerOffers.Select(pco => pco.ID).ToList()
+                ProducersOffersIDs = offer.ProducersOffers.ToList(),
             };
 
         }

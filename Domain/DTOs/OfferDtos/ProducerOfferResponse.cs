@@ -11,6 +11,7 @@
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public Dictionary<string,Tuple<string,int>> Reviews { get; set; }
+        public Dictionary<string, string> Gallery { get; set; }
         public double Rate { get; set; }
         public string Name { get; set; }
         public decimal Diposit { get; set; }

@@ -33,7 +33,8 @@ namespace Application.Handlers.OffersFeature
             .Select(cd => new
             {
                 cd.CustomerId,
-                HasAlreadyPublished = _context.CustomerPublishedOffers.Any(cpo => cpo.CustomerDesignID == request.DesignId)
+                HasAlreadyPublished = _context.CustomerPublishedOffers.Any(cpo => cpo.CustomerDesignID == request.DesignId),
+                cd.Notes,
             })
             .FirstOrDefaultAsync(cancellationToken);
            // var design = await _context.CustomerDesigns.AsNoTracking().FirstOrDefaultAsync(cd => cd.ID == request.DesignId);
@@ -52,7 +53,7 @@ namespace Application.Handlers.OffersFeature
                 Name = request.Name,
                 CustomerDesignID = request.DesignId,
                 Category = request.Category,
-                Description = request.Description,
+                Description = designData.Notes+'\n'+ request.Description,
                 TargetAudience = request.TargetAudience,
                 Gender = request.Gender,
                 Colors = request.Colors,

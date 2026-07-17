@@ -1,4 +1,5 @@
 ﻿using Application.Response;
+using Domain.DTOs.DesignDtos;
 using Google.Apis.Util;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -14,9 +15,6 @@ namespace Application.Commands.DesignFeature
     public class SaveDesignCommand:IRequest<Result<List<Guid>>>
     {
         public string Id {  get; set; }
-        [Required]
-        [MaxLength(50)]
-        public string Name {  get; set; }
-        public List<IFormFile> DesignImage { get; set; }
+        public List<DesignsSaved> DesignsSaved { get; set; }
     }
 }

@@ -34,28 +34,30 @@ namespace Application.Handlers.DesignFeature
             if (customer == null)
                 return Result<List<Guid>>.Failure(Messages.NotFound.WithTarget("User"));
 
-            if (customer.Designs.Any(d => d.Name == request.Name))
-                return Result<List<Guid>>.Failure(Messages.Conflict.WithTarget("Design"));
+            
 
-            var designToBeUploaded = await _uploadService.ChangeFileFormat(request.DesignImage);
             var Ids = new List<Guid>();
-            foreach (var d in designToBeUploaded)
+            foreach (var d in request.DesignsSaved)
             {
-
+                if (customer.Designs.Any(design => design.Name == d.Name))
+                    return Result<List<Guid>>.Failure(new Error("Conflict", $"There is an already design with name {d.Name}, change it then try to dave again"));
                 var design = new CustomerDesign
                 {
-                    Name = request.Name,
+                    Name = d.Name,
                     CustomerId = customer.Id,
+                    Notes = d.Notes,
+                    
                 };
 
                 await _context.AddAsync(design);
                 await _context.SaveChangesAsync();
 
                 Ids.Add(design.ID);
+                var designToBeUploaded = await _uploadService.ChangeFileFormat(new List<IFormFile> { d.DesignImage });
 
                 var designImage = new DesignImage { CustomerDesignID = design.ID };
                 BackgroundJob.Enqueue<IUploadService>(uploadService =>
-                    uploadService.UploadAndSaveSingleFile(designImage, "ImageUrl", d, false));
+                    uploadService.UploadAndSaveSingleFile(designImage, "ImageUrl", designToBeUploaded[0], false));
             }
             
             return Ids;

@@ -4,6 +4,7 @@ using Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(D2DContext))]
-    partial class D2DContextModelSnapshot : ModelSnapshot
+    [Migration("20260717135317_designNotes")]
+    partial class designNotes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -670,33 +673,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ProducerID");
 
                     b.ToTable("LicenseVerifications");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Producers.ProducerGallery", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProducerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProducerId");
-
-                    b.ToTable("ProducersGallery");
                 });
 
             modelBuilder.Entity("Domain.Entities.Producers.Review", b =>
@@ -1672,17 +1648,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Producer");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Producers.ProducerGallery", b =>
-                {
-                    b.HasOne("Domain.Entities.Producers.Producer", "Producer")
-                        .WithMany("Gallery")
-                        .HasForeignKey("ProducerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Producer");
-                });
-
             modelBuilder.Entity("Domain.Entities.Producers.Review", b =>
                 {
                     b.HasOne("Domain.Entities.Customers.Customer", "Customer")
@@ -2081,8 +2046,6 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Producers.Producer", b =>
                 {
                     b.Navigation("Chats");
-
-                    b.Navigation("Gallery");
 
                     b.Navigation("LicenseVerifications");
 

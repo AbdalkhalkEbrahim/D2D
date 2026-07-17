@@ -19,30 +19,60 @@ namespace Application.Handlers.OffersFeature
         }
         public async Task<Result<List<CustomerOfferResponse>>> Handle(GetAllPublishedesignsQuery request, CancellationToken cancellationToken)
         {
-            var design = _context.CustomerDesigns.Include(cd => cd.CustomerPublishedOffer).Include(cd=>cd.DesignImages).Include(cd=>cd.CustomerPublishedOffer.ProducerCustomerOffers).AsNoTracking().Where(d => d.Status == DesignStatus.Published&&d.CustomerPublishedOffer.ProducerCustomerOffers!=null);
-            Console.WriteLine(design is null);
+            var design = _context.CustomerDesigns/*.Include(cd => cd.CustomerPublishedOffer).Include(cd=>cd.DesignImages)
+                .Include(cd=>cd.CustomerPublishedOffer.ProducerCustomerOffers)*/
+                .Select(cd=>new
+                {
+                    cd.CustomerPublishedOffer.ID,
+                    cd.CustomerId,
+                    cd.CustomerPublishedOffer.Name,
+                    cd.CustomerPublishedOffer.Description,
+                    cd.CustomerPublishedOffer.Duration,
+                    cd.CustomerPublishedOffer.MaxPrice,
+                    cd.CustomerPublishedOffer.Amount,
+                    cd.CustomerPublishedOffer.Category,
+                    cd.CustomerPublishedOffer.Gender,
+                    cd.CustomerPublishedOffer.CreatedAt,
+                    DesignImages = cd.DesignImages.Select(di => di.ImageUrl),
+                    cd.CustomerPublishedOffer.Colors,
+                    cd.CustomerPublishedOffer.Material,
+                    cd.CustomerPublishedOffer.PrintingType,
+                    cd.CustomerPublishedOffer.Sizes,
+                    cd.CustomerPublishedOffer.SizesFile,
+                    cd.Status,
+                    cd.CustomerPublishedOffer.UpdatedAt,
+                    cd.CustomerPublishedOffer.IsActive,
+                    cd.CustomerPublishedOffer.TargetAudience,
+                    IDs = cd.CustomerPublishedOffer.ProducerCustomerOffers.Select(pco => pco.ID),
+                    cd.Customer.Addresses.FirstOrDefault(add=>add.Selected).City
+
+                })
+                .AsNoTracking()
+                .Where(d => d.Status == DesignStatus.Published&& !d.IsActive );
+
+            //Console.WriteLine(design is null);
 
             if (request.Duration == 1)
-                design = design.OrderBy(d => d.CustomerPublishedOffer.Duration);
+                design = design.OrderBy(d => d.Duration);
             else if (request.Duration == 2)
-                design = design.OrderByDescending(d => d.CustomerPublishedOffer.Duration);
+                design = design.OrderByDescending(d => d.Duration);
 
 
             if (request.MaxPrice == 1)
-                design = design.OrderBy(d => d.CustomerPublishedOffer.MaxPrice);
+                design = design.OrderBy(d => d.MaxPrice);
             else if (request.MaxPrice == 2)
-                design = design.OrderByDescending(d => d.CustomerPublishedOffer.MaxPrice);
+                design = design.OrderByDescending(d => d.MaxPrice);
 
             if (request.Amount == 1)
-                design = design.OrderBy(d => d.CustomerPublishedOffer.Amount);
+                design = design.OrderBy(d => d.Amount);
             else if (request.Amount == 2)
-                design = design.OrderByDescending(d => d.CustomerPublishedOffer.Amount);
+                design = design.OrderByDescending(d => d.Amount);
 
             if (request.Gender != 0)
-                design = design.Where(d => d.CustomerPublishedOffer.Gender == (request.Gender == 2));
+                design = design.Where(d => d.Gender == (request.Gender == 2));
 
             if (!string.IsNullOrEmpty(request.Category))
-                design = design.Where(d => d.CustomerPublishedOffer.Category == request.Category);
+                design = design.Where(d => d.Category == request.Category);
 
             if (request.CreationOrder == 1)
                 design = design.OrderBy(d => d.CreatedAt);
@@ -63,26 +93,27 @@ namespace Application.Handlers.OffersFeature
                     (
                          new CustomerOfferResponse
                          {
-                             PublishedOfferID =(Guid) item.CustomerPublishedOffer.ID,
+                             PublishedOfferID =(Guid) item.ID,
                              CustomerId = item.CustomerId,
-                             DesignImages = item.DesignImages.Select(di => di.ImageUrl).ToList(),
+                             DesignImages = item.DesignImages.ToList(),
                              Name = item.Name,
-                             Category = item.CustomerPublishedOffer.Category,
-                             Description = item.CustomerPublishedOffer.Description,
-                             Amount = item.CustomerPublishedOffer.Amount,
-                             Colors = item.CustomerPublishedOffer.Colors,
-                             Duration = item.CustomerPublishedOffer.Duration,
-                             Gender = !item.CustomerPublishedOffer.Gender ? "Male" : "Female",
-                             Material = item.CustomerPublishedOffer.Material,
-                             MaxPrice = item.CustomerPublishedOffer.MaxPrice,
-                             PrintingType = item.CustomerPublishedOffer.PrintingType,
-                             Sizes = item.CustomerPublishedOffer.Sizes,
-                             SizesFile = item.CustomerPublishedOffer.SizesFile,
-                             TargetAudience = item.CustomerPublishedOffer.TargetAudience,
-                             IsActive = item.CustomerPublishedOffer.IsActive,
-                             PublishedAt = item.CustomerPublishedOffer.CreatedAt,
-                             UpdatedAt = item.CustomerPublishedOffer.UpdatedAt,
-                             ProducersOffersIDs = item.CustomerPublishedOffer.ProducerCustomerOffers.Select(pco => pco.ID).ToList()
+                             City = item.City,
+                             Category = item.Category,
+                             Description = item.Description,
+                             Amount = item.Amount,
+                             Colors = item.Colors,
+                             Duration = item.Duration,
+                             Gender = !item.Gender ? "Male" : "Female",
+                             Material = item.Material,
+                             MaxPrice = item.MaxPrice,
+                             PrintingType = item.PrintingType,
+                             Sizes = item.Sizes,
+                             SizesFile = item.SizesFile,
+                             TargetAudience = item.TargetAudience,
+                             IsActive = item.IsActive,
+                             PublishedAt = item.CreatedAt,
+                             UpdatedAt = item.UpdatedAt,
+                             ProducersOffersIDs = item.IDs.ToList()
                          }
                     );
             }

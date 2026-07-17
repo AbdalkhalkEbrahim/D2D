@@ -29,6 +29,7 @@ namespace Infrastructure.Data.Context
         public DbSet<DesignerDesign> DesignerDesigns { get; set; }
         public DbSet<DesignImage> DesignImages { get; set; }
         public DbSet<Producer> Producers { get; set; }
+        public DbSet<ProducerGallery>ProducersGallery { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<LicenseVerification> LicenseVerifications { get; set; }
         public DbSet<Escrow> Escrows { get; set; }

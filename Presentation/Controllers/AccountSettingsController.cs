@@ -143,5 +143,13 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+        [HttpPost("add-to-gallery")]
+        [ProducesResponseType(typeof(decimal), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> AddToGallery([FromQuery] PushToProducerGalleryCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result,204);
+        }
     }
 }

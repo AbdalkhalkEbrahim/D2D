@@ -9,6 +9,7 @@ namespace Domain.Entities.Designs
         public Guid ID { get; set; }
         public   string Name { get; set; }
         public DesignStatus Status { get; set; }
+        public string Notes { get; set; }
         public virtual ICollection<DesignImage> DesignImages { get; set; }
         public Design()
         {

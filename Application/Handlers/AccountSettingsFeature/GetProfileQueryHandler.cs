@@ -13,7 +13,20 @@ namespace Application.Handlers.AccountSettingsFeature
         public GetProfileQueryHandler(D2DContext context) { _context = context; }
         public async Task<Result<ProfileResponse>> Handle(GetProfileQuery request, CancellationToken cancellationToken)
         {
-           var user =await _context.Users.Select(u => new {u.Id,u.FirstName,u.LastName,u.Email,u.PhoneNumber,u.AnonName,u.BD,u.ProfileImageUrl}).FirstOrDefaultAsync(u => u.Id == request.UserId);
+            var user = await _context.Users.Select(u => new
+            {
+                u.Id,
+                u.FirstName,
+                u.LastName,
+                u.Email,
+                u.PhoneNumber,
+                u.AnonName,
+                u.BD,
+                u.ProfileImageUrl,
+                Gallery = _context.ProducersGallery
+                .Select(g => new { g.ProducerId, g.Description, g.ImageUrl }).Where(g => g.ProducerId == request.UserId)
+            }).FirstOrDefaultAsync(u=>u.Id == request.UserId);
+               
             if (user == null)
                 return Result<ProfileResponse>.Failure(Messages.NotFound.WithTarget("User"));
 
@@ -25,6 +38,7 @@ namespace Application.Handlers.AccountSettingsFeature
                 PhoneNumber = user.PhoneNumber,
                 AnonName = user.AnonName,
                 BD=user.BD,
+                Gallery = user.Gallery.ToDictionary(g=>g.Description, g=>g.ImageUrl),
                 ProfileImageUrl = user.ProfileImageUrl
             };
             /*List of designs bought from designer*/
