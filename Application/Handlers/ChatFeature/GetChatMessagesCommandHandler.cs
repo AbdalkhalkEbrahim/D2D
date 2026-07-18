@@ -19,14 +19,16 @@ namespace Application.Handlers.ChatFeature
         }
         public async Task<Result<ChatWithMessagesResponse>> Handle(GetChatMessagesCommand request, CancellationToken cancellationToken)
         {
-            var chat = await _context.Chats.AsNoTracking().Select(ch => new { ch.ID, AllMessages = ch.Messages, pName = ch.Producer.AnonName, cName = ch.Customer.AnonName, ch.ProducerID, ch.CustomerID }).FirstOrDefaultAsync(c => c.ID == request.ChatId);
+            var chat = await _context.Chats.AsNoTracking().Select(ch => new { ch.ID, AllMessages = ch.Messages, pName = ch.Producer.AnonName, cName = ch.Customer.AnonName, ch.ProducerID, ch.CustomerID, ch.IsClosed, Step = _context.ActiveOfferLogs.Select(al=>new {al.Step, al.CreatedAt}).OrderByDescending(al=>al.CreatedAt).First().Step }).FirstOrDefaultAsync(c => c.ID == request.ChatId);
             if (chat == null)
                 return Result<ChatWithMessagesResponse>.Failure(Messages.NotFound.WithTarget("Chat"));
             if (chat.AllMessages.OrderByDescending(m => m.CreatedAt).First().Sender.ToString() != request.UserType.ToString())
             {
-                var message = new Message { ID = chat.AllMessages.OrderByDescending(m => m.CreatedAt).First().ID, Content = chat.AllMessages.OrderByDescending(m => m.CreatedAt).First().Content, IsRead = true };
+                /*var message = new Message { ID = chat.AllMessages.OrderByDescending(m => m.CreatedAt).First().ID, Content = chat.AllMessages.OrderByDescending(m => m.CreatedAt).First().Content, IsRead = true };
                 _context.Attach(message);
-                _context.Entry(message).Property(m => m.IsRead).IsModified = true;
+                _context.Entry(message).Property(m => m.IsRead).IsModified = true;*/
+                chat.AllMessages.ForEach(m => m.IsRead = true);
+                _context.Update(chat.AllMessages);
                 await _context.SaveChangesAsync();
             }
             var response = new ChatWithMessagesResponse
@@ -40,7 +42,9 @@ namespace Application.Handlers.ChatFeature
                     CreatedAt = m.CreatedAt
                 }).OrderByDescending(m => m.CreatedAt).ToList(),
                 AnonName = request.UserType == UserType.Customer ? chat.pName : chat.cName,
-                OtherId = request.UserType == UserType.Customer ? chat.ProducerID : chat.CustomerID
+                Step = chat.Step,
+                OtherId = request.UserType == UserType.Customer ? chat.ProducerID : chat.CustomerID,
+                IsClosed = chat.IsClosed
             };
 
             return response;

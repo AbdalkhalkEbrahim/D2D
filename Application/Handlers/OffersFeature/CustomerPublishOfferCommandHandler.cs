@@ -33,7 +33,7 @@ namespace Application.Handlers.OffersFeature
             .Select(cd => new
             {
                 cd.CustomerId,
-                HasAlreadyPublished = _context.CustomerPublishedOffers.Any(cpo => cpo.CustomerDesignID == request.DesignId),
+                HasAlreadyPublished = _context.CustomerPublishedOffers.Any(cpo => cpo.CustomerDesignID == request.DesignId && cd.Status == DesignStatus.Published),
                 cd.Notes,
             })
             .FirstOrDefaultAsync(cancellationToken);
@@ -68,7 +68,6 @@ namespace Application.Handlers.OffersFeature
             /*  design.UpdatedAt = DateTime.UtcNow;
               _context.Attach(design);
               _context.Entry(design).Property(d => d.UpdatedAt).IsModified = true;*/
-
             _context.Add(offer);
             BackgroundJob.Enqueue<INotificationService>(notificationService => notificationService.SendPuplishedDesignNotificationAsync(offer.ID));//
 

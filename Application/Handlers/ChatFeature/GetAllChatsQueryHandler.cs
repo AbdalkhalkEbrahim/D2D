@@ -72,6 +72,7 @@ namespace Application.Handlers.ChatFeature
 
             var response = chats.Select(ch => new ChatsResponse
             {
+                ChatId = ch.ChatId,
                 DesignImageUrl = ch.DesignImageUrl,
                 AnonName = ch.AnonName,
                 LastMessageAgo = ch.LastMessageInfo.CreatedAt,

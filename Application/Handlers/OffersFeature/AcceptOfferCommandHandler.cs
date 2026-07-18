@@ -30,18 +30,26 @@ namespace Application.Handlers.OffersFeature
             if (producerOffer == null)
                 return Result<int>.Failure(Messages.NotFound.WithTarget("Offer"));
 
-            if (Math.Floor(request.Amount) < Math.Floor(producerOffer.Diposit))
-                return Result<int>.Failure(Messages.BadRequest.WithTarget("Balance"));
-
-            producerOffer.OfferStatus = OfferStatus.Accepted;
-
-            var producer = await _context.Producers
-                .FirstOrDefaultAsync(u => u.Id == producerOffer.ProducerID, cancellationToken);
-
-            if (producer != null)
+            if (request.Amount != producerOffer.Diposit)
             {
-                producer.Balance -= request.Amount;
+                Console.WriteLine("====================================");
+                Console.WriteLine(request.Amount);
+                Console.WriteLine("====================================");
+                Console.WriteLine(producerOffer.Diposit);
+
+                return Result<int>.Failure(Messages.BadRequest.WithTarget("Balance"));
             }
+
+
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(u => u.Id == producerOffer.CustomerPublishedOffer.CustomerID, cancellationToken);
+
+            if(customer.Balance < request.Amount)
+                return Result<int>.Failure(Messages.BadRequest.WithTarget("PriceMismatch"));
+
+            customer.Balance -= request.Amount;
+            
+            producerOffer.OfferStatus = OfferStatus.Accepted;
 
             await _context.Users
                 .Where(u => u.UserType == UserType.Admin)
@@ -49,6 +57,8 @@ namespace Application.Handlers.OffersFeature
                     u => u.Balance,
                     u => u.Balance + request.Amount
                 ), cancellationToken);
+
+
             await _context.ProducerCustomerOffers.Where(po => po.ID != request.ProducerOfferId && po.CustomerPublishedOfferID == producerOffer.CustomerPublishedOfferID).ExecuteUpdateAsync(s => s.SetProperty(
                     u => u.OfferStatus,
                     u => OfferStatus.Declined));

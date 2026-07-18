@@ -43,12 +43,21 @@ namespace Application.Handlers.OffersFeature
                d => new Tuple<string, int>(d.Content, d.Rate),
                cancellationToken
            );
-            var gallery = _context.ProducersGallery.Where(g => g.ProducerId == offer.ProducerID)
+
+            var galleryList = await _context.ProducersGallery
+                .Where(g => g.ProducerId == offer.ProducerID)
                 .Select(g => new
                 {
                     g.Description,
                     g.ImageUrl
-                }).ToDictionary(g=>g.Description,g=>g.ImageUrl);
+                }).ToListAsync();
+
+            var gallery = galleryList
+                .GroupBy(g => g.Description)
+                .ToDictionary(
+                    g => g.Key ?? string.Empty,
+                    g => g.Select(x => x.ImageUrl).ToList()
+                );
 
 
             return new ProducerOfferResponse

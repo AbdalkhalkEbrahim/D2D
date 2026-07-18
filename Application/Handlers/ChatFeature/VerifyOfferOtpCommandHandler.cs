@@ -60,6 +60,7 @@ namespace Application.Handlers.ChatFeature
             if (newActiveOfferLogIDs == null)
                 return Result<string>.Failure(Messages.NotFound.WithTarget("ActiveOfferLog"));
 
+
             var activeOfferLog = new ActiveOfferLogs
             {
                 Step = ActiveOfferStatus.Completed.ToString(),

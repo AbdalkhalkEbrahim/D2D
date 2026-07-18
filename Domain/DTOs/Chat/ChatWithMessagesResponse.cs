@@ -12,5 +12,6 @@ namespace Domain.DTOs.Chat
         public string AnonName { get; set; }
         public string? Step { get; set; }
         public string OtherId { get; set; }
+        public bool IsClosed { get; set; }
     }
 }

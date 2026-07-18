@@ -21,7 +21,7 @@ namespace Application.Handlers.DesignFeature
                 return Result<Guid>.Failure(Messages.BadRequest.WithTarget("DraftedDesign"));
 
             design.Status = DesignStatus.Drafted;
-            if(!_context.ActiveOfferLogs.Any(al=>al.CustomOfferID == design.CustomerPublishedOfferID))
+            if(_context.ActiveOfferLogs.Any(al=>al.CustomOfferID == design.CustomerPublishedOfferID))
                 return Result<Guid>.Failure(Messages.Conflict.WithTarget("ActiveDesign"));
 
             foreach (var d in design.CustomerPublishedOffer.ProducerCustomerOffers)
