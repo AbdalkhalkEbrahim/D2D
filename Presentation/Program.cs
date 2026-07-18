@@ -82,11 +82,9 @@ namespace Presentation
             builder.Services.AddScoped<IUploadService, UploadService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<IChatService, ChatService>();
-            builder.Services.AddScoped<IDesignValidationService, DesignValidationService>();
 
            builder.Services.AddScoped<IModelesService,ModelsService>();
 
-            builder.Services.AddHttpClient<IIdentityValidationService, IdentityValidationService>(client => { });
 
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {

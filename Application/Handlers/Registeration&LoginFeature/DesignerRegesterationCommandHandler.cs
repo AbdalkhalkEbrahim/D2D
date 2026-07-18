@@ -18,16 +18,14 @@ namespace Application.Handlers
         private readonly UserManager<User> _userManager;
         private readonly IUploadService _uploadService;
         private readonly D2DContext _context;
-        private readonly IIdentityValidationService _identityValidationService;
-        private readonly IDesignValidationService _designValidationService;
+      
 
-        public DesignerRegesterationCommandHandler(UserManager<User> userManager, IUploadService uploadService, D2DContext context, IIdentityValidationService identityValidationService, IDesignValidationService designValidationService)
+        public DesignerRegesterationCommandHandler(UserManager<User> userManager, IUploadService uploadService, D2DContext context)
         {
             _userManager = userManager;
             _uploadService = uploadService;
             _context = context;
-            _identityValidationService = identityValidationService;
-            _designValidationService = designValidationService;
+            
         }
 
         public async Task<Result<DesignerRegisterationResponse>> Handle(DesignerRegesterationCommand request, CancellationToken cancellationToken)
@@ -42,9 +40,7 @@ namespace Application.Handlers
             var filesToBeUploaded = await _uploadService.ChangeFileFormat(files);
 
             List<string> links = new List<string>();
-            BackgroundJob.Enqueue<IUploadService>(uploadService =>
-                uploadService.UploadAndSaveUserDocsAsync(user.Id, user.UserType, filesToBeUploaded)
-                );
+           
 
             user.IdentityStatus = VerificationStatus.Approved;
             return Result<DesignerRegisterationResponse>.Success(new DesignerRegisterationResponse

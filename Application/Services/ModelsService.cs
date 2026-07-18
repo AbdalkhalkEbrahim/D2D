@@ -19,6 +19,7 @@ using System.Globalization;
 using Domain.Entities.Shared;
 using Microsoft.EntityFrameworkCore;
 using Domain.Enums.Status;
+using Domain.DTOs;
 
 namespace Application.Services
 {
@@ -157,6 +158,189 @@ namespace Application.Services
             - Never guess missing digits.
             - Never return Arabic numerals.
             - The National ID must contain exactly 14 English digits.
+            """;
+        private const string LicensePrompt = """
+            You are an AI Egyptian factory document verification assistant.
+
+            You will receive one or more images submitted by a factory.
+
+            Each image represents a separate official document.
+            Analyze EACH image independently first, then perform an overall comparison between all documents.
+
+            The documents may include:
+
+            - السجل الصناعي (Industrial Registration)
+            - السجل التجاري (Commercial Registration)
+            - البطاقة الضريبية (Tax Card)
+            - رخصة تشغيل المصنع (Factory Operating License)
+            - رخصة صناعية
+            - Any official factory-related document
+
+            ==================================================
+            STEP 1 - INDIVIDUAL IMAGE ANALYSIS
+            ==================================================
+
+            For EACH uploaded image separately:
+
+            Perform the following:
+
+            1. Identify the document type.
+
+            Possible values:
+
+            - Industrial Registration
+            - Commercial Registration
+            - Tax Card
+            - Factory Operating License
+            - Industrial License
+            - Unknown
+
+            2. Extract all visible information from THIS IMAGE ONLY.
+
+            Extract:
+
+            - Company Name
+            - Factory Name
+            - Owner Name
+            - National ID / Owner ID if visible
+            - Commercial Registration Number
+            - Industrial Registration Number
+            - Tax Number
+            - License Number
+            - Issue Date
+            - Expiry Date
+            - Issuing Authority
+            - Factory Activity
+            - Factory Address
+
+            3. Analyze the visual quality of THIS IMAGE.
+
+            Check:
+
+            - Blur
+            - Cropping
+            - Missing edges
+            - Missing pages
+            - Image clarity
+            - Visible edits
+            - Different fonts
+            - Suspicious formatting
+            - Missing stamps
+            - Missing signatures
+
+            If any information is unreadable:
+
+            Return null.
+
+            Never guess values.
+
+            ==================================================
+            STEP 2 - DOCUMENTS COMPARISON
+            ==================================================
+
+            After analyzing all images individually:
+
+            Compare the extracted information between documents.
+
+            Check:
+
+            - Company name consistency
+            - Factory name consistency
+            - Address consistency
+            - Registration numbers consistency
+            - Tax information consistency
+            - Factory activity consistency
+            - Whether all documents belong to the same factory
+
+            ==================================================
+            STEP 3 - FACTORY ACTIVITY VERIFICATION
+            ==================================================
+
+            Determine whether the factory activity is related to clothing manufacturing.
+
+            Relevant activities include:
+
+            - تصنيع الملابس الجاهزة
+            - صناعة الملابس
+            - صناعة المنسوجات
+            - الغزل والنسيج
+            - Apparel Manufacturing
+            - Garment Manufacturing
+            - Textile Manufacturing
+
+            ==================================================
+            OUTPUT FORMAT
+            ==================================================
+
+            Return ONLY valid JSON:
+
+            {
+              "success": true,
+
+              "imagesAnalysis": [
+                {
+                  "imageNumber": 1,
+                  "documentType": "Industrial Registration",
+
+                  "extractedData": {
+                    "companyName": "",
+                    "factoryName": "",
+                    "ownerName": "",
+                    "nationalId": "",
+                    "commercialRegistrationNumber": "",
+                    "industrialRegistrationNumber": "",
+                    "taxNumber": "",
+                    "licenseNumber": "",
+                    "issueDate": "",
+                    "expiryDate": "",
+                    "issuingAuthority": "",
+                    "factoryActivity": "",
+                    "factoryAddress": ""
+                  },
+
+                  "imageQuality": {
+                    "quality": "Good",
+                    "blurDetected": false,
+                    "cropped": false,
+                    "editedAppearance": false,
+                    "missingParts": false
+                  },
+
+                  "possibleIssues": []
+                }
+              ],
+
+              "overallAnalysis": {
+                "isRelevant": true,
+
+                "documentsBelongToSameFactory": true,
+
+                "crossCheck": {
+                  "companyNameMatched": true,
+                  "addressMatched": true,
+                  "activityMatched": true,
+                  "numbersConsistent": true
+                },
+
+                "confidence": "High",
+
+                "summary": "The submitted documents appear consistent and related to a clothing manufacturing factory."
+              }
+            }
+
+            ==================================================
+            RULES
+            ==================================================
+
+            - Analyze every image separately before comparison.
+            - Do not mix information between images.
+            - Do not invent missing values.
+            - Return null for unreadable fields.
+            - Return valid JSON only.
+            - Do not use Markdown.
+            - Do not explain your reasoning.
+            - Do not claim legal authenticity.
+            - Only evaluate visible information.
             """;
         public ModelsService(D2DContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration, IUploadService uploadService)
         {
@@ -399,7 +583,7 @@ namespace Application.Services
 
             return chat.ID;
         }
-        public async Task<Result> AnalysisUserDocuments(string userId, List<IFormFile> identityFiles)
+        public async Task<Result> AnalysisUserDocuments(string userId, List<QwenImageItem> identityFiles,List<FileUploadModel> uploadedDocuments)
         {
            if (identityFiles == null || identityFiles.Count != 3)
                 return Result.Failure(Messages.BadRequest.WithTarget("Default"));
@@ -410,32 +594,22 @@ namespace Application.Services
             if (user == null)
                 return Result.Failure(Messages.NotFound.WithTarget("User"));
 
-            var images = new List<QwenImageItem>();
+            var images = identityFiles;
 
-            foreach (var file in identityFiles)
-            {
-                using var ms = new MemoryStream();
-                await file.CopyToAsync(ms);
-
-                images.Add(new QwenImageItem
-                {
-                    DataBase64 = Convert.ToBase64String(ms.ToArray()),
-                    Type = file.ContentType
-                });
-            }
+           
 
             var requestBody = new QwenMultimodalRequest
             {
                 ModelId = _configuration["AiKey:Model_description_image"] ?? "qwen.qwen3-vl-235b-a22b",
                 Messages = new List<QwenMessage>
-        {
-            new QwenMessage
-            {
-                Role = "user",
-                Text = SystemGenerationPrompt,
-                Images = images
-            }
-        }
+                {
+                    new QwenMessage
+                    {
+                        Role = "user",
+                        Text = SystemGenerationPrompt,
+                        Images = images
+                    }
+                }
             };
 
             var client = _httpClientFactory.CreateClient();
@@ -484,7 +658,6 @@ namespace Application.Services
 
 
 
-            var uploadedDocuments = await _uploadService.ChangeFileFormat(identityFiles);
             var uploads =( await _uploadService.UploadFileAsync(uploadedDocuments)).Value;
 
             var identity = new UserIdentityFiles
@@ -496,11 +669,9 @@ namespace Application.Services
                 FaceSimilarity = report.VerificationReport.FaceSimilarity,
                 Confidence = report.VerificationReport.Confidence,
                 Observations = report.VerificationReport.Observations,
-
-                // TODO
-                 FrontImageID = uploads[0],
-                 BackImageID = uploads[1],
-                 PersonalImage = uploads[2]
+                FrontImageID = uploads[0],
+                BackImageID = uploads[1],
+                PersonalImage = uploads[2]
             };
 
             _context.UserIdentityFiles.Add(identity);
@@ -510,10 +681,7 @@ namespace Application.Services
             {
                 user.IdentityStatus = VerificationStatus.Rejected;
             }
-            else
-            {
-                user.IdentityStatus = VerificationStatus.Pending;
-            }
+           
 
             await _context.SaveChangesAsync();
 

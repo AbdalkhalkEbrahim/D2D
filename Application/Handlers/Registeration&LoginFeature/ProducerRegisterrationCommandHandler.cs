@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Application.Response;
 using Domain.DTOs.RegisterationDtos;
+using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums.Status;
 using Domain.Enums.Types;
@@ -19,13 +20,12 @@ namespace Application.Handlers
         private readonly UserManager<User> _userManager;
         private readonly IUploadService _uploadService;
         private readonly D2DContext _context;
-        private readonly IIdentityValidationService _identityValidationService;
+        
 
-        public ProducerRegisterrationCommandHandler(UserManager<User> userManager, IUploadService uploadService, IIdentityValidationService identityValidationService, D2DContext context)
+        public ProducerRegisterrationCommandHandler(UserManager<User> userManager, IUploadService uploadService,  D2DContext context)
         {
             _userManager = userManager;
             _uploadService = uploadService;
-            _identityValidationService = identityValidationService;
             _context = context;
         }
 
@@ -35,25 +35,31 @@ namespace Application.Handlers
             if (user == null || !user.EmailConfirmed || user.UserType != UserType.Producer)
                 return Result<ProducerRegisterationResponse>.Failure(Messages.BadRequest.WithTarget("InvalidRequest"));
 
-            List<IFormFile> files = request.LicenseUrls;
-            files.AddRange(new List<IFormFile> { request.FrontImageID, request.BackImageID, request.PersonalImage });
 
-            var filesToBeUploaded = await _uploadService.ChangeFileFormat(files);
-
-            List<string> links = new List<string>();
-            BackgroundJob.Enqueue<IUploadService>(uploadService =>
-                uploadService.UploadAndSaveUserDocsAsync(user.Id,user.UserType,filesToBeUploaded)
+            var filesBase64 = await _uploadService.ChangeFileFormateToBase64(request.IdentityFiles);
+            var files = await _uploadService.ChangeFileFormat(request.IdentityFiles);
+            BackgroundJob.Enqueue<IModelesService>(uploadService =>
+                uploadService.AnalysisUserDocuments(user.Id, filesBase64, files)
                 );
 
-            user.IdentityStatus = VerificationStatus.Pending;
+            var licenseFormat = await _uploadService.ChangeFileFormat(request.LicenseUrls);
+            foreach (var file in licenseFormat)
+            {
+                var lic = new LicenseVerification
+                {
+                    ProducerID = user.Id
+                };
+
+                BackgroundJob.Enqueue<IUploadService>(uploadService =>
+               uploadService.UploadAndSaveSingleFile(lic, "LicenseUrl",file,false)
+               );
+            }
+           
+
             return Result<ProducerRegisterationResponse>.Success(new ProducerRegisterationResponse
             {
                 UserId = user.Id,
                 VerificationStatus = user.IdentityStatus,
-
-/*                SimilarityScore = response.Value.SimilarityScore,
-                DocumentQuality = response.Value.DocumentQuality,
-               Notes = response.Value.Notes*/
             });
         }
     }

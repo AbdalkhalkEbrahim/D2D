@@ -20,14 +20,12 @@ namespace Application.Handlers
     {
         private readonly UserManager<User> _userManager;
         private readonly IUploadService _uploadService;
-        private readonly IIdentityValidationService _identityValidationService;
         private readonly D2DContext _context;
         
-        public CustomerRegisterationCommandHandler(UserManager<User> userManager, IUploadService uploadService, IIdentityValidationService identityValidationService, D2DContext context)
+        public CustomerRegisterationCommandHandler(UserManager<User> userManager, IUploadService uploadService, D2DContext context)
         {
             _userManager = userManager;
             _uploadService = uploadService;
-            _identityValidationService = identityValidationService;
             _context = context;
         }
 
@@ -51,9 +49,10 @@ namespace Application.Handlers
                     Selected = true,
                 }
             };
-
+            var filesBase64 =await _uploadService.ChangeFileFormateToBase64(request.IdentityFiles);
+            var files = await _uploadService.ChangeFileFormat(request.IdentityFiles);
             BackgroundJob.Enqueue<IModelesService>(uploadService =>
-                uploadService.AnalysisUserDocuments(user.Id,request.IdentityFiles)
+                uploadService.AnalysisUserDocuments(user.Id,filesBase64,files)
                 );
             _context.Update(customer);
             await _context.SaveChangesAsync();

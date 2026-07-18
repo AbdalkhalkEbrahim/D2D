@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.Enums.Status;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace Domain.Entities.Shared
         public string FrontImageID { get; set; }
         public string BackImageID { get; set; }
         public string PersonalImage { get; set; }
+        public VerificationStatus Status { get; set; }
         public User User { get; set; }
         [ForeignKey("User")]
         public string UserId { get; set; }

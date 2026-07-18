@@ -5,7 +5,7 @@ namespace Domain.Entities.Shared
 {
     public class User : IdentityUser
     {
-        public string NationalId { get; set; }
+        public string? NationalId { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public DateTime BD { get;  set; }

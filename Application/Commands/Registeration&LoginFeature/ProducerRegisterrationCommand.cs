@@ -13,13 +13,7 @@ namespace Application.Commands.RegisterationFeature
         public required string ProducerId { get; set; }
 
         [Required]
-        public required IFormFile FrontImageID { get; set; }
-
-        [Required]
-        public required IFormFile BackImageID { get; set; }
-
-        [Required]
-        public required IFormFile PersonalImage { get; set; }
+        public List<IFormFile> IdentityFiles { get; set; }
 
         [Required]
         [MinLength(1, ErrorMessage = "At least one license file is required.")]
