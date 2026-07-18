@@ -1,9 +1,11 @@
 ﻿using Application.Interfaces;
 using Domain.DTOs;
+using Domain.DTOs.Model;
 using Domain.Entities.Chats.AiModel;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Presentation.Controllers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,11 +21,12 @@ namespace V02.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ChatModelController : ControllerBase
+    public class ChatModelController : BaseApiController
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly IUploadService _uploadService;
+        private readonly IModelesService _modelesService;
 
         private const string SystemGenerationPrompt =
             "Describe this image in detailes, seperate the description into 2 section, " +
@@ -34,11 +37,12 @@ namespace V02.Controllers
             "and how it looks and the positions of everything the size and thickness of " +
             "any printed logo or lines or drawings, descriping how it looks detailly";
 
-        public ChatModelController(IHttpClientFactory httpClientFactory, IConfiguration configuration, IUploadService uploadService)
+        public ChatModelController(IHttpClientFactory httpClientFactory, IConfiguration configuration, IUploadService uploadService,IModelesService modelesService)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _uploadService = uploadService;
+            _modelesService = modelesService;
         }
 
         [HttpPost("analyze-design")]
@@ -117,7 +121,7 @@ namespace V02.Controllers
                 string jsonResponseString = await response.Content.ReadAsStringAsync();
                 var itiResult = JsonSerializer.Deserialize<QwenMultimodalResponse>(jsonResponseString);
 
-                if (itiResult == null || string.IsNullOrEmpty(itiResult.OutputText))
+                if (itiResult == null /*|| string.IsNullOrEmpty(itiResult.OutputText)*/)
                 {
                     return StatusCode(502, "The upstream model returned an unexpected or empty response body.");
                 }
@@ -129,117 +133,22 @@ namespace V02.Controllers
                 return StatusCode(500, $"An error occurred during multi-case design execution: {ex.Message}");
             }
         }
-
+        [HttpPost("create-model-chat")]
+        
+        public async Task<IActionResult> CreateModelChat([FromBody] string CustomerId)
+        {
+            var response = await _modelesService.CreateModelChate(CustomerId);
+            return HandleResult(response);
+        }
         [HttpPost("generate-summaries")]
         public async Task<IActionResult> GenerateSummaries([FromBody] SummaryGenerationPayload payload)
         {
-            if (payload == null || string.IsNullOrWhiteSpace(payload.Description))
-            {
-                return BadRequest("The description content cannot be empty.");
-            }
-
-            try
-            {
-                string structuralSystemInstructions = string.Empty;
-
-                if (payload.IsSimpleImagination)
-                {
-                    structuralSystemInstructions =
-                        "You am a creative design assistant. The user has provided a simple, rough concept for a design. " +
-                        "Generate exactly 5 different apparel prompt variants based on this concept. " +
-                        "CRITICAL INSTRUCTIONS FOR VARIATION:\n" +
-                        $"1. The first variant '[SUM_1]' must be a polished, direct reflection of the user's exact raw input text: \"{payload.Description.Trim()}\".\n" +
-                        "2. Variants '[SUM_2]', '[SUM_3]', '[SUM_4]', and '[SUM_5]' must introduce distinct, artistic design variations (e.g., alter the logo placements, try different graphic styles, shift line layouts or thicknesses, shuffle visual positions) while keeping the overarching product identity recognizable. This provides a diverse stylistic choice catalog.\n" +
-                        "CRITICAL COMPOSITION MANDATE FOR EVERY VARIANT: You must explicitly state that the final output image displays both the front and back views of the t-shirt side-by-side in a single layout. The garment must be hung neatly on a hanger, perfectly centered in the middle of the frame, fully visible, and captured with clear, professional catalog clarity.\n" +
-                        "CRITICAL FORMATTING: You must separate each variant using exact delimiters '[SUM_1]', '[SUM_2]', '[SUM_3]', '[SUM_4]', '[SUM_5]' followed immediately by the text. Do not include any other markdown formatting, headers, conversational intro, or outro text.";
-                }
-                else
-                {
-                    structuralSystemInstructions =
-                        "You are a precise design assistant. Below is a detailed description of an apparel design. " +
-                        "Generate exactly 5 different summaries of this design. " +
-                        "Each summary must be a concise version keeping all essential design landmarks, with an overall structural similarity between summaries of no less than 85% to ensure design consistency.\n" +
-                        "CRITICAL COMPOSITION MANDATE FOR EVERY SUMMARY: You must explicitly state that the final output image displays both the front and back views of the t-shirt side-by-side in a single layout. The garment must be hung neatly on a hanger, perfectly centered in the middle of the frame, fully visible, and captured with clear, professional catalog clarity.\n" +
-                        "CRITICAL FORMATTING: You must separate each summary using exact delimiters '[SUM_1]', '[SUM_2]', '[SUM_3]', '[SUM_4]', '[SUM_5]' followed immediately by the text. Do not include any other markdown formatting, headers, conversational intro, or outro text outside these blocks.\n\n" +
-                        $"Detailed Description:\n{payload.Description.Trim()}";
-                }
-
-                var requestBody = new ItiChatTextRequest
-                {
-                    ModelId = _configuration["AiKey:Model_summarizer"] ?? "openai.gpt-oss-120b-1:0",
-                    Messages = new List<ItiTextMessage>
-                    {
-                        new ItiTextMessage
-                        {
-                            Role = "user",
-                            Content = structuralSystemInstructions
-                        }
-                    }
-                };
-
-                var client = _httpClientFactory.CreateClient();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _configuration["AiKey:ApiKey"]);
-
-                string serialPayload = JsonSerializer.Serialize(requestBody);
-                var contentToSend = new StringContent(serialPayload, Encoding.UTF8, "application/json");
-
-                string endpoint = _configuration["AiKey:EndPoint_summarizer"] ?? "http://apiaccess.iti.net.eg/api/v1/student/chat";
-                HttpResponseMessage response = await client.PostAsync(endpoint, contentToSend);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    string failedBody = await response.Content.ReadAsStringAsync();
-                    return StatusCode((int)response.StatusCode, $"Text Upstream Service Failure: {failedBody}");
-                }
-
-                string jsonResponseString = await response.Content.ReadAsStringAsync();
-                var textResult = JsonSerializer.Deserialize<ItiChatTextResponse>(jsonResponseString);
-
-                if (textResult == null || string.IsNullOrEmpty(textResult.OutputText))
-                {
-                    return StatusCode(502, "The upstream model returned an empty text generation field.");
-                }
-
-                string rawModelOutput = textResult.OutputText;
-                var summariesList = new List<string>();
-                string[] tags = { "\\[SUM_1\\]", "\\[SUM_2\\]", "\\[SUM_3\\]", "\\[SUM_4\\]", "\\[SUM_5\\]" };
-
-                string pattern = string.Join("|", tags);
-                string[] rawParts = Regex.Split(rawModelOutput, pattern);
-
-                foreach (var part in rawParts)
-                {
-                    string cleanPart = part.Trim();
-                    if (!string.IsNullOrEmpty(cleanPart))
-                    {
-                        summariesList.Add(cleanPart);
-                    }
-                }
-
-                if (summariesList.Count < 5)
-                {
-                    summariesList.Clear();
-                    string[] alternativeParts = Regex.Split(rawModelOutput, @"summarize\d+\s*:\s*", RegexOptions.IgnoreCase);
-                    foreach (var part in alternativeParts)
-                    {
-                        string cleanPart = part.Trim();
-                        if (!string.IsNullOrEmpty(cleanPart)) summariesList.Add(cleanPart);
-                    }
-                }
-
-                if (payload.IsSimpleImagination)
-                    summariesList.Add(payload.Description.Trim());
-
-                return Ok(summariesList);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred during summary variations processing: {ex.Message}");
-            }
+            var response=await _modelesService.GenerateSummaries(payload);
+            return Ok(response);
         }
 
         [HttpPost("generate-design-image")]
-        public async Task<IActionResult> GenerateDesignImage([FromBody] string summaryDescription, string userId)
+        public async Task<IActionResult> GenerateDesignImage([FromBody] string summaryDescription, string userId,int chatId)
         {
             if (string.IsNullOrWhiteSpace(summaryDescription))
             {
@@ -279,7 +188,7 @@ namespace V02.Controllers
                 };
                 var modelGeneratedDesign = new ModelGeneratedDesign
                 {
-                    UserId = userId,
+                     ModelChatId=chatId,
                     PromptUsed = summaryDescription,
                     CreatedAt = DateTime.UtcNow,
 
@@ -294,107 +203,19 @@ namespace V02.Controllers
             }
         }
 
-        public class QwenMultimodalRequest
-        {
-            [JsonPropertyName("model_id")]
-            public string ModelId { get; set; }
 
-            [JsonPropertyName("messages")]
-            public List<QwenMessage> Messages { get; set; } = new();
-        }
+       
 
-        public class QwenMessage
-        {
-            [JsonPropertyName("role")]
-            public string Role { get; set; } = "user";
+       
 
-            [JsonPropertyName("text")]
-            public string Text { get; set; }
+       
 
-            [JsonPropertyName("images")]
-            public List<QwenImageItem> Images { get; set; } = new();
-        }
+        
+       
 
-        public class QwenImageItem
-        {
-            [JsonPropertyName("data_base64")]
-            public string DataBase64 { get; set; }
+      
 
-            [JsonPropertyName("type")]
-            public string Type { get; set; }
-        }
-
-        public class QwenMultimodalResponse
-        {
-            [JsonPropertyName("request_id")]
-            public string RequestId { get; set; }
-
-            [JsonPropertyName("model_id")]
-            public string ModelId { get; set; }
-
-            [JsonPropertyName("region")]
-            public string Region { get; set; }
-
-            [JsonPropertyName("output_text")]
-            public string OutputText { get; set; }
-
-            [JsonPropertyName("usage")]
-            public QwenUsage Usage { get; set; }
-
-            [JsonPropertyName("estimated_cost_usd")]
-            public string EstimatedCostUsd { get; set; }
-
-            [JsonPropertyName("actual_cost_usd")]
-            public string ActualCostUsd { get; set; }
-
-            [JsonPropertyName("status")]
-            public string Status { get; set; }
-        }
-
-        public class QwenUsage
-        {
-            [JsonPropertyName("input_tokens")]
-            public int InputTokens { get; set; }
-
-            [JsonPropertyName("output_tokens")]
-            public int OutputTokens { get; set; }
-
-            [JsonPropertyName("total_tokens")]
-            public int TotalTokens { get; set; }
-
-            [JsonPropertyName("stop_reason")]
-            public string StopReason { get; set; }
-
-            [JsonPropertyName("budget_state")]
-            public string BudgetState { get; set; }
-
-            [JsonPropertyName("fallback_used")]
-            public bool FallbackUsed { get; set; }
-        }
-
-        public class ItiChatTextRequest
-        {
-            [JsonPropertyName("model_id")]
-            public string ModelId { get; set; }
-
-            [JsonPropertyName("messages")]
-            public List<ItiTextMessage> Messages { get; set; } = new();
-        }
-
-        public class ItiTextMessage
-        {
-            [JsonPropertyName("role")]
-            public string Role { get; set; } = "user";
-
-            [JsonPropertyName("content")]
-            public string Content { get; set; }
-        }
-
-        public class ItiChatTextResponse
-        {
-            [JsonPropertyName("output_text")]
-            public string OutputText { get; set; }
-        }
+       
 
         public class FluxGenerationRequest
         {
@@ -402,13 +223,6 @@ namespace V02.Controllers
             public string Inputs { get; set; }
         }
 
-        public class SummaryGenerationPayload
-        {
-            [JsonPropertyName("description")]
-            public string Description { get; set; } = string.Empty;
-
-            [JsonPropertyName("isSimpleImagination")]
-            public bool IsSimpleImagination { get; set; }
-        }
+       
     }
 }

@@ -24,7 +24,7 @@ namespace Application.Handlers.AccountSettingsFeature
                 u.BD,
                 u.ProfileImageUrl,
                 Gallery = _context.ProducersGallery
-                .Select(g => new { g.ProducerId, g.Description, g.ImageUrl }).Where(g => g.ProducerId == request.UserId)
+                .Select(g => new { g.ProducerId, g.Description, g.ImageUrl }).Where(g => g.ProducerId == request.UserId).ToList()
             }).FirstOrDefaultAsync(u=>u.Id == request.UserId);
                
             if (user == null)
@@ -38,7 +38,11 @@ namespace Application.Handlers.AccountSettingsFeature
                 PhoneNumber = user.PhoneNumber,
                 AnonName = user.AnonName,
                 BD=user.BD,
-                Gallery = user.Gallery.ToDictionary(g=>g.Description, g=>g.ImageUrl),
+                Gallery = user.Gallery.GroupBy(g => g.Description)
+                .ToDictionary(
+                    g => g.Key ?? string.Empty,
+                    g => g.Select(x => x.ImageUrl).ToList()
+                ),
                 ProfileImageUrl = user.ProfileImageUrl
             };
             /*List of designs bought from designer*/

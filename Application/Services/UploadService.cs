@@ -21,7 +21,7 @@ namespace Application.Services
     {
         private readonly Cloudinary _cloudinary;
         private readonly D2DContext _context;
-        public UploadService(IOptions<CloudinarySettings> config,D2DContext context)
+        public UploadService(IOptions<CloudinarySettings> config, D2DContext context)
         {
             var account = new Account(
                config.Value.CloudName,
@@ -58,7 +58,7 @@ namespace Application.Services
             return Result<List<string>>.Success(links);
         }
 
-        public async Task<Result> UploadAndSaveSingleFile<T>(T obj,string property, FileUploadModel file, bool updateOrAdd)
+        public async Task<Result> UploadAndSaveSingleFile<T>(T obj, string property, FileUploadModel file, bool updateOrAdd)
         {
             if (file == null)
                 return Result.Failure(Messages.BadRequest.WithTarget("NullValue"));
@@ -139,13 +139,13 @@ namespace Application.Services
                         default:
                             switch (userType) {
                                 case UserType.Producer:
-                                    producer.LicenseVerifications.Add(new LicenseVerification{LicenseUrl = secureUrl });
-                                break;
-                                case UserType.Designer:
-                                    designer.DesignVerifications.Add(new DesignVerification { StepUrl = secureUrl });
-                                break;
+                                    producer.LicenseVerifications.Add(new LicenseVerification { LicenseUrl = secureUrl });
+                                    break;
+                                //case UserType.Designer:
+                                //    designer.DesignVerifications.Add(new DesignVerification { StepUrl = secureUrl });
+                                //    break;
                             }
-                        break;
+                            break;
                     }
                 }
             }
@@ -165,6 +165,7 @@ namespace Application.Services
         {
             var filesToUpload = new List<FileUploadModel>();
 
+
             foreach (var file in files)
             {
                 if (file != null && file.Length > 0)
@@ -180,9 +181,22 @@ namespace Application.Services
                     }
                 }
             }
+
             return filesToUpload;
         }
 
-       
+        public async Task<FileUploadModel> ChangeFileFormat(IFormFile singlefile)
+        {
+            using var ms = new MemoryStream();
+
+            await singlefile.CopyToAsync(ms);
+
+            return new FileUploadModel
+            {
+                FileBytes = ms.ToArray(),
+                FileName = singlefile.FileName
+            };
+        }
+
     }
 }

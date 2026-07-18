@@ -101,7 +101,7 @@ namespace Application.Response
                 { "PasswordChangeFailed", "Failed to update the password. Please verify your current password and try again." },
                 { "ImageUploadFailed", "Failed to upload one or more images. Please try again." },
                 {"Design", "The selected design maybe published or not exsisted " },
-                {"DraftedDesign", "The selected design is in drafted state already" }
+                {"DraftedDesign", "The selected design is in drafted state already" },
             });
 
 
@@ -258,5 +258,7 @@ namespace Application.Response
              new("Forbidden", $"Please Try again in {minutes} minutes and {seconds} seconds.");
         public static Error CloudinaryError(string message) => new("SystemError", $"Cloudinary Error: {message}");
         public static Error EmailConnection(string message) => new("SystemError", $"Email connection Error : {message}");
+        public static Error ModelSummaryError(string message) => new("SystemError", $"Text Upstream Service Failure: {message}");
+
     }
 }

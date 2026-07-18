@@ -15,6 +15,9 @@ namespace Application.Commands.DesignFeature
     public class SaveDesignCommand:IRequest<Result<List<Guid>>>
     {
         public string Id {  get; set; }
-        public List<DesignsSaved> DesignsSaved { get; set; }
+        //public List<DesignsSaved> DesignsSaved { get; set; }
+        public List<IFormFile> Files { get; set; }
+        public string Name { get; set; }
+        public string Notes { get; set; }
     }
 }

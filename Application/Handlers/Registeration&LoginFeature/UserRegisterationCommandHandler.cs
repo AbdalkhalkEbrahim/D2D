@@ -3,7 +3,7 @@ using Application.Interfaces;
 using Application.Response;
 using Domain.DTOs.RegisterationDtos;
 using Domain.Entities.Customers;
-using Domain.Entities.Designers;
+using d= Domain.Entities.Designers;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
 using Domain.Enums.Types;
@@ -41,7 +41,7 @@ namespace Application.Handlers
             User user = request.UserType switch
             {
                 UserType.Customer => new Customer(),
-                UserType.Designer => new Designer(),
+                UserType.Designer => new d.Designer(),
                 _ => new Producer()
             };
 

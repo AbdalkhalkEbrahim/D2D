@@ -10,7 +10,7 @@ namespace Domain.DTOs.Chat
     {
         public List<MessagesResponse> Messages { get; set; }
         public string AnonName { get; set; }
-        public string? Step { get; set; }
+        public Dictionary<string,bool> Steps { get; set; }
         public string OtherId { get; set; }
         public bool IsClosed { get; set; }
     }

@@ -45,7 +45,7 @@ namespace Application.Handlers
                 uploadService.UploadAndSaveUserDocsAsync(user.Id,user.UserType,filesToBeUploaded)
                 );
 
-            user.IdentityStatus = VerificationStatus.Approved;
+            user.IdentityStatus = VerificationStatus.Pending;
             return Result<ProducerRegisterationResponse>.Success(new ProducerRegisterationResponse
             {
                 UserId = user.Id,

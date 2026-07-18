@@ -22,7 +22,7 @@ namespace Application.Handlers.OffersFeature
             //    .Select(pdo => new {pdo.CustomerPublishedOffer, pdo.Producer.Rate,pdo.CreatedAt,pdo.Price,pdo.Producer.AnonName })
             //    ;
              var publishedDesignOffers = _context.ProducerCustomerOffers
-            .Where(pdo => pdo.CustomerPublishedOffer != null&& pdo.CustomerPublishedOfferID == request.PublishedDesignId && pdo.OfferStatus!=OfferStatus.Declined)
+            .Where(pdo => pdo.CustomerPublishedOffer != null&& pdo.CustomerPublishedOfferID == request.PublishedDesignId && pdo.OfferStatus==OfferStatus.OnHold)
             .Select(pdo => new
             {
                 pdo.OfferStatus,

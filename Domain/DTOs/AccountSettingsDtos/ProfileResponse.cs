@@ -19,7 +19,7 @@ namespace Domain.DTOs.AccountSettingsDtos
         public string AnonName { get; set; }
         public DateTime BD { get; set; }
 
-        public Dictionary<string, string> Gallery { get; set; }
+        public Dictionary<string,List< string>> Gallery { get; set; }
        
     }
 }

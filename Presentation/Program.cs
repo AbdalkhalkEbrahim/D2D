@@ -15,8 +15,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
-using V02;
-using V02.Services;
 
 namespace Presentation
 {
@@ -86,11 +84,7 @@ namespace Presentation
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<IDesignValidationService, DesignValidationService>();
 
-            #region zena
-            builder.Services.AddScoped<IPromptBuilder, PromptBuilder>();
-            builder.Services.AddHttpClient<IModelChatService, ModelChatService>();
-            builder.Services.AddHttpClient<IImageGenerationService, ImageGenerationService>();
-            #endregion
+           builder.Services.AddScoped<IModelesService,ModelsService>();
 
             builder.Services.AddHttpClient<IIdentityValidationService, IdentityValidationService>(client => { });
 

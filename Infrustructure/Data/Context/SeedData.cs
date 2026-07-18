@@ -366,22 +366,22 @@ namespace Infrastructure.Data.Context
             }
 
             // 11. Seed 50 ModelChats & ModelChatMessages
-            for (int i = 0; i < 50; i++)
-            {
-                var modelChat = new ModelChat
-                {
-                    Title = $"AI Conceptualization Session {i + 1}",
-                    CustomerID = dbCustomers[i % dbCustomers.Count].Id
-                };
-                context.ModelChats.Add(modelChat);
+            //for (int i = 0; i < 50; i++)
+            //{
+            //    var modelChat = new ModelChat
+            //    {
+            //        Title = $"AI Conceptualization Session {i + 1}",
+            //        CustomerID = dbCustomers[i % dbCustomers.Count].Id
+            //    };
+            //    context.ModelChats.Add(modelChat);
 
-                context.ModelChatMessages.Add(new ModelChatMessage
-                {
-                    ModelChat = modelChat,
-                    Text = $"Propose an oversized alternative concept containing a 3D icon version {i + 1}.",
-                    Sender = MessageSender.Customer
-                });
-            }
+            //    context.ModelChatMessages.Add(new ModelChatMessage
+            //    {
+            //        ModelChat = modelChat,
+            //        Text = $"Propose an oversized alternative concept containing a 3D icon version {i + 1}.",
+            //        Sender = MessageSender.Customer
+            //    });
+            //}
 
             // 12. Miscellaneous Counters & Tickets
             context.SystemCounters.Add(new SystemCounter { CustomerCounter = 50, ProducerCounter = 50, DesignerCounter = 50 });

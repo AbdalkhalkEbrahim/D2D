@@ -30,6 +30,7 @@ namespace Application.Handlers.OffersFeature
             // if (offer != null || (offer.Producer.UserType != UserType.Producer))
             if (producer.Any(pco=>pco.CustomerPublishedOfferID == request.CustomerPublishedOfferId))
                 return Result<ProducerOfferResponse>.Failure(Messages.Conflict.WithTarget("CustomerOffer"));
+
             var producerOffer = new ProducerCustomerOffer
             {
                 ProducerID = request.ProducerId,

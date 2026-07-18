@@ -2,6 +2,7 @@
 using Application.Response;
 using Domain.DTOs.Chat;
 using Domain.Entities.Chats;
+using Domain.Enums.Status;
 using Domain.Enums.Types;
 using Infrastructure.Data.Context;
 using MediatR;
@@ -17,38 +18,82 @@ namespace Application.Handlers.ChatFeature
         {
             _context = context;
         }
-        public async Task<Result<ChatWithMessagesResponse>> Handle(GetChatMessagesCommand request, CancellationToken cancellationToken)
+        public async Task<Result<ChatWithMessagesResponse>> Handle( GetChatMessagesCommand request, CancellationToken cancellationToken)
         {
-            var chat = await _context.Chats.AsNoTracking().Select(ch => new { ch.ID, AllMessages = ch.Messages, pName = ch.Producer.AnonName, cName = ch.Customer.AnonName, ch.ProducerID, ch.CustomerID, ch.IsClosed, Step = _context.ActiveOfferLogs.Select(al=>new {al.Step, al.CreatedAt}).OrderByDescending(al=>al.CreatedAt).First().Step }).FirstOrDefaultAsync(c => c.ID == request.ChatId);
+            var chat = await _context.Chats.AsNoTracking().Where(c => c.ID == request.ChatId)
+                .Select(c => new
+                {
+                    c.ID,
+                    c.ProducerID,
+                    c.CustomerID,
+                    c.IsClosed,
+                    ProducerName = c.Producer.AnonName,
+                    CustomerName = c.Customer.AnonName,
+                   
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
             if (chat == null)
                 return Result<ChatWithMessagesResponse>.Failure(Messages.NotFound.WithTarget("Chat"));
-            if (chat.AllMessages.OrderByDescending(m => m.CreatedAt).First().Sender.ToString() != request.UserType.ToString())
+
+            var messages = await _context.Messages.Where(m => m.ChatID == request.ChatId).OrderByDescending(m => m.CreatedAt).ToListAsync(cancellationToken);
+
+            //var selectedStep = await _context.ActiveOfferLogs.AsNoTracking().Where(al => al.ChatID == request.ChatId).OrderBy(al => al.CreatedAt)
+            //    .Select(al => new
+            //    {
+            //        al.Step,
+            //        al.CreatedAt
+            //    })
+            //    .FirstOrDefaultAsync (cancellationToken);
+            var allStepsWithSelected = await _context.ActiveOfferLogs.Select(al => new { al.ChatID, al.Step, 
+                Steps = al.CustomerPublishedOffer.ProducerCustomerOffers.
+                  Where(p=>p.OfferStatus==OfferStatus.Accepted).Select(pco => pco.Steps.Select(s => s.StepName)).FirstOrDefault(),al.CreatedAt })
+                
+                .OrderByDescending(c=>c.CreatedAt)
+                .FirstOrDefaultAsync(ch => ch.ChatID == request.ChatId);
+
+            var lastMessage = messages.FirstOrDefault();
+
+            if (lastMessage != null &&
+                lastMessage.Sender.ToString() != request.UserType.ToString())
             {
-                /*var message = new Message { ID = chat.AllMessages.OrderByDescending(m => m.CreatedAt).First().ID, Content = chat.AllMessages.OrderByDescending(m => m.CreatedAt).First().Content, IsRead = true };
-                _context.Attach(message);
-                _context.Entry(message).Property(m => m.IsRead).IsModified = true;*/
-                chat.AllMessages.ForEach(m => m.IsRead = true);
-                _context.Update(chat.AllMessages);
-                await _context.SaveChangesAsync();
-            }
-            var response = new ChatWithMessagesResponse
-            {
-                Messages = chat.AllMessages.Select(m => new MessagesResponse
+                foreach (var message in messages.Where(m => !m.IsRead))
                 {
-                    ID = m.ID,
-                    Message = m.Content,
-                    Sender = m.Sender,
-                    IsRead = m.IsRead,
-                    CreatedAt = m.CreatedAt
-                }).OrderByDescending(m => m.CreatedAt).ToList(),
-                AnonName = request.UserType == UserType.Customer ? chat.pName : chat.cName,
-                Step = chat.Step,
-                OtherId = request.UserType == UserType.Customer ? chat.ProducerID : chat.CustomerID,
+                    message.IsRead = true;
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            var currentStep = allStepsWithSelected.Step;
+            return new ChatWithMessagesResponse
+            {
+                Messages = messages
+                    .Select(m => new MessagesResponse
+                    {
+                        ID = m.ID,
+                        Message = m.Content,
+                        Sender = m.Sender,
+                        IsRead = m.IsRead,
+                        CreatedAt = m.CreatedAt
+                    })
+                    .ToList(),
+
+                AnonName = request.UserType == UserType.Customer
+                    ? chat.ProducerName
+                    : chat.CustomerName,
+
+                Steps = allStepsWithSelected.Steps
+                    .ToDictionary(
+                        x => x,
+                        x => x == currentStep),
+
+                OtherId = request.UserType == UserType.Customer
+                    ? chat.ProducerID
+                    : chat.CustomerID,
+
                 IsClosed = chat.IsClosed
             };
-
-            return response;
-
         }
 
 

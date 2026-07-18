@@ -40,15 +40,12 @@ namespace Infrastructure.Data.Context
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<ModelChat> ModelChats { get; set; }
-        public DbSet<ModelChatMessage> ModelChatMessages { get; set; }
         public DbSet<Otp> Otps { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<MagicToken> MagicTokens { get; set; }
         public DbSet<SystemCounter> SystemCounters { get; set; }
         public DbSet<Tickets> Tickets { get; set; }
-        public DbSet<Image> Images { get; set; }
         public DbSet<ModelGeneratedDesign> ModelGeneratedDesigns { get; set; }
-        public DbSet<DesignState> DesignStates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

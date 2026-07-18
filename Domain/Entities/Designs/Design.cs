@@ -1,7 +1,5 @@
-﻿using Domain.Entities.Chats.AiModel;
-using Domain.Entities.Shared;
+﻿using Domain.Entities.Shared;
 using Domain.Enums.Status;
-using System.ComponentModel.DataAnnotations.Schema;
 namespace Domain.Entities.Designs
 {
     public class Design:Audits

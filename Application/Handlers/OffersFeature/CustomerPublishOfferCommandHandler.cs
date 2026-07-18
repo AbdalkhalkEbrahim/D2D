@@ -33,7 +33,7 @@ namespace Application.Handlers.OffersFeature
             .Select(cd => new
             {
                 cd.CustomerId,
-                HasAlreadyPublished = _context.CustomerPublishedOffers.Any(cpo => cpo.CustomerDesignID == request.DesignId && cd.Status == DesignStatus.Published),
+                HasAlreadyPublished = _context.CustomerPublishedOffers.Any(cpo => cpo.CustomerDesignID == request.DesignId ),
                 cd.Notes,
             })
             .FirstOrDefaultAsync(cancellationToken);
