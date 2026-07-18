@@ -11,12 +11,8 @@ namespace Application.Commands.RegisterationFeature
         [Required]
         public required string CustomerId { get; set; }
         [Required]
-
-        public required IFormFile FrontImageID { get; set; }
-        [Required]
-        public required IFormFile BackImageID { get; set; }
-        [Required]
-        public required IFormFile PersonalImage { get; set; }
+        public List<IFormFile> IdentityFiles { get; set; }
+       
         [Required]
         [MaxLength(2)]
         [Range(1, 70, ErrorMessage = "Building number must be between 1 and 70.")]

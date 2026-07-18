@@ -46,7 +46,7 @@ namespace Infrastructure.Data.Context
         public DbSet<SystemCounter> SystemCounters { get; set; }
         public DbSet<Tickets> Tickets { get; set; }
         public DbSet<ModelGeneratedDesign> ModelGeneratedDesigns { get; set; }
-
+        public DbSet<UserIdentityFiles> UserIdentityFiles { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

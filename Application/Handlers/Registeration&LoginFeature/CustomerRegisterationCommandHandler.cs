@@ -22,7 +22,7 @@ namespace Application.Handlers
         private readonly IUploadService _uploadService;
         private readonly IIdentityValidationService _identityValidationService;
         private readonly D2DContext _context;
-
+        
         public CustomerRegisterationCommandHandler(UserManager<User> userManager, IUploadService uploadService, IIdentityValidationService identityValidationService, D2DContext context)
         {
             _userManager = userManager;
@@ -52,22 +52,15 @@ namespace Application.Handlers
                 }
             };
 
-            var filesToBeUploaded = await _uploadService.ChangeFileFormat(new List<IFormFile> { request.FrontImageID, request.BackImageID, request.PersonalImage });
-
-            BackgroundJob.Enqueue<IUploadService>(uploadService =>
-                uploadService.UploadAndSaveUserDocsAsync(user.Id,user.UserType,filesToBeUploaded)
+            BackgroundJob.Enqueue<IModelesService>(uploadService =>
+                uploadService.AnalysisUserDocuments(user.Id,request.IdentityFiles)
                 );
             _context.Update(customer);
             await _context.SaveChangesAsync();
-           // user.IdentityStatus = VerificationStatus.Approved; 
             return Result<CustomerRegisteratonResponse>.Success(new CustomerRegisteratonResponse
             {
                 UserId = customer.Id,
-                VerificationStatus=customer.IdentityStatus,
-                //SimilarityScore=response.Value.SimilarityScore,
-                //DocumentQuality=response.Value.DocumentQuality,
-                //NeedsManualReview=response.Value.NeedsManualReview,
-                //Notes=response.Value.Notes,
+                VerificationStatus=customer.IdentityStatus
             });
         }
     }

@@ -45,20 +45,20 @@ namespace Application.Handlers.DesignFeature
 
                 var design = new CustomerDesign
                 {
-                    Name = d.Name,
+                    Name = request.Name,
                     CustomerId = customer.Id,
                     Notes = request.Notes,
                     
                 };
 
-
+                await _context.AddAsync(design);
                 var designToBeUploaded = await _uploadService.ChangeFileFormat(new List<IFormFile> { d });
 
                 var designImage = new DesignImage { CustomerDesignID = design.ID };
                 BackgroundJob.Enqueue<IUploadService>(uploadService =>
                     uploadService.UploadAndSaveSingleFile(designImage, "ImageUrl", designToBeUploaded[0], false));
 
-                await _context.AddAsync(design);
+                
                 await _context.SaveChangesAsync();
 
                 Ids.Add(design.ID);

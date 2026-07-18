@@ -16,6 +16,9 @@ using Domain.Entities.Chats.AiModel;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json.Serialization;
 using System.Globalization;
+using Domain.Entities.Shared;
+using Microsoft.EntityFrameworkCore;
+using Domain.Enums.Status;
 
 namespace Application.Services
 {
@@ -25,6 +28,136 @@ namespace Application.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly IUploadService _uploadService;
+        private readonly string SystemGenerationPrompt = """
+            You are an AI identity verification assistant.
+
+            You will receive exactly three images in the following order:
+
+            Image 1: National ID Card - Front Side
+            Image 2: National ID Card - Back Side
+            Image 3: User Selfie
+
+            The verification process consists of TWO COMPLETELY INDEPENDENT stages.
+
+            ==================================================
+            STAGE 1 - NATIONAL ID VERIFICATION
+            ==================================================
+
+            IMPORTANT:
+
+            For this stage, IGNORE the User Selfie completely.
+
+            Use ONLY:
+            - National ID Front
+            - National ID Back
+
+            Your tasks:
+
+            1. Extract the Egyptian National ID number from the front image.
+            2. Extract the Egyptian National ID number from the back image.
+
+            The Egyptian National ID always contains exactly 14 digits.
+
+            The digits may appear using Eastern Arabic numerals (٠١٢٣٤٥٦٧٨٩).
+
+            Before comparing or returning the IDs:
+            - Convert Eastern Arabic numerals to Western numerals (0123456789).
+            - Remove spaces.
+            - Remove dots.
+            - Remove commas.
+            - Remove dashes.
+            - Remove slashes.
+            - Remove every non-digit character.
+            - Return ONLY English digits.
+            - The final ID must contain exactly 14 digits.
+
+            If either ID cannot be confidently extracted as a valid 14-digit number, return ONLY:
+
+            {
+                "success": false,
+                "nationalIdMatched": false,
+                "reason": "Unable to confidently extract a valid Egyptian National ID.",
+                "frontNationalId": null,
+                "backNationalId": null
+            }
+
+            Do NOT continue.
+
+            If the two National IDs are different, return ONLY:
+
+            {
+                "success": false,
+                "nationalIdMatched": false,
+                "frontNationalId": "<front_id>",
+                "backNationalId": "<back_id>",
+                "message": "The National ID numbers do not match."
+            }
+
+            Do NOT continue.
+
+            ==================================================
+            STAGE 2 - FACE VERIFICATION
+            ==================================================
+
+            Execute this stage ONLY if Stage 1 completed successfully.
+
+            DO NOT re-check the National ID.
+            DO NOT modify the extracted National ID.
+            DO NOT fail because the User Selfie belongs to another person.
+
+            The User Selfie is ONLY used for face comparison.
+
+            Use ONLY:
+            - National ID Front
+            - User Selfie
+
+            Compare the person's face on the National ID Front with the uploaded User Selfie.
+
+            If the faces belong to different people, DO NOT return an OCR failure.
+
+            Instead, return success=true, nationalIdMatched=true, and set samePerson=false with an appropriate similarity score.
+
+            Return ONLY:
+
+            {
+                "success": true,
+                "nationalIdMatched": true,
+                "nationalId": "<14_digit_national_id>",
+                "verificationReport": {
+                "samePerson": true,
+                "faceSimilarity": 96,
+                "confidence": "Very High",
+                "decision": "Likely Match",
+                "faceVisibility": "Excellent",
+                "idImageQuality": "Good",
+                "selfieImageQuality": "Good",
+                "blurDetected": false,
+                "glareDetected": false,
+                "occlusionDetected": false,
+                "faceOrientation": "Frontal",
+                "lightingQuality": "Good",
+                "possibleIssues": [],
+                "observations": [
+                    "The facial features are highly consistent."
+                ],
+                "summary": "The uploaded selfie appears highly similar to the person shown on the National ID card."
+                }
+            }
+
+            Rules:
+            - The User Selfie MUST NEVER be used to extract or validate the National ID.
+            - National ID extraction depends ONLY on the Front and Back images.
+            - Face comparison depends ONLY on the Front image and the User Selfie.
+            - If the selfie belongs to another person, still return the extracted National ID and the verification report with samePerson=false.
+            - Never return an OCR extraction failure because of the selfie.
+            - Never return Markdown.
+            - Return valid JSON only.
+            - Never explain your reasoning.
+            - Never invent National ID numbers.
+            - Never guess missing digits.
+            - Never return Arabic numerals.
+            - The National ID must contain exactly 14 English digits.
+            """;
         public ModelsService(D2DContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration, IUploadService uploadService)
         {
             _context = context;
@@ -266,9 +399,125 @@ namespace Application.Services
 
             return chat.ID;
         }
-        public async Task<Result> AnalysisUserDocuments(string UserId, List<IFormFile> identityFiles)
+        public async Task<Result> AnalysisUserDocuments(string userId, List<IFormFile> identityFiles)
         {
+           if (identityFiles == null || identityFiles.Count != 3)
+                return Result.Failure(Messages.BadRequest.WithTarget("Default"));
 
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return Result.Failure(Messages.NotFound.WithTarget("User"));
+
+            var images = new List<QwenImageItem>();
+
+            foreach (var file in identityFiles)
+            {
+                using var ms = new MemoryStream();
+                await file.CopyToAsync(ms);
+
+                images.Add(new QwenImageItem
+                {
+                    DataBase64 = Convert.ToBase64String(ms.ToArray()),
+                    Type = file.ContentType
+                });
+            }
+
+            var requestBody = new QwenMultimodalRequest
+            {
+                ModelId = _configuration["AiKey:Model_description_image"] ?? "qwen.qwen3-vl-235b-a22b",
+                Messages = new List<QwenMessage>
+        {
+            new QwenMessage
+            {
+                Role = "user",
+                Text = SystemGenerationPrompt,
+                Images = images
+            }
+        }
+            };
+
+            var client = _httpClientFactory.CreateClient();
+
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue(
+                    "Bearer",
+                    _configuration["AiKey:ApiKey"]);
+
+            var content = new StringContent(
+                JsonSerializer.Serialize(requestBody),
+                Encoding.UTF8,
+                "application/json");
+
+            string endpoint = _configuration["AiKey:EndPoint_description_image"]
+                ?? "http://apiaccess.iti.net.eg/api/v1/student/multimodal-chat";
+
+            var response = await client.PostAsync(endpoint, content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                string failedBody = await response.Content.ReadAsStringAsync();
+                return Result.Failure(Messages.ModelSummaryError(failedBody));
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            var aiResponse = JsonSerializer.Deserialize<QwenMultimodalResponse>(json);
+
+            if (aiResponse == null)
+                return Result.Failure(Messages.BadRequest.WithTarget("NullValue"));
+
+            var report = JsonSerializer.Deserialize<IdentityVerificationResponse>(aiResponse.OutputText);
+
+            if (report == null)
+                return Result.Failure(Messages.BadRequest.WithTarget("NullValue"));
+
+            if (!report.NationalIdMatched)
+            {
+                user.IdentityStatus = VerificationStatus.Rejected;
+
+                await _context.SaveChangesAsync();
+
+                return Result.Success();
+            }
+
+
+
+            var uploadedDocuments = await _uploadService.ChangeFileFormat(identityFiles);
+            var uploads =( await _uploadService.UploadFileAsync(uploadedDocuments)).Value;
+
+            var identity = new UserIdentityFiles
+            {
+                UserId = userId,
+                NationalId = report.NationalId,
+                IsSuccess = report.Success,
+                IsSamePerson = report.VerificationReport!.SamePerson,
+                FaceSimilarity = report.VerificationReport.FaceSimilarity,
+                Confidence = report.VerificationReport.Confidence,
+                Observations = report.VerificationReport.Observations,
+
+                // TODO
+                 FrontImageID = uploads[0],
+                 BackImageID = uploads[1],
+                 PersonalImage = uploads[2]
+            };
+
+            _context.UserIdentityFiles.Add(identity);
+
+            if (!report.VerificationReport.SamePerson &&
+                report.VerificationReport.FaceSimilarity < 30)
+            {
+                user.IdentityStatus = VerificationStatus.Rejected;
+            }
+            else
+            {
+                user.IdentityStatus = VerificationStatus.Pending;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Result.Success();
         }
     }
 }

@@ -14,5 +14,6 @@ namespace Application.Interfaces
         public Task<Result<List<string>>> GenerateSummaries(SummaryGenerationPayload payload);
         public Task<Result<int>> CreateModelChate(string CustomerId);
         public Task<Result<decimal>> AnalaysisImageScore(string prompet, IFormFile image);
+        public Task<Result> AnalysisUserDocuments(string userId, List<IFormFile> identityFiles);
     }
 }
