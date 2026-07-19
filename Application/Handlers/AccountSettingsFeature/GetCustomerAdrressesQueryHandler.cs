@@ -17,7 +17,7 @@ namespace Application.Handlers.AccountSettingsFeature
         }
         public async Task<Result<List<AddressResponse>>> Handle(GetCustomerAdrressesQuery request, CancellationToken cancellationToken)
         {
-           var customer=await _context.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Id == request.CustomerId);
+           var customer=await _context.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Id == request.CustomerId&&!c.IsDeleted);
             if (customer == null)
                 return Result<List<AddressResponse>>.Failure(Messages.NotFound.WithTarget("User"));
 

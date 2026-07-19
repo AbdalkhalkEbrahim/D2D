@@ -44,10 +44,11 @@ namespace Application.Handlers.OffersFeature
                     cpo.IsActive,
                     cpo.CreatedAt,
                     cpo.UpdatedAt,
-                    ProducersOffers = cpo.ProducerCustomerOffers.Select(pco => pco.ID)
+                    ProducersOffers = cpo.ProducerCustomerOffers.Select(pco => pco.ID),
+                    cpo.Customer.IsDeleted
                       
                 })
-                .FirstOrDefaultAsync(o => (request.DesignId != null && request.DesignId == o.CustomerDesignID) ||
+                .FirstOrDefaultAsync(o =>!o.IsDeleted&& (request.DesignId != null && request.DesignId == o.CustomerDesignID) ||
                 (request.PublishedOfferId != null && o.ID == request.PublishedOfferId), cancellationToken);
 
             if (offer == null) 

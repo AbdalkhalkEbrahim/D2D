@@ -30,7 +30,7 @@ namespace Application.Handlers.ChatFeature
             if(request.MessageText == null && request.MessageImageUrl == null)
                 return Result.Failure(Messages.BadRequest.WithTarget("NullValue"));
 
-            var chat = await _context.Chats.Where(c => c.ID == request.ChatId)
+            var chat = await _context.Chats.Where(c => c.ID == request.ChatId&&!c.Producer.IsDeleted)
                .Select(ch => new { ch.ProducerCount, ch.ProducerLimit, ch.ID, customerAnonName = ch.Customer.AnonName, producerAnonName = ch.Producer.AnonName, ch.ProducerID, ch.CustomerID, ch.IsClosed })
                .FirstOrDefaultAsync();
 

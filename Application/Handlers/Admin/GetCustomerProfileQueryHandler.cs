@@ -22,7 +22,7 @@ namespace Application.Handlers.Admin
         }
         public async Task<Result<GetUserProfileAdminResponse>> Handle(GetCustomerProfileQuery request, CancellationToken cancellationToken)
         {
-            var user = await _context.Customers.Where(u => u.Id == request.id).Select(u => new GetUserProfileAdminResponse
+            var user = await _context.Customers.Where(u => u.Id == request.id&&!u.IsDeleted).Select(u => new GetUserProfileAdminResponse
             {
                 Id = u.Id,
                 Name = u.FirstName + " " + u.LastName,

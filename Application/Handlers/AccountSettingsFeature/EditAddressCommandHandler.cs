@@ -20,7 +20,7 @@ namespace Application.Handlers.AccountSettingsFeature
         }
         public async Task<Result<AddressResponse>> Handle(EditAddressCommand request, CancellationToken cancellationToken)
         {
-            var addresses = _context.Customers.AsNoTracking().Where(c=>c.Id == request.CustomerId).SelectMany(c => c.Addresses);
+            var addresses = _context.Customers.AsNoTracking().Where(c=>c.Id == request.CustomerId&&!c.IsDeleted).SelectMany(c => c.Addresses);
 
             if(!addresses.Any())
                 return Result<AddressResponse>.Failure(Messages.NotFound.WithTarget("Address"));

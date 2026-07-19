@@ -27,7 +27,7 @@ namespace Application.Handlers.DesignFeature
 
         public async Task<Result<List<Guid>>> Handle(SaveDesignCommand request, CancellationToken cancellationToken)
         {
-            var customer = await _context.Customers.Include(c=>c.Designs).Include(c=>c.ModelChat).FirstOrDefaultAsync(c => c.Id == request.Id);
+            var customer = await _context.Customers.Include(c=>c.Designs).Include(c=>c.ModelChat).FirstOrDefaultAsync(c => c.Id == request.Id&& !c.IsDeleted);
             if (customer == null)
                 return Result<List<Guid>>.Failure(Messages.NotFound.WithTarget("User"));
 

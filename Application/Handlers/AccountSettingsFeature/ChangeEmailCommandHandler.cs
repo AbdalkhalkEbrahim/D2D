@@ -28,8 +28,10 @@ namespace Application.Handlers.AccountSettingsFeature
             if (!result.IsSuccess)
                 return Result<string>.Failure(result.Error);
 
-            await _context.Users.Where(u => u.Id == request.Id).ExecuteUpdateAsync(setter => setter.SetProperty(u => u.Email, request.Email));
-            await _context.SaveChangesAsync();
+           var editedEmail= await _context.Users.Where(u => u.Id == request.Id&&!u.IsDeleted).ExecuteUpdateAsync(setter => setter.SetProperty(u => u.Email, request.Email));
+            if (editedEmail == 0)
+                return Result<string>.Failure(Messages.NotFound.WithTarget("User"));
+           // await _context.SaveChangesAsync();
             return request.Email;
         }
     }

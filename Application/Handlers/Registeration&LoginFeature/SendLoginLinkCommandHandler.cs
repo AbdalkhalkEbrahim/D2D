@@ -25,7 +25,7 @@ namespace Application.Handlers
         {
             var user = await _context.Users
                 .Include(u => u.MagicToken)
-                .FirstOrDefaultAsync(u => u.Id == request.UserID, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == request.UserID&& !u.IsDeleted, cancellationToken);
 
             if (user is null)
                 return Result<string>.Failure(Messages.NotFound.WithTarget("User"));

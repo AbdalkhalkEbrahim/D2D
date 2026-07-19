@@ -17,7 +17,7 @@ namespace Application.Handlers.Admin
 
         public async Task<Result<GetUserProfileAdminResponse>> Handle(GetProducerProfileQuery request, CancellationToken cancellationToken)
         {
-            var producer = await _context.Producers.Where(p => p.Id == request.id).Select(p => new GetUserProfileAdminResponse
+            var producer = await _context.Producers.Where(p => p.Id == request.id&&!p.IsDeleted).Select(p => new GetUserProfileAdminResponse
             {
                 Id = p.Id,
                 Name = p.FirstName + " " + p.LastName,
@@ -36,7 +36,7 @@ namespace Application.Handlers.Admin
             }).FirstOrDefaultAsync();
 
             if (producer == null)
-                return Result<GetUserProfileAdminResponse>.Failure(Messages.NotFound.WithTarget("Producer"));
+                return Result<GetUserProfileAdminResponse>.Failure(Messages.NotFound.WithTarget("User"));
 
 
             return producer;

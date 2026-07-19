@@ -30,7 +30,7 @@ namespace Application.Handlers.ChatFeature
         }
         public async Task<Result> Handle(CustomerSendMessageCommand request, CancellationToken cancellationToken)
         {
-            var chat = await _context.Chats.Where(c => c.ID == request.ChatId)
+            var chat = await _context.Chats.Where(c => c.ID == request.ChatId&&!c.Customer.IsDeleted)
                 .Select(ch => new {ch.CustomerLimit, ch.CustomerCount, ch.ID, customerAnonName = ch.Customer.AnonName,producerAnonName = ch.Producer.AnonName, ch.ProducerID, ch.CustomerID, ch.IsClosed})
                 .FirstOrDefaultAsync();
 

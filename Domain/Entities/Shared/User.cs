@@ -25,6 +25,7 @@ namespace Domain.Entities.Shared
         public string? PersonalImage { get; set; }
         public MagicToken? MagicToken { get; set; }
         public VerificationStatus IdentityStatus { get; set; } = VerificationStatus.Pending;
+        public bool IsDeleted { get; set; } = false;
         #endregion
         public virtual ICollection<Notification>? Notifications { get; set; } = new List<Notification>();
         public virtual ICollection<RefreshToken>? RefreshTokens { get; set; } = new List<RefreshToken>();

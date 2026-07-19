@@ -20,7 +20,7 @@ namespace Application.Handlers.Admin
             int AllStatusCount = 0, ActiveStatusCount = 0, PendingStatusCount, SusbendingStatusCoount, AllUsersCount = 0, CustomerCount = 0, ProducerCount = 0;
 
 
-            var users = _context.Users.Select(u => new { u.Id, u.FirstName, u.LastName, u.Email, u.ProfileImageUrl, u.NumOfReports, u.NumOfCollaborations, u.UserType, u.JoinDate, u.IdentityStatus, u.AnonName });
+            var users = _context.Users.Select(u => new { u.Id, u.FirstName, u.LastName, u.Email, u.ProfileImageUrl, u.NumOfReports, u.NumOfCollaborations, u.UserType, u.JoinDate, u.IdentityStatus, u.AnonName,u.IsDeleted });
 
             if (request.UserAnnonNameTextSearch != null)
                 users = users.Where(u => (u.FirstName + " " + u.LastName).Contains(request.UserAnnonNameTextSearch) || u.AnonName.Contains(request.UserAnnonNameTextSearch));
@@ -65,11 +65,11 @@ namespace Application.Handlers.Admin
             //SusbendingStatusCoount = users.Count(u => u.IdentityStatus == VerificationStatus.Suspended);
 
             if (request.isActive)
-                users = users.Where(u => u.IdentityStatus == VerificationStatus.Approved);
+                users = users.Where(u => u.IdentityStatus == VerificationStatus.Approved&&!u.IsDeleted);
             else if (request.isPending)
-                users = users.Where(u => u.IdentityStatus == VerificationStatus.Pending);
+                users = users.Where(u => u.IdentityStatus == VerificationStatus.Pending && !u.IsDeleted);
             else if (request.isSusbending)
-                users = users.Where(u => u.IdentityStatus == VerificationStatus.Suspended);
+                users = users.Where(u => u.IdentityStatus == VerificationStatus.Suspended || u.IsDeleted);
 
 
             users = request.isNewst ? users.OrderByDescending(u => u.JoinDate).ThenBy(u => u.Id) : users.OrderBy(u => u.JoinDate).ThenBy(u => u.Id);

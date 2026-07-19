@@ -25,7 +25,7 @@ namespace Application.Handlers.AccountSettingsFeature
             //var deletedaddress = await _context.Customers.SelectMany(c=>c.Addresses).Where(a => a.ID == request.Id&&!a.Selected).ExecuteDeleteAsync();
             //if (deletedaddress == 0)
             //    return Result.Failure(Messages.NotFound.WithTarget("Address"));
-            var user = await _context.Customers.FirstOrDefaultAsync(c => c.Addresses.Any(a => a.ID == request.Id));
+            var user = await _context.Customers.FirstOrDefaultAsync(c =>!c.IsDeleted&& c.Addresses.Any(a => a.ID == request.Id));
             if (user == null)
                 return Result.Failure(Messages.NotFound.WithTarget("User"));
 

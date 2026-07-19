@@ -20,7 +20,7 @@ namespace Application.Handlers.NotificationFeature
         }
         public async Task<Result> Handle(ReadAllNotificationsCommand request, CancellationToken cancellationToken)
         {
-            var notifications = await _context.Notifications.AsNoTracking().Where(n => n.UserID == request.UserId && !n.IsRead).ToListAsync();
+            var notifications = await _context.Notifications.AsNoTracking().Where(n => n.UserID == request.UserId && !n.IsRead&& !n.User.IsDeleted).ToListAsync();
 
             if (!notifications.Any())
                 return Result.Failure(Messages.NotFound.WithTarget("Notification"));

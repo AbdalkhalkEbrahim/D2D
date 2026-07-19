@@ -26,11 +26,11 @@ namespace Application.Handlers.OffersFeature
             var Producer = _context.ProducerCustomerOffers.Select(po =>new {
                 ProducerId = po.Producer.Id, po.ID, po.Producer.AnonName, po.CustomerPublishedOffer.CustomerDesign.Name,
                 DesignImages = po.CustomerPublishedOffer.CustomerDesign.DesignImages.Select(im=>im.ImageUrl), po.Price, po.OfferStatus,
-                po.CreatedAt, po.UpdatedAt,
+                po.CreatedAt, po.UpdatedAt,po.Producer.IsDeleted,
                 Review = po.Producer.Reviews.Select(r=> new {po.Producer.AnonName, r.Content, r.Rate}), po.Producer.Rate,
                 Steps = po.Steps.Select(s=> new {s.StepName, s.MinDuration, s.MaxDuration}),
                 po.Diposit, po.Duration
-            }).Where(p => p.ProducerId == request.ProducerId);
+            }).Where(p => p.ProducerId == request.ProducerId&&!p.IsDeleted);
 
             if (Producer.Count() == 0)
                 return Result<List<ProducerOfferResponse>>.Failure(Messages.NotFound.WithTarget("User"));

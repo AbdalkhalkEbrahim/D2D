@@ -4,8 +4,10 @@ using Application.Response;
 using Domain.DTOs.AuthDtos;
 using Domain.Entities.Shared;
 using Google.Apis.Auth;
+using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Handlers
 {
@@ -13,11 +15,12 @@ namespace Application.Handlers
     {
         private readonly UserManager<User> _userManager;
         private readonly IAuthService _authService;
-
-        public GoogleLoginCommandHandler(UserManager<User> userManager, IAuthService authService)
+        private readonly D2DContext _context;
+        public GoogleLoginCommandHandler(UserManager<User> userManager, IAuthService authService,D2DContext context)
         {
             _userManager = userManager;
             _authService = authService;
+            _context = context;
         }
 
         public async Task<Result<JwtToken>> Handle(GoogleLoginCommand request, CancellationToken cancellationToken)
@@ -32,7 +35,7 @@ namespace Application.Handlers
                 return Result<JwtToken>.Failure(Messages.BadRequest.WithTarget("InvalidCredentials"));
             }
 
-            var user = await _userManager.FindByEmailAsync(payload.Email);
+            var user = await _context.Users.FirstOrDefaultAsync(u=>u.Email==payload.Email&& !u.IsDeleted);
             if (user == null)
                 return Result<JwtToken>.Failure(Messages.NotFound.WithTarget("User"));
 

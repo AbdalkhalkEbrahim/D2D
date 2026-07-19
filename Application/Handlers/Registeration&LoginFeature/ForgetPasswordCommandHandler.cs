@@ -30,7 +30,7 @@ namespace Application.Handlers
             if (request.NewPassword != request.ConfirmPassword)
                 return Result<string>.Failure(Messages.BadRequest.WithTarget("PasswordMismatch"));
 
-            var user = await _context.Users.FirstOrDefaultAsync(u=>u.Id == request.Id);
+            var user = await _context.Users.FirstOrDefaultAsync(u=>u.Id == request.Id&& !u.IsDeleted);
             if (user == null)
                 return Result<string>.Failure(Messages.NotFound.WithTarget("User"));
 

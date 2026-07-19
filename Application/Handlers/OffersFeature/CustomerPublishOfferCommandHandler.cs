@@ -29,7 +29,7 @@ namespace Application.Handlers.OffersFeature
         {
 
             var designData = await _context.CustomerDesigns
-            .Where(cd => cd.ID == request.DesignId)
+            .Where(cd => cd.ID == request.DesignId&& !cd.Customer.IsDeleted)
             .Select(cd => new
             {
                 cd.CustomerId,

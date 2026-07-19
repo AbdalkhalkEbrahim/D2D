@@ -26,7 +26,7 @@ namespace Application.Handlers.Admin
             var lastMonth = now.AddMonths(-1);
             var twoMonthsAgo = now.AddMonths(-2);
 
-            var counts = await _context.Users
+            var counts = await _context.Users.Where(u=>!u.IsDeleted)
                 .GroupBy(_ => 1)
                 .Select(g => new
                 {

@@ -20,7 +20,7 @@ namespace Presentation.Controllers
         [HttpPatch("edit-producer-published-design-from-gallery")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> EditPublishedDesign([FromForm] EditProducerPublishedDesignFromGalleryCommand dto)
+        public async Task<IActionResult> EditPublishedDesign([FromBody] EditProducerPublishedDesignFromGalleryCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

@@ -25,8 +25,9 @@ namespace Application.Handlers.OffersFeature.CustomOffers
                     u => u.IsDeleted,
                     u => true
                 ), cancellationToken);
+
             if (deletedDesign == 0)
-                return Result.Failure(Messages.SystemError.WithTarget("SystemError"));
+                return Result.Failure(Messages.NotFound.WithTarget("Design"));
             return Result.Success();
         }
     }

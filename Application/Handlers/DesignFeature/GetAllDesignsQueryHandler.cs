@@ -22,7 +22,7 @@ namespace Application.Handlers.DesignFeature
         }
         public async Task<Result<List<DesignResponse>>> Handle(GetAllDesignsQuery request, CancellationToken cancellationToken)
         {
-           var query = _context.CustomerDesigns.Include(i=>i.DesignImages).AsNoTracking().Where(c=>c.CustomerId==request.CustomerId);
+           var query = _context.CustomerDesigns.Include(i=>i.DesignImages).AsNoTracking().Where(c=>c.CustomerId==request.CustomerId&& !c.Customer.IsDeleted);
                 
             if (await query.AnyAsync() == false)//
                 return Result<List<DesignResponse>>.Failure(Messages.NotFound.WithTarget("User"));

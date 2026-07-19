@@ -69,13 +69,13 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(new GetUsersCountQuery());
             return HandleResult(result);
         }
-/*        [HttpGet("get-active-collaboration-count")]
+        [HttpGet("get-active-collaboration-count")]
         [ProducesResponseType(typeof(ActiveCollaborationCountResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetActiveCollaborationCount()
         {
             var result = await _mediator.Send(new CollaborationCountQuery());
             return HandleResult(result);
-        }*/
+        }
         [HttpGet("get-recent-users")]
         [ProducesResponseType(typeof(List<RecentUsersResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetRecentUsers()
@@ -113,6 +113,17 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+
+        [HttpPost ("susbend-user")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> SusbendUser( SoftDeleteUserCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+
 
     }
 }

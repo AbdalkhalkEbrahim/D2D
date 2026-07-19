@@ -24,7 +24,7 @@ namespace Application.Handlers.OffersFeature
         {
            // var offer = await _context.ProducerCustomerOffers.AsNoTracking().Include(pco=>pco.Producer).FirstOrDefaultAsync(pco => pco.CustomerPublishedOfferID == request.CustomerPublishedOfferId && pco.ProducerID == request.ProducerId );
 
-            var producer =await  _context.Producers.AsNoTracking().Include(p => p.ProducerCustomerOffers).Where(p => p.Id == request.ProducerId).Select(p=>p.ProducerCustomerOffers).FirstOrDefaultAsync();
+            var producer =await  _context.Producers.AsNoTracking().Include(p => p.ProducerCustomerOffers).Where(p => p.Id == request.ProducerId&& !p.IsDeleted).Select(p=>p.ProducerCustomerOffers).FirstOrDefaultAsync();
             if(producer == null) 
                 return Result<ProducerOfferResponse>.Failure(Messages.NotFound.WithTarget("User"));
             // if (offer != null || (offer.Producer.UserType != UserType.Producer))

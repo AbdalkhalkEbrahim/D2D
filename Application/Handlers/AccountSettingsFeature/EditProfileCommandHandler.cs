@@ -29,17 +29,17 @@ namespace Application.Handlers.AccountSettingsFeature
         }
         public async Task<Result<ProfileResponse>> Handle(EditProfileCommand request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId&& !u.IsDeleted);
             if (user == null)
                 return Result<ProfileResponse>.Failure(Messages.NotFound.WithTarget("User"));
 
-            if(request.ProfileImageUrl != null)
-            {
-                var fileToBeUploaded = await _uploadService.ChangeFileFormat(new List<IFormFile> { request.ProfileImageUrl });
+            //if(request.ProfileImageUrl != null)
+            //{
+            //    var fileToBeUploaded = await _uploadService.ChangeFileFormat(new List<IFormFile> { request.ProfileImageUrl });
 
-                BackgroundJob.Enqueue<IUploadService>(uploadService =>
-                uploadService.UploadAndSaveSingleFile(user,"ProfileImageUrl", fileToBeUploaded[0], true));
-            }
+            //    BackgroundJob.Enqueue<IUploadService>(uploadService =>
+            //    uploadService.UploadAndSaveSingleFile(user,"ProfileImageUrl", fileToBeUploaded[0], true));
+            //}
 
             var entityPatch = new JsonPatchDocument<User>();
             request.data.Operations.ForEach(op => entityPatch.Operations.Add(new jsonPatch.Operation<User>(op.op, op.path, op.from, op.value)));

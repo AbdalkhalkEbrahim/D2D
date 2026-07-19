@@ -17,7 +17,7 @@ namespace Application.Handlers.AccountSettingsFeature
         }
         public async Task<Result<int>> Handle(AddNewAddressCommand request, CancellationToken cancellationToken)
         {
-            var user=await _context.Customers.FirstOrDefaultAsync(u => u.Id == request.CustomerId);
+            var user=await _context.Customers.FirstOrDefaultAsync(u => u.Id == request.CustomerId&& !u.IsDeleted);
             if(user==null)
                 return Result<int>.Failure(Messages.NotFound.WithTarget("User"));
             user.Addresses.Add(new Address

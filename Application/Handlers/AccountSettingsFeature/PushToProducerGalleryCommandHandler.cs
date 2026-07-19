@@ -30,7 +30,7 @@ namespace Application.Handlers.AccountSettingsFeature
         public async Task<Result<Guid>> Handle(PushToProducerGalleryCommand request, CancellationToken cancellationToken)
         {
 
-            var producer = await _context.Producers.FirstOrDefaultAsync(p => p.Id == request.ProducerId);
+            var producer = await _context.Producers.FirstOrDefaultAsync(p => p.Id == request.ProducerId&& !p.IsDeleted);
             if (producer == null)
                 return Result<Guid>.Failure(Messages.NotFound.WithTarget("User"));
             foreach (var d in request.Images)

@@ -26,7 +26,7 @@ namespace Application.Handlers.AccountSettingsFeature
         public async Task<Result<decimal>> Handle(AddBalanceCommand request, CancellationToken cancellationToken)
         {
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == request.UserId && !u.IsDeleted, cancellationToken);
 
             if (user == null)
                 return Result<decimal>.Failure(Messages.NotFound.WithTarget("User"));

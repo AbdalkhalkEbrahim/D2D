@@ -17,7 +17,7 @@ namespace Application.Handlers.Admin
         public async Task<Result<List<TicketResponse>>> Handle(GetAllTicketsQuery request, CancellationToken cancellationToken)
         {
             int allCount, resolvedCount, openCount, inProgressCount;
-            var tickets = _context.Tickets.Select(t => new { t.CreatedAt, t.Id, t.IssueType, t.Status, t.User.FirstName, t.User.LastName, t.Description });
+            var tickets = _context.Tickets.Where(u=>!u.User.IsDeleted).Select(t => new { t.CreatedAt, t.Id, t.IssueType, t.Status, t.User.FirstName, t.User.LastName, t.Description });
             var count = tickets.GroupBy(_ => 1).Select(t => new
             {
                 AllCount = tickets.Count(),

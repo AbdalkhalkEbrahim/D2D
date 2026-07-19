@@ -20,7 +20,7 @@ namespace Application.Handlers.Admin
         }
         public async Task<Result<List<RecentUsersResponse>>> Handle(RecentUsersQuery request, CancellationToken cancellationToken)
         {
-            return _context.Users.Select(u => new RecentUsersResponse
+            return _context.Users.Where(u=>!u.IsDeleted).Select(u => new RecentUsersResponse
             {
                 Id = u.Id,
                 Name=u.FirstName+" "+u.LastName,

@@ -21,7 +21,7 @@ namespace Application.Handlers.AccountSettingsFeature
         }
         public async Task<Result> Handle(AddTicketCommand request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId&& !u.IsDeleted);
             if (user == null)
                 return Result.Failure(Messages.NotFound.WithTarget("User"));
             var ticket = new Tickets

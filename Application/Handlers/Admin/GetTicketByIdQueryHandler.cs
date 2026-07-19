@@ -20,7 +20,7 @@ namespace Application.Handlers.Admin
         }
         public async Task<Result<TicketResponse>> Handle(GetTicketByIdQuery request, CancellationToken cancellationToken)
         {
-            var ticket = _context.Tickets.Select(t=>new { t.CreatedAt,t.Id,t.IssueType,t.Status,t.User.FirstName,t.User.LastName,t.Description }).FirstOrDefault(t => t.Id == request.TicketId);
+            var ticket = _context.Tickets.Where(u=>!u.User.IsDeleted).Select(t=>new { t.CreatedAt,t.Id,t.IssueType,t.Status,t.User.FirstName,t.User.LastName,t.Description }).FirstOrDefault(t => t.Id == request.TicketId);
             if(ticket == null)
                 return Result<TicketResponse>.Failure(Messages.NotFound.WithTarget("Default"));
             return new TicketResponse

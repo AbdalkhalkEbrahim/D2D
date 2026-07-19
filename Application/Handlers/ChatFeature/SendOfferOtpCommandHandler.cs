@@ -29,7 +29,7 @@ namespace Application.Handlers.ChatFeature
         public async Task<Result<OtpResponse>> Handle(SendOfferOtpCommand request, CancellationToken cancellationToken)
         {
             var userEmail = await _context.Users
-                .Where(u => u.Id == request.CustomerId || u.Id == request.ProducerId)
+                .Where(u => (u.Id == request.CustomerId || u.Id == request.ProducerId)&&!u.IsDeleted)
                 .Select(u => new {u.Id, u.Email }).ToListAsync();
             if(userEmail.Count != 2)
                 return Result<OtpResponse>.Failure(Messages.NotFound.WithTarget("User"));

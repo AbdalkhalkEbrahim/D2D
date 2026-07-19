@@ -25,7 +25,7 @@ namespace Application.Handlers.Admin
         public async Task<Result<CollaborationsWithCounts>> Handle(GetAllProducerOffersQuery request, CancellationToken cancellationToken)
         {
             int AllCount, CompletedCount, ClosedCount, PendingCount = ClosedCount = CompletedCount = AllCount = 0;
-            var offer = _context.ProducerCustomerOffers
+            var offer = _context.ProducerCustomerOffers.Where(p=>!p.Producer.IsDeleted)
                 .Select(po => new
                 {
                     OfferId = po.CustomerPublishedOffer.ID,

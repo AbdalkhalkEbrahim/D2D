@@ -44,11 +44,12 @@ namespace Application.Handlers.OffersFeature
                     cd.CustomerPublishedOffer.IsActive,
                     cd.CustomerPublishedOffer.TargetAudience,
                     IDs = cd.CustomerPublishedOffer.ProducerCustomerOffers.Select(pco => pco.ID),
-                    cd.Customer.Addresses.FirstOrDefault(add=>add.Selected).City
+                    cd.Customer.Addresses.FirstOrDefault(add=>add.Selected).City,
+                    cd.Customer.IsDeleted
 
                 })
                 .AsNoTracking()
-                .Where(d => d.Status == DesignStatus.Published&& !d.IsActive );
+                .Where(d => d.Status == DesignStatus.Published&& !d.IsActive&& !d.IsDeleted );
 
             //Console.WriteLine(design is null);
 

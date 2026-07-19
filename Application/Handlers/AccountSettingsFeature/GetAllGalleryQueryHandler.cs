@@ -24,9 +24,9 @@ namespace Application.Handlers.AccountSettingsFeature
         }
         public async Task<Result<Dictionary<string,List<string>>>> Handle(GetAllGalleryQuery request, CancellationToken cancellationToken)
         {
-            var producer = await _context.Producers.Select(p => new { p.Id, 
-                Gallery = p.ProducerDesigns.Select(g=> new {g.Name, Images = g.DesignImages.Select(di=>di.ImageUrl).ToList()}) })
-                .FirstOrDefaultAsync(p => p.Id == request.ProducerId);
+            var producer = await _context.Producers.Select(p => new { p.Id, p.IsDeleted,
+                Gallery = p.ProducerDesigns.Where(g=>!g.IsDeleted).Select(g=> new {g.Name, Images = g.DesignImages.Select(di=>di.ImageUrl).ToList()}) })
+                .FirstOrDefaultAsync(p => p.Id == request.ProducerId&&!p.IsDeleted );
 
             if (producer == null)
                 return Result<Dictionary<string, List<string>>>.Failure(Messages.NotFound.WithTarget("User"));

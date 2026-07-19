@@ -17,7 +17,7 @@ namespace Application.Commands.OffersFeature.CustomOffer
         public string ProducerId { get; set; }
         public Guid DesignId {  get; set; }
         public string? Name { get; set; }
-        public List<IFormFile>? Designs { get; set; }
+       // public List<IFormFile>? Designs { get; set; }
         public JsonPatchDocument<ProducerPublishedDesignFromGallery> data { get; set; }
     }
 }

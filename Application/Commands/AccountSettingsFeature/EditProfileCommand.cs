@@ -16,7 +16,7 @@ namespace Application.Commands.AccountSettingsFeature
     public class EditProfileCommand : IRequest<Result<ProfileResponse>>
     { 
         public required string UserId { get; set; }
-        public IFormFile? ProfileImageUrl { get; set; }
+        //public IFormFile? ProfileImageUrl { get; set; }
         public JsonPatchDocument<ProfileRequest> data { get; set; }
 
     }

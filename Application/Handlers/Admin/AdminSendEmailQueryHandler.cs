@@ -24,7 +24,7 @@ namespace Application.Handlers.Admin
         }
         public async Task<Result> Handle(AdminSendEmailQuery request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.Select(u => new { u.Id, u.Email }).FirstOrDefaultAsync(u => u.Id == request.UserId);
+            var user = await _context.Users.Where(u=>!u.IsDeleted).Select(u => new { u.Id, u.Email }).FirstOrDefaultAsync(u => u.Id == request.UserId);
             if(user == null)
                 return Result.Failure(Messages.BadRequest.WithTarget("Usser"));
 

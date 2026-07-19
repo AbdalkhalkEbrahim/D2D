@@ -24,7 +24,7 @@ namespace Application.Handlers.Admin
         }
         public async Task<Result> Handle(ChangeUserStatusCommand request, CancellationToken cancellationToken)
         {
-            var user = _context.Users.Where(c => c.Id == request.Id);
+            var user = _context.Users.Where(c => c.Id == request.Id&& !c.IsDeleted);
             if(!user.Any())
                 return Result.Failure(Messages.NotFound.WithTarget("User"));
 

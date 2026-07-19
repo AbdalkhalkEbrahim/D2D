@@ -157,5 +157,14 @@ namespace Presentation.Controllers
             return HandleResult(result);
         }
 
+        [HttpDelete ("delete-producer-offer")]
+        [ProducesResponseType(typeof(ReviewAndRateResponse), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeleteOffer([FromQuery] DeleteProducerOfferCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
     }
 }

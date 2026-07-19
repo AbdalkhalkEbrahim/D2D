@@ -13,7 +13,7 @@ namespace Application.Handlers.AccountSettingsFeature
         public GetProfileQueryHandler(D2DContext context) { _context = context; }
         public async Task<Result<ProfileResponse>> Handle(GetProfileQuery request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.Select(u => new
+            var user = await _context.Users.Where(u=>!u.IsDeleted).Select(u => new
             {
                 u.Id,
                 u.FirstName,

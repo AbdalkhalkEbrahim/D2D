@@ -16,7 +16,7 @@ namespace Application.Handlers.NotificationFeature
         }
         public async Task<Result<List<NotificationResponse>>> Handle(GetAllNotificationsQuery request, CancellationToken cancellationToken)
         {
-           var notifications =await _context.Notifications.AsNoTracking().Where(n => n.UserID == request.UserId).Select(n => new NotificationResponse
+           var notifications =await _context.Notifications.AsNoTracking().Where(n => n.UserID == request.UserId&& !n.User.IsDeleted).Select(n => new NotificationResponse
            {
                Id = n.ID,
                Title = n.Title,
