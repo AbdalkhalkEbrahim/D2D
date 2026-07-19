@@ -13,15 +13,15 @@ namespace Domain.Entities.Designs
         public string Location { get; set; }
         public bool IsDeleted { get; set; } = false;
 
-        public virtual CustomerCustomOffer? CustomerCustomOffer { get; set; }
-        [ForeignKey(nameof(CustomerCustomOffer))]
-        public Guid? CustomerCustomOfferID { get; set; }
+        public virtual ICollection< CustomerCustomOffer> CustomerCustomOffers { get; set; }
+       
         public virtual Producer Producer { get; set; }
         [ForeignKey("Producer")]
         public string ProducerID { get; set; }
         public ProducerDesign():base()
         {
             Status = DesignStatus.Published;
+            CustomerCustomOffers=new List<CustomerCustomOffer>();
         }
     }
 }

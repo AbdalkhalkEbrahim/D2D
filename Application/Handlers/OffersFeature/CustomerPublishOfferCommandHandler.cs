@@ -3,7 +3,9 @@ using Application.Interfaces;
 using Application.Response;
 using Domain.Entities.Designs;
 using Domain.Entities.Offers;
+using Domain.Entities.Shared;
 using Domain.Enums.Status;
+using Domain.Enums.Types;
 using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
@@ -32,6 +34,7 @@ namespace Application.Handlers.OffersFeature
             .Where(cd => cd.ID == request.DesignId&& !cd.Customer.IsDeleted)
             .Select(cd => new
             {
+
                 cd.CustomerId,
                 HasAlreadyPublished = _context.CustomerPublishedOffers.Any(cpo => cpo.CustomerDesignID == request.DesignId ),
                 cd.Notes,
@@ -82,7 +85,16 @@ namespace Application.Handlers.OffersFeature
                 var file = await _uploadService.ChangeFileFormat(new List<IFormFile> { request.SizesFile });
                 BackgroundJob.Enqueue<IUploadService>(uploadService =>  uploadService.UploadAndSaveSingleFile(offer, "SizesFile", file[0], true));
             }
-            //    await _hubContext.Clients.Group("ProducersGroup").SendAsync("onDesignPuplished", new { Message = "A new offer has been published." });
+            //await _hubContext.Clients.Group("ProducersGroup").SendAsync("onDesignPuplished", new { Message = "A new offer has been published." });
+
+            var notification = new Notification
+            {
+                Content = $"you recieved a new offer on {offer.Name} from your gallery",
+                NotificationsType = NotificationsType.RecieveOffer,
+                UserID = offer.CustomerID,
+                Title = "New Offer"
+            };
+            _context.Add(notification);
 
             await _context.SaveChangesAsync();
 

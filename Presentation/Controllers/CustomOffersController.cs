@@ -1,6 +1,4 @@
-﻿using Application.Commands.OffersFeature;
-using Application.Commands.OffersFeature.CustomOffer;
-using Application.Handlers.OffersFeature.CustomOffers;
+﻿using Application.Commands.OffersFeature.CustomOffer;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +28,16 @@ namespace Presentation.Controllers
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeletePublishedDesign([FromBody] SoftDeleteDesignFromGalleryCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpPost("customer-request-on-producer-design")]
+        [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status410Gone)]
+        public async Task<IActionResult> CustomerRequestedOffer(CustomerRequestOfferOnProducerDesignCommad dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

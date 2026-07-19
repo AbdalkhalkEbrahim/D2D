@@ -36,6 +36,7 @@ namespace Infrastructure.Data.Context
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<ProducerCustomerOffer> ProducerCustomerOffers { get; set; }
         public DbSet<CustomerPublishedOffer> CustomerPublishedOffers { get; set; }
+        public DbSet<CustomerCustomOffer> CustomerCustomOffers { get; set; }
         public DbSet<ProducerDesignerOffer> ProducerDesignerOffers { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Message> Messages { get; set; }
