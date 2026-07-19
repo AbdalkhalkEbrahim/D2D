@@ -15,6 +15,7 @@ namespace Domain.DTOs.DesignDtos
         public List<string> Images { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? PublishedAt { get; set; } = null;
+        public string Notes { get; set; } 
 
     }
 }

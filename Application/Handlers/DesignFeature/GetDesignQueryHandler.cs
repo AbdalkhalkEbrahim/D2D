@@ -21,14 +21,16 @@ namespace Application.Handlers.DesignFeature
             if (design == null)
                 return Result<DesignResponse>.Failure(Messages.NotFound.WithTarget("Design"));
 
+            var images = design.DesignImages.Select(d => d.ImageUrl).ToList();
             return new DesignResponse
             {
                 Id = design.ID,
                 Name = design.Name,
                 Status = design.Status.ToString(),
-                Images = new List<string> { design.DesignImages.Last().ImageUrl },
+                Images = images,
                 CreatedAt = design.CreatedAt,
-                PublishedAt = design.UpdatedAt
+                PublishedAt = design.UpdatedAt,
+                Notes = design.Notes
             };
         }
     }

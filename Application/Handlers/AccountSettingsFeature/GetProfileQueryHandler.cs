@@ -30,7 +30,11 @@ namespace Application.Handlers.AccountSettingsFeature
             if (user == null)
                 return Result<ProfileResponse>.Failure(Messages.NotFound.WithTarget("User"));
 
-            var profile = new ProfileResponse
+            var Gallery = _context.ProducersGallery
+                .Select(g => new { g.ProducerId, g.Description, g.ImageUrl }).Where(g => g.ProducerId == request.UserId);
+            
+
+        var profile = new ProfileResponse
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,

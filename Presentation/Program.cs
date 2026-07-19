@@ -75,7 +75,7 @@ namespace Presentation
             });
 
             builder.Services.AddHostedService<D2DBackgroundServices>();
-
+            builder.Services.AddHttpClient();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IOtpService, OtpService>();
             builder.Services.AddScoped<IAuthService, AuthService>();

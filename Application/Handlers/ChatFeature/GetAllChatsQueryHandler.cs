@@ -50,7 +50,8 @@ namespace Application.Handlers.ChatFeature
                  DesignImageUrl = ch.Customer.Designs
                      .Where(d => d.Status == DesignStatus.Published && d.CustomerPublishedOffer.IsActive)
                      .Select(d => d.DesignImages.Select(img => img.ImageUrl).FirstOrDefault())
-                     .FirstOrDefault()
+                     .FirstOrDefault(),
+                     ch.CreatedAt
              });
 
             if (!chats.Any() || chats.All(ch=>ch.OfferStatus == ActiveOfferStatus.Canceled.ToString()))
@@ -69,7 +70,7 @@ namespace Application.Handlers.ChatFeature
             }
 
             chats.OrderByDescending(ch => ch.LastMessageInfo.CreatedAt);
-
+            
             var response = chats.Select(ch => new ChatsResponse
             {
                 ChatId = ch.ChatId,
