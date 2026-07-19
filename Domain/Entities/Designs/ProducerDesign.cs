@@ -1,12 +1,18 @@
 ﻿using Domain.Entities.Offers;
 using Domain.Entities.Producers;
 using Domain.Enums.Status;
+using Domain.Enums.Types;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities.Designs
 {
     public class ProducerDesign: Design
     {
+        public DesignType DesignType { get; set; }
+        public string Category { get; set; }
+        public string Location { get; set; }
+        public bool IsDeleted { get; set; } = false;
+
         public virtual CustomerCustomOffer? CustomerCustomOffer { get; set; }
         [ForeignKey(nameof(CustomerCustomOffer))]
         public Guid? CustomerCustomOfferID { get; set; }

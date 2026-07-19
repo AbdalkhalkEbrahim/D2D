@@ -1,15 +1,20 @@
 ﻿using Application.Commands.AccountSettingsFeature;
 using Application.Interfaces;
 using Application.Response;
+using Domain.Entities.Customers;
+using Domain.Entities.Designers;
+using Domain.Entities.Designs;
 using Domain.Entities.Producers;
+using Domain.Enums.Types;
 using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Handlers.AccountSettingsFeature
 {
-    public class PushToProducerGalleryCommandHandler : IRequestHandler<PushToProducerGalleryCommand, Result>
+    public class PushToProducerGalleryCommandHandler : IRequestHandler<PushToProducerGalleryCommand, Result<Guid>>
     {
         private readonly D2DContext _context;
         private readonly IUploadService _uploadService;
@@ -22,27 +27,40 @@ namespace Application.Handlers.AccountSettingsFeature
             _uploadService = uploadService;
             _modelesService = modelesService;
         }
-        public async Task<Result> Handle(PushToProducerGalleryCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> Handle(PushToProducerGalleryCommand request, CancellationToken cancellationToken)
         {
 
             var producer = await _context.Producers.FirstOrDefaultAsync(p => p.Id == request.ProducerId);
             if (producer == null)
-                return Result.Failure(Messages.NotFound.WithTarget("User"));
-            foreach (var img in request.Images)
+                return Result<Guid>.Failure(Messages.NotFound.WithTarget("User"));
+            foreach (var d in request.Images)
             {
-                var score = await _modelesService.AnalaysisImageScore(prompt, img);
+
+                if (producer.ProducerDesigns.Any(design => design.Name == request.Name && design.ProducerID == request.ProducerId))
+                    return Result<Guid>.Failure(new Error("Conflict", $"There is an already design with name {request.Name}, change it then try to save again"));
+                var score = await _modelesService.AnalaysisImageScore(prompt, d);
 
                 if (!score.IsSuccess || score.Value <= 0.75m)
-                    return Result.Failure(Messages.BadRequest.WithTarget("ValidationError"));
+                    return Result<Guid>.Failure(new Error("BadRequest", "The content uploaded violates our polices, please try to upload again more suitable content"));
             }
             //check for uniqueness
-            var gallery = new ProducerGallery { ProducerId = request.ProducerId, Description = request.Description };
+            var gallery = new ProducerDesign { ProducerID = request.ProducerId, Notes = request.Description,
+                Category = request.Category, Location = request.Location, Name = request.Name, DesignType = DesignType.ProducerGallery  };
 
-            var filesToBeUploaded = await _uploadService.ChangeFileFormat(request.Images);
-            foreach (var image in filesToBeUploaded) 
-                BackgroundJob.Enqueue<IUploadService>(uploadService => uploadService.UploadAndSaveSingleFile(gallery, "ImageUrl", image, true));
+            _context.Add(gallery);
 
-            return Result.Success();
+            foreach (var d in request.Images)
+            {
+                var designToBeUploaded = await _uploadService.ChangeFileFormat(new List<IFormFile> { d });
+                var designImage = new DesignImage { ProducerDesignID = gallery.ID };
+
+                BackgroundJob.Enqueue<IUploadService>(uploadService =>
+                       uploadService.UploadAndSaveSingleFile(designImage, "ImageUrl", designToBeUploaded[0], false));
+            }
+
+            await _context.SaveChangesAsync();
+
+            return gallery.ID;
         }
     }
 }

@@ -61,7 +61,8 @@ namespace Application.Response
                 { "Design", "This design title or file has already been uploaded." },
                 {"Address","Cannot delete the selected address. Please select another address before deleting this one." },
                 {"Offer","This design has already a publish offer" },
-                {"CustomerOffer","You've already submitted a request for this offer" }
+                {"CustomerOffer","You've already submitted a request for this offer" },
+                {"Active","This is an active offer already, you can't accept more requests on it" }
 
             });
 

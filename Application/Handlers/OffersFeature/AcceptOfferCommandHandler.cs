@@ -30,13 +30,11 @@ namespace Application.Handlers.OffersFeature
             if (producerOffer == null)
                 return Result<int>.Failure(Messages.NotFound.WithTarget("Offer"));
 
+            if (producerOffer.CustomerPublishedOffer.IsActive)
+                return Result<int>.Failure(Messages.Conflict.WithTarget("Active"));
+
             if (request.Amount != producerOffer.Diposit)
             {
-                Console.WriteLine("====================================");
-                Console.WriteLine(request.Amount);
-                Console.WriteLine("====================================");
-                Console.WriteLine(producerOffer.Diposit);
-
                 return Result<int>.Failure(Messages.BadRequest.WithTarget("Balance"));
             }
 
@@ -50,19 +48,24 @@ namespace Application.Handlers.OffersFeature
             customer.Balance -= request.Amount;
             
             producerOffer.OfferStatus = OfferStatus.Accepted;
-            producerOffer.CustomerPublishedOffer.IsActive= true;
+
+            await _context.CustomerPublishedOffers.Where(o => o.ID == producerOffer.CustomerPublishedOfferID)
+                .ExecuteUpdateAsync(s => s.SetProperty(
+                    u => u.IsActive,
+                    u => true));
 
             await _context.Users
                 .Where(u => u.UserType == UserType.Admin)
                 .ExecuteUpdateAsync(s => s.SetProperty(
                     u => u.Balance,
-                    u => u.Balance + request.Amount
+                    u => u.Balance + request.Amount*0.15m
                 ), cancellationToken);
 
 
             await _context.ProducerCustomerOffers.Where(po => po.ID != request.ProducerOfferId && po.CustomerPublishedOfferID == producerOffer.CustomerPublishedOfferID).ExecuteUpdateAsync(s => s.SetProperty(
                     u => u.OfferStatus,
                     u => OfferStatus.Declined));
+
             var chat = new Chat
             {
                 CustomerID = producerOffer.CustomerPublishedOffer.CustomerID,
@@ -78,9 +81,12 @@ namespace Application.Handlers.OffersFeature
                 PublishedOfferID = producerOffer.CustomerPublishedOffer.ID,
                 CreatedAt = DateTime.UtcNow,
                 IsPublishedOfferActive = true
+
             };
             await _context.ActiveOfferLogs.AddAsync(activeLog, cancellationToken);
+            //_context.Attach(activation);
 
+            //_context.Entry(activation).Property(a=>a.IsActive).IsModified = true;
             await _context.SaveChangesAsync(cancellationToken);
 
 

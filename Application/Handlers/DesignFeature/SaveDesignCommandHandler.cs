@@ -34,7 +34,7 @@ namespace Application.Handlers.DesignFeature
             foreach (var d in request.Files)
             {
 
-                if (customer.Designs.Any(design => design.Name == request.Name))
+                if (customer.Designs.Any(design => design.Name == request.Name && design.CustomerId == request.Id))
                     return Result<List<Guid>>.Failure(new Error("Conflict", $"There is an already design with name {request.Name}, change it then try to save again"));
                 var score = await _modelesService.AnalaysisImageScore(prompt, d);
 
@@ -50,8 +50,10 @@ namespace Application.Handlers.DesignFeature
                 Notes = request.Notes,
 
             };
+
             await _context.AddAsync(design);
             Ids.Add(design.ID);
+
             foreach (var d in request.Files)
             {
                 var designToBeUploaded = await _uploadService.ChangeFileFormat(new List<IFormFile> { d });

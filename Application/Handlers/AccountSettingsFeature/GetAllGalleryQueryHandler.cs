@@ -5,6 +5,7 @@ using Domain.Entities.Shared;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens.Experimental;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,14 +24,19 @@ namespace Application.Handlers.AccountSettingsFeature
         }
         public async Task<Result<Dictionary<string,List<string>>>> Handle(GetAllGalleryQuery request, CancellationToken cancellationToken)
         {
-            var producer = await _context.Producers.Select(p => new { p.Id, Gallery = p.Gallery.Select(g=> new {g.Description, g.ImageUrl}) }).FirstOrDefaultAsync(p => p.Id == request.ProducerId);
+            var producer = await _context.Producers.Select(p => new { p.Id, 
+                Gallery = p.ProducerDesigns.Select(g=> new {g.Name, Images = g.DesignImages.Select(di=>di.ImageUrl).ToList()}) })
+                .FirstOrDefaultAsync(p => p.Id == request.ProducerId);
+
             if (producer == null)
                 return Result<Dictionary<string, List<string>>>.Failure(Messages.NotFound.WithTarget("User"));
 
-            var response = producer.Gallery.GroupBy(g => g.Description)
+            var g = producer.Gallery;
+            
+            var response = producer.Gallery.GroupBy(g => g.Name)
                 .ToDictionary(
                     g => g.Key ?? string.Empty,
-                    g => g.Select(x => x.ImageUrl).ToList()
+                    g => g.SelectMany(x => x.Images).ToList()
                 );
             return response;
         }

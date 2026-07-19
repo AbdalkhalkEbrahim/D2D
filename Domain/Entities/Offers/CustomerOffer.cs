@@ -12,7 +12,7 @@ namespace Domain.Entities.Offers
         public OfferStatus CustomerOfferStatus { get; set; }
         public /*required*/ virtual Customer Customer { get; set; }
         [ForeignKey("Customer")]
-        public required string CustomerID { get; set; }
+        public string CustomerID { get; set; }
 /*        public virtual ICollection<ProducerCustomerOffer> ProducerCustomerOffer { get; set; }
 */        /*public CustomerOffer()
         {
