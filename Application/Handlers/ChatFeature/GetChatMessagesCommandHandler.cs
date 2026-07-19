@@ -65,7 +65,7 @@ namespace Application.Handlers.ChatFeature
                 await _context.SaveChangesAsync(cancellationToken);
             }
 
-            var currentStep = allStepsWithSelected.Step;
+           // var currentStep = allStepsWithSelected.Step;
             return new ChatWithMessagesResponse
             {
                 Messages = messages
@@ -83,10 +83,10 @@ namespace Application.Handlers.ChatFeature
                     ? chat.ProducerName
                     : chat.CustomerName,
 
-                Steps = allStepsWithSelected.Steps
-                    .ToDictionary(
-                        x => x,
-                        x => x == currentStep),
+                //Steps = allStepsWithSelected.Steps
+                //    .ToDictionary(
+                //        x => x,
+                //        x => x == currentStep),
 
                 OtherId = request.UserType == UserType.Customer
                     ? chat.ProducerID

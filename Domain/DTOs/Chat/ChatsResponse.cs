@@ -14,8 +14,8 @@ namespace Domain.DTOs.Chat
         public int ChatId { get; set; }
         public string DesignImageUrl { get; set; }
         public string AnonName { get; set; }
-        public DateTime LastMessageAgo { get; set; }
-        public string LastMessage { get; set; }
+        public DateTime? LastMessageAgo { get; set; }
+        public string? LastMessage { get; set; }
         public string OfferStatus { get; set; }
         public bool IsRead { get; set; }
     }

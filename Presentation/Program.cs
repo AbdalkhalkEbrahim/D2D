@@ -66,7 +66,7 @@ namespace Presentation
                     maxRetryDelay: TimeSpan.FromSeconds(30),
                     errorNumbersToAdd: null));
             });
-
+            builder.Services.AddHttpClient();
             builder.Services.AddSwaggerGen(options =>
             {
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

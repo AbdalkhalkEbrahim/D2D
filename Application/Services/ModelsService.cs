@@ -647,7 +647,11 @@ namespace Application.Services
             if (report == null)
                 return Result.Failure(Messages.BadRequest.WithTarget("NullValue"));
 
-            if (!report.NationalIdMatched)
+            if (_context.Users.Any(u => u.NationalId == report.NationalId))
+                return Result.Failure(Messages.Conflict.WithTarget("Default"));
+
+
+            if (!report.NationalIdMatched )
             {
                 user.IdentityStatus = VerificationStatus.Rejected;
 

@@ -75,10 +75,10 @@ namespace Application.Handlers.ChatFeature
                 ChatId = ch.ChatId,
                 DesignImageUrl = ch.DesignImageUrl,
                 AnonName = ch.AnonName,
-                LastMessageAgo = ch.LastMessageInfo.CreatedAt,
-                LastMessage = ch.LastMessageInfo.Content.Last(),
+                LastMessageAgo = ch.LastMessageInfo == null? default: ch.LastMessageInfo.CreatedAt,
+                LastMessage = ch.LastMessageInfo == null? null : ch.LastMessageInfo.Content.Last(),
                 OfferStatus = ch.OfferStatus,
-                IsRead = ch.LastMessageInfo.IsRead
+                IsRead = ch.LastMessageInfo != null && ch.LastMessageInfo.IsRead
             }).ToList();
 
             return response;

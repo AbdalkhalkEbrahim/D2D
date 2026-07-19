@@ -50,6 +50,7 @@ namespace Application.Handlers.OffersFeature
             customer.Balance -= request.Amount;
             
             producerOffer.OfferStatus = OfferStatus.Accepted;
+            producerOffer.CustomerPublishedOffer.IsActive= true;
 
             await _context.Users
                 .Where(u => u.UserType == UserType.Admin)
@@ -75,7 +76,8 @@ namespace Application.Handlers.OffersFeature
                 Chat = chat,
                 Step= ActiveOfferStatus.Negotiating.ToString(),
                 PublishedOfferID = producerOffer.CustomerPublishedOffer.ID,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                IsPublishedOfferActive = true
             };
             await _context.ActiveOfferLogs.AddAsync(activeLog, cancellationToken);
 
