@@ -102,7 +102,7 @@ namespace Application.Response
                 { "PasswordChangeFailed", "Failed to update the password. Please verify your current password and try again." },
                 { "ImageUploadFailed", "Failed to upload one or more images. Please try again." },
                 {"Design", "The selected design maybe published or not exsisted " },
-                {"DraftedDesign", "The selected design is in drafted state already" },
+                {"DraftedDesign", "The selected design is in drafted state already" }
             });
 
 

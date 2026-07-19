@@ -69,7 +69,7 @@ namespace Application.Handlers.ChatFeature
                 chats = chats.Where(ch => ch.OfferStatus == ActiveOfferStatus.Completed.ToString() && ch.OfferStatus != ActiveOfferStatus.Canceled.ToString());
             }
 
-            chats.OrderByDescending(ch => ch.LastMessageInfo.CreatedAt);
+            chats.OrderByDescending(ch => ch.LastMessageInfo.CreatedAt).ThenByDescending(ch=>ch.CreatedAt);
             
             var response = chats.Select(ch => new ChatsResponse
             {
