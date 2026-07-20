@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Commands.AccountSettingsFeature
 {
-    public class PushToProducerGalleryCommand:IRequest<Result<Guid>>
+    public class AddProducerDesignCommand:IRequest<Result<Guid>>
     {
         public string ProducerId { get; set; }
         public string Name { get; set; }

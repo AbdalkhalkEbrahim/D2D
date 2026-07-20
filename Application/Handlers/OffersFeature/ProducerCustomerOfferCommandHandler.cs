@@ -74,7 +74,7 @@ namespace Application.Handlers.OffersFeature
             })
             .ToDictionaryAsync(
                 d => d.AnonName,
-                d => new Tuple<string,int>(d.Content, d.Rate), 
+                d => (d.Content, d.Rate), 
                 cancellationToken
             );
             return new ProducerOfferResponse
