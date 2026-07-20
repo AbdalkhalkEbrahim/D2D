@@ -102,7 +102,7 @@ namespace Presentation.Controllers
         [HttpPatch("edit-profile")]
         [ProducesResponseType(typeof(ProfileResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> EditProfile([FromBody] EditProfileCommand dto)
+        public async Task<IActionResult> EditProfile([FromForm] EditProfileCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

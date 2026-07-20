@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.DTOs.AccountSettingsDtos
+﻿namespace Domain.DTOs.AccountSettingsDtos
 {
     public class GalleryResponse
     {
-        public string Description { get; set; }
-        public string ImageUrl { get; set; }    
+        public Guid DesignId { get; set; }
+        public string ProducerAnonName { get; set; } 
+        public List<Tuple<int,string>> Images {  get; set; }
+        public string Notes { get; set; }
+        public string Location  { get; set; }
+        public string Category { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

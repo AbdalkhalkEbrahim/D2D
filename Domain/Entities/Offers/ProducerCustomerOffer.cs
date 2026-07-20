@@ -12,7 +12,7 @@ namespace Domain.Entities.Offers
         public virtual ICollection<CustomerCustomOffer>? CustomerCustomOffer { get; set; }
         public virtual CustomerPublishedOffer? CustomerPublishedOffer { get; set; }
         [ForeignKey(nameof(CustomerPublishedOffer))]
-        public Guid CustomerPublishedOfferID { get; set; }
+        public Guid? CustomerPublishedOfferID { get; set; }
         public int Duration { get; set; }
         public decimal Diposit { get; set; }
         public List<ProducerSteps> Steps { get; set; }

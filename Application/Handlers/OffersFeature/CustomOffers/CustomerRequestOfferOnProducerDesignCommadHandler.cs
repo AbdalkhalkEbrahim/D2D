@@ -75,7 +75,8 @@ namespace Application.Handlers.OffersFeature.CustomOffers
                 Content = $"you recieved a new offer on {RequestedDesign.Name} from your gallery ",
                 NotificationsType= NotificationsType.RecieveOffer,
                 UserID= RequestedDesign.ProducerID,
-                Title="New Offer"
+                Title="New Offer",
+                RefrenceUrl = ""
             };
             _context.Add(notification);
             await _context.SaveChangesAsync();

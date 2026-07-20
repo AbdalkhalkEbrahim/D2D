@@ -4,6 +4,7 @@ using Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(D2DContext))]
-    partial class D2DContextModelSnapshot : ModelSnapshot
+    [Migration("20260720002235_customercutomofferwithproducerdesigns")]
+    partial class customercutomofferwithproducerdesigns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1247,7 +1250,7 @@ namespace Infrastructure.Migrations
                 {
                     b.HasBaseType("Domain.Entities.Offers.ProducerOffer");
 
-                    b.Property<Guid?>("CustomerPublishedOfferID")
+                    b.Property<Guid>("CustomerPublishedOfferID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Diposit")
@@ -1805,7 +1808,8 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Entities.Offers.CustomerPublishedOffer", "CustomerPublishedOffer")
                         .WithMany("ProducerCustomerOffers")
                         .HasForeignKey("CustomerPublishedOfferID")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.Producers.Producer", "Producer")
                         .WithMany("ProducerCustomerOffers")

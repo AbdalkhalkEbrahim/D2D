@@ -20,17 +20,16 @@ namespace Application.Handlers.OffersFeature.CustomOffers
         }
         public async Task<Result<ProducerOfferResponse>> Handle(ProducerCustomOfferCommand request, CancellationToken cancellationToken)
         {
-            var producer = await _context.Producers.AsNoTracking().Include(p => p.ProducerCustomerOffers).Where(p => p.Id == request.ProducerId && !p.IsDeleted).Select(p => p.ProducerCustomerOffers).FirstOrDefaultAsync();
-            if (producer == null)
+            var customOffer = await _context.CustomerCustomOffers.Select(cco => new { cco.ProducerDesign, cco.ID, cco.ProducerCustomerOfferID })
+                .FirstOrDefaultAsync(cco => cco.ID == request.CustomerCustomOfferId && cco.ProducerDesign.ProducerID == request.ProducerId);
+
+            if (customOffer == null)
                 return Result<ProducerOfferResponse>.Failure(Messages.NotFound.WithTarget("User"));
             // if (offer != null || (offer.Producer.UserType != UserType.Producer))
-            if (producer.Any(pco => pco.CustomerPublishedOfferID == request.CustomerCustomOfferId))
-                return Result<ProducerOfferResponse>.Failure(Messages.Conflict.WithTarget("CustomerOffer"));
 
             var producerOffer = new ProducerCustomerOffer
             {
                 ProducerID = request.ProducerId,
-                CustomerPublishedOfferID = request.CustomerCustomOfferId,
                 Price = request.Price,
                 Duration = request.DeliveryTime,
                 Diposit = request.Diposit,
@@ -44,6 +43,13 @@ namespace Application.Handlers.OffersFeature.CustomOffers
 
             _context.Add(producerOffer);
             await _context.SaveChangesAsync();
+
+            var raws = await _context.CustomerCustomOffers.Where(cco=>cco.ID == request.CustomerCustomOfferId)
+                .ExecuteUpdateAsync(property => property.SetProperty(p => p.ProducerCustomerOfferID, p => producerOffer.ID));
+
+            if (raws == 0)
+                return Result<ProducerOfferResponse>.Failure(new Error("BadRequest", "Can't reply to this offer"));
+
             BackgroundJob.Enqueue<INotificationService>(notificationService => notificationService.SendProducerOfferNotification(request.CustomerId, producerOffer.ID));
 
 

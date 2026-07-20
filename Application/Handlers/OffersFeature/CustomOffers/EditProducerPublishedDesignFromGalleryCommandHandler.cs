@@ -78,9 +78,6 @@ namespace Application.Handlers.OffersFeature.CustomOffers
                 request.data.Operations.ForEach(op => entityPatch.Operations.Add(new jsonPatch.Operation<ProducerDesign>(op.op, op.path, op.from, op.value)));
 
                 entityPatch.ApplyTo(design);
-            
-           
-           
             await _context.SaveChangesAsync();
 
             return Result.Success();

@@ -1,42 +1,40 @@
 ﻿using Application.Queries.OffersFeature;
+using Application.Queries.OffersFeature.CustomOffers;
 using Application.Response;
 using Domain.DTOs.OfferDtos;
-using Domain.Enums.Status;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-
-namespace Application.Handlers.OffersFeature
+namespace Application.Handlers.OffersFeature.CustomOffers
 {
-    public class GetProducerCustomerOfferByIdQueryHandler : IRequestHandler<GetProducerCustomerOfferByIdQuery, Result<ProducerOfferResponse>>
+    public class GetProducerCustomOfferByIdQueryHandler : IRequestHandler<GetProducerCustomOfferByIdQuery, Result<ProducerOfferResponse>>
     {
         private readonly D2DContext _context;
-        public GetProducerCustomerOfferByIdQueryHandler(D2DContext context)
+        public GetProducerCustomOfferByIdQueryHandler(D2DContext context)
         {
             _context = context;
         }
-        public async Task<Result<ProducerOfferResponse>> Handle(GetProducerCustomerOfferByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Result<ProducerOfferResponse>> Handle(GetProducerCustomOfferByIdQuery request, CancellationToken cancellationToken)
         {
             var offer = await _context.ProducerCustomerOffers.
-        Select(po => new {
-            po.OfferStatus,
-            po.ProducerID,
-            po.Producer.AnonName,
-            po.Producer.Reviews,
-            po.Producer.Rate,
-            po.Price,
-            po.ID,
-            po.CreatedAt,
-            po.UpdatedAt,
-            po.Diposit,
-            po.Duration,
-            po.CustomerPublishedOffer.Name,
-            po.Steps,
-            ImagesUrls = po.CustomerPublishedOffer.CustomerDesign.DesignImages.Select(im => im.ImageUrl),
-            po.Producer.IsDeleted
-        })
-        .FirstOrDefaultAsync(po => po.ID == request.ProducerOfferId && po.OfferStatus != OfferStatus.Declined && !po.IsDeleted);
+                Select(po => new {
+                    po.OfferStatus,
+                    po.ProducerID,
+                    po.Producer.AnonName,
+                    po.Producer.Reviews,
+                    po.Producer.Rate,
+                    po.Price,
+                    po.ID,
+                    po.CreatedAt,
+                    po.UpdatedAt,
+                    po.Diposit,
+                    po.Duration,
+                    Name = po.CustomerCustomOffer.Select(cco => cco.Name).FirstOrDefault(),
+                    po.Steps,
+                    ImagesUrls = po.CustomerCustomOffer.SelectMany(cco => cco.ProducerDesign.DesignImages.Select(im => im.ImageUrl)),
+                    po.Producer.IsDeleted
+                })
+                .FirstOrDefaultAsync(po => po.ID == request.ProducerOfferId && po.OfferStatus != OfferStatus.Declined && !po.IsDeleted);
 
             if (offer == null)
                 return Result<ProducerOfferResponse>.Failure(Messages.NotFound.WithTarget("Offer"));
@@ -92,4 +90,6 @@ namespace Application.Handlers.OffersFeature
             };
         }
     }
+}
+
 }

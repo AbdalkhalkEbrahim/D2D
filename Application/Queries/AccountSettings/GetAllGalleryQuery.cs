@@ -1,16 +1,16 @@
 ﻿using Application.Response;
 using Domain.DTOs.AccountSettingsDtos;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Queries.AccountSettings
 {
-    public class GetAllGalleryQuery:IRequest<Result<Dictionary<string, List<string>>>>
+    public class GetAllGalleryQuery:IRequest<Result<List<GalleryResponse>>>
     {
         public string ProducerId { get; set; }
+        public string? Location { get; set; }
+        public string? Category { get; set; }
+        public string? Name { get; set; }
+        public int? PageSize { get; set; }
+        public int? PageCount { get; set; }
     }
 }

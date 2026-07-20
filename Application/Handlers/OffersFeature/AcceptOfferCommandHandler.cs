@@ -1,12 +1,9 @@
 ﻿using Application.Commands.OffersFeature;
 using Application.Response;
 using Domain.Entities.Chats;
-using Domain.Entities.Offers;
-using Domain.Entities.Producers;
 using Domain.Enums.Status;
 using Domain.Enums.Types;
 using Infrastructure.Data.Context;
-using Infrastructure.Migrations;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using AL = Domain.Entities.Offers;

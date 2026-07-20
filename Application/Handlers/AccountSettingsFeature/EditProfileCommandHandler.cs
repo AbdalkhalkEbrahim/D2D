@@ -1,7 +1,9 @@
 ﻿using Application.Commands.AccountSettingsFeature;
 using Application.Interfaces;
 using Application.Response;
+using Azure;
 using Domain.DTOs.AccountSettingsDtos;
+using Domain.DTOs.PublishedDesignDtos;
 using Domain.Entities.Customers;
 using Domain.Entities.Designs;
 using Domain.Entities.Offers;
@@ -12,6 +14,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using jsonPatch = Microsoft.AspNetCore.JsonPatch.Operations;
 
 
@@ -41,11 +44,18 @@ namespace Application.Handlers.AccountSettingsFeature
             //    uploadService.UploadAndSaveSingleFile(user,"ProfileImageUrl", fileToBeUploaded[0], true));
             //}
 
-            var entityPatch = new JsonPatchDocument<User>();
-            request.data.Operations.ForEach(op => entityPatch.Operations.Add(new jsonPatch.Operation<User>(op.op, op.path, op.from, op.value)));
-            // Console.WriteLine(request.data.Operations.Count);
-            entityPatch.ApplyTo(user);
+            /*if (!string.IsNullOrWhiteSpace(request.data))
+            {
+                var patchDoc = JsonConvert.DeserializeObject<JsonPatchDocument<User>>(request.data);
+                if (patchDoc != null)
+                {
+                    var entityPatch = new JsonPatchDocument<User>();
+                    patchDoc.Operations.ForEach(op => entityPatch.Operations.Add(new jsonPatch.Operation<User>(op.op, op.path, op.from, op.value)));
 
+                    entityPatch.ApplyTo(user);
+                }
+            }
+*/
             //_context.Update(user);
             await _context.SaveChangesAsync();
 
