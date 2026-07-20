@@ -1,9 +1,11 @@
 ﻿using Application.Commands.AccountSettingsFeature;
+using Application.Commands.OffersFeature;
 using Application.Commands.OffersFeature.CustomOffer;
 using Application.Handlers.OffersFeature.CustomOffers;
 using Application.Queries.AccountSettings;
 using Application.Queries.OffersFeature.CustomOffers;
 using Domain.DTOs.OfferDtos;
+using Domain.DTOs.Review_RateDtos;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -123,6 +125,15 @@ namespace Presentation.Controllers
         [ProducesResponseType(statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(statusCode: StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetRequestById([FromQuery] GetCustomRequestByIdQuery dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpDelete("delete-customer-custom-offer")]
+        [ProducesResponseType(typeof(ReviewAndRateResponse), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeleteOffer([FromQuery] DeclineCustomerOfferCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

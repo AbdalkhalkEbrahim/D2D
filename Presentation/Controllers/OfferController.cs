@@ -121,10 +121,10 @@ namespace Presentation.Controllers
         }
 
 
-        [HttpPost("decline-producer-offer")]
+        [HttpDelete("decline-producer-offer")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeclineProducerOffer([FromBody] DeclineProducerOfferCommand dto)
+        public async Task<IActionResult> DeclineProducerOffer([FromQuery] DeclineProducerOfferCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

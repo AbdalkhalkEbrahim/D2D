@@ -24,15 +24,9 @@ namespace Application.Handlers.OffersFeature
         }
         public async Task<Result> Handle(DeclineProducerOfferCommand request, CancellationToken cancellationToken)
         {
-            var offer = await _context.ProducerCustomerOffers.Select(o => new {o.ID,o.ProducerID,o.OfferStatus,o.UpdatedAt, o.CustomerPublishedOffer.Name}).FirstOrDefaultAsync(o => o.ID == request.OfferId);
-            if (offer == null)
+            var offer = await _context.ProducerCustomerOffers.Where(o => o.ID == request.OfferId && o.OfferStatus== OfferStatus.OnHold).ExecuteDeleteAsync(cancellationToken);
+            if (offer == 0)
                 return Result.Failure(Messages.NotFound.WithTarget("Offer"));
-            var producerCustomerOffer = new ProducerCustomerOffer { ID=offer.ID ,OfferStatus = OfferStatus.Declined, UpdatedAt = DateTime.UtcNow };
-            _context.Attach(producerCustomerOffer);
-            _context.Entry(producerCustomerOffer).Property(o => o.OfferStatus).IsModified = true;
-            _context.Entry(producerCustomerOffer).Property(o => o.UpdatedAt).IsModified = true;
-            await _context.SaveChangesAsync();
-            BackgroundJob.Enqueue<INotificationService>(notificationService => notificationService.DeclineProducerOfferNotification(offer.ProducerID,offer.Name));
             return Result.Success();
         }
     }
