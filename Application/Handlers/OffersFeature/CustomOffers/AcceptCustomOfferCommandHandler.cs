@@ -2,6 +2,7 @@
 using Application.Response;
 using Domain.Entities.Chats;
 using Domain.Entities.Offers;
+using Domain.Entities.Shared;
 using Domain.Enums.Status;
 using Domain.Enums.Types;
 using Infrastructure.Data.Context;
@@ -50,10 +51,11 @@ namespace Application.Handlers.OffersFeature.CustomOffers
 
             producerOffer.OfferStatus = OfferStatus.Accepted;
 
-            await _context.CustomerCustomOffers.Where(o => o.ID == producerOffer.CustomOfferId)
-                .ExecuteUpdateAsync(s => s.SetProperty(
-                    u => u.IsActive,
-                    u => true));
+            await _context.CustomerCustomOffers
+            .Where(o => o.ID == producerOffer.CustomOfferId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.IsActive, true)
+                .SetProperty(u => u.CustomerOfferStatus, OfferStatus.Accepted));
 
 
             await _context.Users
@@ -84,6 +86,7 @@ namespace Application.Handlers.OffersFeature.CustomOffers
 
             };
             await _context.ActiveOfferLogs.AddAsync(activeLog, cancellationToken);
+            producerOffer.OfferStatus= OfferStatus.Accepted;
             //_context.Attach(activation);
 
             //_context.Entry(activation).Property(a=>a.IsActive).IsModified = true;

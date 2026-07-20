@@ -28,6 +28,7 @@ namespace Domain.DTOs.OfferDtos
         public decimal MaxPrice { get; set; }
         public bool IsActive { get; set; }
         public List<Guid>? ProducersOffersIDs { get; set; }
+        public Guid? ProducerCustomOffer {  get; set; }
         public DateTime PublishedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
