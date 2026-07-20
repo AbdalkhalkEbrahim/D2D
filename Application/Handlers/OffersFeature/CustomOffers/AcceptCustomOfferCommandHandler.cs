@@ -1,4 +1,4 @@
-﻿using Application.Commands.OffersFeature;
+﻿using Application.Commands.OffersFeature.CustomOffer;
 using Application.Response;
 using Domain.Entities.Chats;
 using Domain.Entities.Offers;
@@ -7,27 +7,32 @@ using Domain.Enums.Types;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Application.Handlers.OffersFeature
+namespace Application.Handlers.OffersFeature.CustomOffers
 {
-    public class AcceptOfferCommandHandler : IRequestHandler<AcceptOfferCommand, Result<int>>
+    public class AcceptCustomOfferCommandHandler : IRequestHandler<AcceptCustomOfferCommand, Result<int>>
     {
         private readonly D2DContext _context;
 
-        public AcceptOfferCommandHandler(D2DContext context)
+        public AcceptCustomOfferCommandHandler(D2DContext context)
         {
             _context = context;
         }
-        public async Task<Result<int>> Handle(AcceptOfferCommand request, CancellationToken cancellationToken)
+        public async Task<Result<int>> Handle(AcceptCustomOfferCommand request, CancellationToken cancellationToken)
         {
             var producerOffer = await _context.ProducerCustomerOffers
-                .Include(po => po.CustomerPublishedOffer)
-                .FirstOrDefaultAsync(po => po.ID == request.ProducerOfferId && po.OfferStatus == OfferStatus.OnHold, cancellationToken);
+               .Include(po => po.CustomerCustomOffer)
+               .FirstOrDefaultAsync(po => po.ID == request.ProducerOfferId && po.OfferStatus == OfferStatus.OnHold, cancellationToken);
 
             if (producerOffer == null)
                 return Result<int>.Failure(Messages.NotFound.WithTarget("Offer"));
 
-            if (producerOffer.CustomerPublishedOffer.IsActive)
+            if (producerOffer.OfferStatus== OfferStatus.Accepted)
                 return Result<int>.Failure(Messages.Conflict.WithTarget("Active"));
 
             if (request.Amount != producerOffer.Diposit)
@@ -37,16 +42,15 @@ namespace Application.Handlers.OffersFeature
 
 
             var customer = await _context.Customers
-                .FirstOrDefaultAsync(u => u.Id == producerOffer.CustomerPublishedOffer.CustomerID, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == producerOffer.CustomerCustomOffer.CustomerID, cancellationToken);
 
-            if(customer.Balance < request.Amount)
+            if (customer.Balance < request.Amount)
                 return Result<int>.Failure(Messages.BadRequest.WithTarget("PriceMismatch"));
-
             customer.Balance -= request.Amount;
-            
+
             producerOffer.OfferStatus = OfferStatus.Accepted;
 
-            await _context.CustomerPublishedOffers.Where(o => o.ID == producerOffer.CustomerPublishedOfferID)
+            await _context.CustomerCustomOffers.Where(o => o.ID == producerOffer.CustomOfferId)
                 .ExecuteUpdateAsync(s => s.SetProperty(
                     u => u.IsActive,
                     u => true));
@@ -56,29 +60,27 @@ namespace Application.Handlers.OffersFeature
                 .Where(u => u.UserType == UserType.Admin)
                 .ExecuteUpdateAsync(s => s.SetProperty(
                     u => u.Balance,
-                    u => u.Balance + request.Amount*0.15m
+                u => u.Balance + request.Amount * 0.15m
                 ), cancellationToken);
 
 
-            await _context.ProducerCustomerOffers.Where(po => po.ID != request.ProducerOfferId && po.CustomerPublishedOfferID == producerOffer.CustomerPublishedOfferID).ExecuteUpdateAsync(s => s.SetProperty(
-                    u => u.OfferStatus,
-                    u => OfferStatus.Declined));
+           
 
             var chat = new Chat
             {
-                CustomerID = producerOffer.CustomerPublishedOffer.CustomerID,
+                CustomerID = producerOffer.CustomerCustomOffer.CustomerID,
                 ProducerID = producerOffer.ProducerID,
-                Name = producerOffer.CustomerPublishedOffer.Name
+                Name = producerOffer.CustomerCustomOffer.Name
             };
             await _context.Chats.AddAsync(chat, cancellationToken);
 
             var activeLog = new ActiveOfferLogs
             {
                 Chat = chat,
-                Step= ActiveOfferStatus.Negotiating.ToString(),
-                PublishedOfferID = producerOffer.CustomerPublishedOffer.ID,
+                Step = ActiveOfferStatus.Negotiating.ToString(),
+                CustomOfferID = producerOffer.CustomerCustomOffer.ID,
                 CreatedAt = DateTime.UtcNow,
-                IsPublishedOfferActive = true
+                IsCustomOfferActive = true
 
             };
             await _context.ActiveOfferLogs.AddAsync(activeLog, cancellationToken);
@@ -89,9 +91,6 @@ namespace Application.Handlers.OffersFeature
 
 
             return chat.ID;
-
-
-
         }
     }
 }

@@ -26,6 +26,7 @@ namespace Application.Handlers.OffersFeature.CustomOffers
             if (customOffer == null)
                 return Result<ProducerOfferResponse>.Failure(Messages.NotFound.WithTarget("User"));
             // if (offer != null || (offer.Producer.UserType != UserType.Producer))
+           
 
             var producerOffer = new ProducerCustomerOffer
             {
@@ -33,6 +34,7 @@ namespace Application.Handlers.OffersFeature.CustomOffers
                 Price = request.Price,
                 Duration = request.DeliveryTime,
                 Diposit = request.Diposit,
+                CustomOfferId=customOffer.ID,
                 Steps = request.Steps.Select(s => new ProducerSteps
                 {
                     StepName = s.Key,

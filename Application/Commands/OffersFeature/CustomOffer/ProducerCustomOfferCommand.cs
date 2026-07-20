@@ -17,6 +17,6 @@ namespace Application.Commands.OffersFeature.CustomOffer
         public decimal Price { get; set; }
         public decimal Diposit { get; set; }
         public int DeliveryTime { get; set; }
-        public Dictionary<string, Tuple<int, int>> Steps { get; set; }
+        public Dictionary<string, (int, int)> Steps { get; set; }
     }
 }
