@@ -2,6 +2,7 @@
 using Application.Queries.OffersFeature.CustomOffers;
 using Application.Response;
 using Domain.DTOs.OfferDtos;
+using Domain.Enums.Status;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -90,6 +91,6 @@ namespace Application.Handlers.OffersFeature.CustomOffers
             };
         }
     }
-}
+
 
 }

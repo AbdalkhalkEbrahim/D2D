@@ -143,21 +143,5 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
-        [HttpPost("add-to-gallery")]
-        [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> AddToGallery([FromQuery] PushToProducerGalleryCommand dto)
-        {
-            var result = await _mediator.Send(dto);
-            return HandleResult(result);
-        }
-        [HttpGet("get-all-gallery")]
-        [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetAllGallery([FromQuery] GetAllGalleryQuery dto)
-        {
-            var result = await _mediator.Send(dto);
-            return HandleResult(result);
-        }
     }
 }
