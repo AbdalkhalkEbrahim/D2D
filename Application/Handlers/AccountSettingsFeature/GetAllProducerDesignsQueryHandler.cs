@@ -27,8 +27,8 @@ namespace Application.Handlers.AccountSettingsFeature
         public async Task<Result<ProducerDesignsResponse>> Handle(GetAllProducerDesignsQuery request, CancellationToken cancellationToken)
         {
             var producer = await _context.Producers.Select(p => new { p.Id, p.IsDeleted, p.AnonName,
-                Gallery = p.ProducerDesigns.Where(g=>!g.IsDeleted).Select(g=> new {g.ID, g.IsDeleted, g.Notes, g.Category, g.CreatedAt, g.UpdatedAt, g.Location, g.Name,
-                    Images = g.DesignImages.Select(di=> new { di.ID, di.ImageUrl }).ToList()}) })
+                Gallery = p.ProducerDesigns.Where(g=>!g.IsDeleted).Select(g=> new {g.ID, g.IsDeleted, g.Notes, g.Category, g.CreatedAt, g.UpdatedAt, g.Location, g.Name, Images = g.DesignImages.Select(di => new { di.ID, g.Name, di.ImageUrl }).ToList() })
+            })
                 .FirstOrDefaultAsync(p => p.Id == request.ProducerId && !p.IsDeleted);
 
             if (producer == null)
@@ -50,21 +50,19 @@ namespace Application.Handlers.AccountSettingsFeature
             if (request.PageNum.HasValue && request.PageNum.Value > 0)
                 gallery.Skip(((int)request.PageNum - 1) * (int)request.PageSize).Take((int)request.PageSize);
 
-            
-            var response = gallery.GroupBy(g => g.Name)
-                .ToDictionary(
-                    g => g.Key ?? string.Empty,
-                    g => g.SelectMany(x => x.Images).ToList()
-                );
+
             var finalResponse = new ProducerDesignsResponse { AnonName = request.UserType.ToLower() == UserType.Producer.ToString().ToLower() ? null : producer.AnonName };
             var galleryResponse = new List<GalleryResponse>();
-            foreach ( var item in gallery)
+            foreach (var item in gallery)
             {
                 galleryResponse.Add(new GalleryResponse
                 {
-                    DesignId = item.ID,
-                  
-                    Images = item.Images.Select(im=> new Tuple<int,string>(im.ID,im.ImageUrl)).ToList(),
+                    Design = item.Images
+                    .GroupBy(img => (item.ID, img.Name ?? string.Empty))
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(img => img.ImageUrl).ToList()
+                    ),
                     Notes = item.Notes,
                     Location = item.Location,
                     Category = item.Category,

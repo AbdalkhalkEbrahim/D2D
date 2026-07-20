@@ -27,7 +27,7 @@ namespace Application.Handlers.ChatFeature
         {
 
             var chats = _context.Chats
-             .Where(ch => (ch.CustomerID == request.UserId || ch.ProducerID == request.UserId) && !ch.IsClosed)
+             .Where(ch => (ch.CustomerID == request.UserId || ch.ProducerID == request.UserId))
              .Select(ch => new
              {
                  ChatId = ch.ID,
@@ -76,7 +76,7 @@ namespace Application.Handlers.ChatFeature
                 ChatId = ch.ChatId,
                 DesignImageUrl = ch.DesignImageUrl,
                 AnonName = ch.AnonName,
-                LastMessageAgo = ch.LastMessageInfo == null? default: ch.LastMessageInfo.CreatedAt,
+                LastMessageAgo = ch.LastMessageInfo == null? ch.CreatedAt: ch.LastMessageInfo.CreatedAt,
                 LastMessage = ch.LastMessageInfo == null? null : ch.LastMessageInfo.Content.Last(),
                 OfferStatus = ch.OfferStatus,
                 IsRead = ch.LastMessageInfo != null && ch.LastMessageInfo.IsRead

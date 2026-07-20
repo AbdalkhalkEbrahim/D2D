@@ -66,6 +66,7 @@ namespace Application.Handlers.OffersFeature
                 MaxPrice = request.TargetPrice,
                 PrintingType = request.PrintingType,
                 Sizes = request.Sizes
+                
             };
 
             /*  design.UpdatedAt = DateTime.UtcNow;
@@ -80,11 +81,12 @@ namespace Application.Handlers.OffersFeature
             _context.Entry(designStub).Property(d => d.UpdatedAt).IsModified = true;
             _context.Entry(designStub).Property(d => d.CustomerPublishedOfferID).IsModified = true;
             _context.Entry(designStub).Property(d => d.Status).IsModified = true;
-            if (request.SizesFile != null)
+
+           /* if (request.SizesFile != null)
             {
                 var file = await _uploadService.ChangeFileFormat(new List<IFormFile> { request.SizesFile });
                 BackgroundJob.Enqueue<IUploadService>(uploadService =>  uploadService.UploadAndSaveSingleFile(offer, "SizesFile", file[0], true));
-            }
+            }*/
             //await _hubContext.Clients.Group("ProducersGroup").SendAsync("onDesignPuplished", new { Message = "A new offer has been published." });
 
             var notification = new Notification
@@ -92,7 +94,8 @@ namespace Application.Handlers.OffersFeature
                 Content = $"you recieved a new offer on {offer.Name} from your gallery",
                 NotificationsType = NotificationsType.RecieveOffer,
                 UserID = offer.CustomerID,
-                Title = "New Offer"
+                Title = "New Offer",
+                RefrenceUrl = ""
             };
             _context.Add(notification);
 

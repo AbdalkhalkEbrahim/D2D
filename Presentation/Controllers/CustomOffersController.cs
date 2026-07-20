@@ -27,6 +27,15 @@ namespace Presentation.Controllers
             var result = await _mediator.Send(dto);
             return HandleResult(result);
         }
+
+        [HttpGet("get-all-producers-Profiles")]
+        [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllProfiles([FromQuery]GetAllProfilesQuery dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
         [HttpGet("get-all-gallery")]
         [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

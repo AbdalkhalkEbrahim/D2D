@@ -45,16 +45,24 @@ namespace Application.Handlers.ChatFeature
                 .Select(a => new
                 {
                     a.Chat.ID,
+                    CName = a.Chat.Customer.AnonName,
+                    PName = a.Chat.Customer.AnonName,
                     a.Chat.ProducerID,
                     a.Chat.CustomerID,
-                    CustomerOfferId = a.CustomerPublishedOffer.CustomerID,
+                    CustomerOffer = a.CustomerPublishedOffer,
+                    ProducerOfferId = a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(po=>po.OfferStatus == OfferStatus.Accepted).ID,
                     OfferId = a.CustomerPublishedOffer.ID,
                     CEmail = a.Chat.Customer.Email,
                     PEmail = a.Chat.Producer.Email
                 })
                 .Where(c => c.ProducerID == request.ProducerId && c.CustomerID == request.CustomerId &&
-                c.CustomerOfferId == request.CustomerId)
-                .Select(a => new { a.ID, a.OfferId, a.CEmail, a.PEmail })
+                c.CustomerOffer.CustomerID == request.CustomerId)
+                .Select(a => new { a.ID, a.OfferId, a.CEmail, a.PEmail,
+                    a.CName ,
+                    a.PName,
+                    a.ProducerOfferId,
+                    CustomerOfferId = a.CustomerOffer.ID
+                })
                 .FirstOrDefaultAsync();
 
             if (newActiveOfferLogIDs == null)
@@ -73,7 +81,7 @@ namespace Application.Handlers.ChatFeature
             {
                 NotificationsType = NotificationsType.ActveOfferStatuesChanged,
                 Title = "Offer completed",
-                Content = $"Your offer with {request.ProducerId} has been completed successfully, add a review",
+                Content = $"Your offer with {newActiveOfferLogIDs.CName} has been completed successfully, add a review",
                 RefrenceUrl = $"/reviews/add-review/{request.ProducerId}",
                 UserID = request.CustomerId
             };
@@ -81,7 +89,7 @@ namespace Application.Handlers.ChatFeature
             {
                 NotificationsType = NotificationsType.ActveOfferStatuesChanged,
                 Title = "Offer completed",
-                Content = $"Your offer with {request.CustomerId} has been completed successfully, check your balance",
+                Content = $"Your offer with {newActiveOfferLogIDs.PName} has been completed successfully, check your balance",
                 RefrenceUrl = $"/accountSettings/get-profile/{request.ProducerId}",
                 UserID = request.ProducerId
             };
@@ -109,8 +117,16 @@ namespace Application.Handlers.ChatFeature
             _context.Entry(updatedChat).Property(ch => ch.IsClosed).IsModified = true; 
             _context.Entry(updatedChat).Property(ch => ch.UpdatedAt).IsModified = true;
 
+
             await _context.AddAsync(activeOfferLog);
             await _context.SaveChangesAsync(cancellationToken);
+
+            await _context.ProducerCustomerOffers.Where(o => o.ID == newActiveOfferLogIDs.ProducerOfferId)
+                .ExecuteUpdateAsync(prop => prop.SetProperty(p => p.OfferStatus, p => OfferStatus.Completed));
+
+            await _context.CustomerPublishedOffers.Where(o => o.ID == newActiveOfferLogIDs.CustomerOfferId)
+               .ExecuteUpdateAsync(prop => prop.SetProperty(p => p.CustomerOfferStatus, p => OfferStatus.Completed));
+
             return request.ProducerId;
         }
     }
