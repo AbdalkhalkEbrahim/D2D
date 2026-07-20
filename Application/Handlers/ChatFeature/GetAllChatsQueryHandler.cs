@@ -32,6 +32,7 @@ namespace Application.Handlers.ChatFeature
              {
                  ChatId = ch.ID,
                  AnonName = request.Type == UserType.Customer ? ch.Producer.AnonName : ch.Customer.AnonName,
+
                  LastMessageInfo = ch.Messages
                      .OrderByDescending(m => m.CreatedAt)
                      .Select(m => new
@@ -42,15 +43,17 @@ namespace Application.Handlers.ChatFeature
                          IsSenderMe = m.Sender.ToString() == request.Type.ToString()
                      })
                      .FirstOrDefault(),
+
                  OfferStatus = _context.ActiveOfferLogs
                      .Where(ao => ao.ChatID == ch.ID)
                      .OrderByDescending(ao => ao.CreatedAt)
                      .Select(ao => ao.Step)
                      .FirstOrDefault(),
+
                  DesignImageUrl = ch.Customer.Designs
                      .Where(d => d.Status == DesignStatus.Published && d.CustomerPublishedOffer.IsActive)
-                     .Select(d => d.DesignImages.Select(img => img.ImageUrl).FirstOrDefault())
-                     .FirstOrDefault(),
+                     .Select(d => d.DesignImages.Select(img => img.ImageUrl).FirstOrDefault()).ToList(),
+
                      ch.CreatedAt
              });
 
