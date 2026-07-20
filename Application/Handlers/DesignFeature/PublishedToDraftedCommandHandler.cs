@@ -19,10 +19,11 @@ namespace Application.Handlers.DesignFeature
            var design =await _context.CustomerDesigns.Include(d=>d.CustomerPublishedOffer).FirstOrDefaultAsync(d => d.ID == request.DesignId && d.Status==DesignStatus.Published);
             if (design == null)
                 return Result<Guid>.Failure(Messages.BadRequest.WithTarget("DraftedDesign"));
-            if (_context.ActiveOfferLogs.Any(al => al.PublishedOfferID == design.CustomerPublishedOfferID))
-                return Result<Guid>.Failure(Messages.Conflict.WithTarget("ActiveDesign"));
+/*            if (_context.ActiveOfferLogs.Any(al => al.PublishedOfferID == design.CustomerPublishedOfferID))
+                return Result<Guid>.Failure(Messages.Conflict.WithTarget("ActiveDesign"));*/
 
             design.Status = DesignStatus.Drafted;
+            
             _context.Remove(design.CustomerPublishedOffer);
             
             _context.SaveChanges();

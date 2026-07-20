@@ -2,8 +2,7 @@
 {
     public class GalleryResponse
     {
-        public Guid DesignId { get; set; }
-        public List<Tuple<int,string>> Images {  get; set; }
+        public Dictionary<(Guid,string),List<string>> Design {  get; set; }
         public string Notes { get; set; }
         public string Location  { get; set; }
         public string Category { get; set; }

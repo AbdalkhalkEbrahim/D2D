@@ -25,7 +25,7 @@ namespace Application.Handlers.ChatFeature
         private readonly IOtpService _otpService;
         private readonly IChatService _chatService;
         private readonly INotificationService _notificationService;
-        public VerifyOfferOtpCommandHandler(D2DContext context, IOtpService otpService, IChatService chatService, INotificationService notificationService) 
+        public VerifyOfferOtpCommandHandler(D2DContext context, IOtpService otpService, IChatService chatService, INotificationService notificationService)
         {
             _context = context;
             _otpService = otpService;
@@ -34,11 +34,11 @@ namespace Application.Handlers.ChatFeature
         }
         public async Task<Result<string>> Handle(VerifyOfferOtpCommand request, CancellationToken cancellationToken)
         {
-            var otp =await _context.Otps.FirstOrDefaultAsync(o => o.UserId == request.ProducerId && o.Code == request.Code);
+            var otp = await _context.Otps.FirstOrDefaultAsync(o => o.UserId == request.ProducerId && o.Code == request.Code);
 
-            var isValid =_otpService.VerifyOtp(otp);
+            var isValid = _otpService.VerifyOtp(otp);
 
-            if(!isValid.IsSuccess)
+            if (!isValid.IsSuccess)
                 return Result<string>.Failure(isValid.Error);
 
             var newActiveOfferLogIDs = await _context.ActiveOfferLogs
@@ -54,16 +54,28 @@ namespace Application.Handlers.ChatFeature
                     OfferId = a.CustomerPublishedOffer.ID,
                     CEmail = a.Chat.Customer.Email,
                     PEmail = a.Chat.Producer.Email,
-                    CustomerPublishedOfferId= a.PublishedOfferID,
-                    CustomOfferId=a.CustomOfferID,
-                    ProducerPublishedOfferId=a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(p=>p.OfferStatus== OfferStatus.Accepted).ID,
+                    CustomerPublishedOfferId = a.PublishedOfferID,
+                    CustomOfferId = a.CustomOfferID,
+                    ProducerPublishedOfferId = a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(p => p.OfferStatus == OfferStatus.Accepted).ID,
                     ProducerCustomOfferId = a.CustomerCustomOffer.ProducerCustomerOfferID
 
                 })
                 .Where(c => c.ProducerID == request.ProducerId && c.CustomerID == request.CustomerId &&
                 c.CustomerID == request.CustomerId)
-                .Select(a => new { a.ID, a.OfferId, a.CEmail, a.PEmail,a.CustomTotalAmount,a.PublishedTotalAmount,a.CustomDeposit,a.PublishedDeposit,
-                a.ProducerCustomOfferId,a.ProducerPublishedOfferId,a.CustomerPublishedOfferId,a.CustomOfferId})
+                .Select(a => new {
+                    a.ID,
+                    a.OfferId,
+                    a.CEmail,
+                    a.PEmail,
+                    a.CustomTotalAmount,
+                    a.PublishedTotalAmount,
+                    a.CustomDeposit,
+                    a.PublishedDeposit,
+                    a.ProducerCustomOfferId,
+                    a.ProducerPublishedOfferId,
+                    a.CustomerPublishedOfferId,
+                    a.CustomOfferId
+                })
                 .FirstOrDefaultAsync();
 
             if (newActiveOfferLogIDs == null)
@@ -91,17 +103,17 @@ namespace Application.Handlers.ChatFeature
                 total = newActiveOfferLogIDs.PublishedDeposit - deposit;
             }
 
-            
+
             await _context.Users
             .Where(u => u.Id == request.ProducerId)
             .ExecuteUpdateAsync(s => s.SetProperty(
                 u => u.Balance,
-            u => u.Balance + (total-(total*0.15m))
+            u => u.Balance + (total - (total * 0.15m))
             ), cancellationToken);
-            
 
 
-                var cNotification = new Notification
+
+            var cNotification = new Notification
             {
                 NotificationsType = NotificationsType.ActveOfferStatuesChanged,
                 Title = "Offer completed",
@@ -161,7 +173,7 @@ namespace Application.Handlers.ChatFeature
 
             var updatedChat = new Chat { ID = newActiveOfferLogIDs.ID, IsClosed = true, UpdatedAt = DateTime.UtcNow };
             _context.Attach(updatedChat);
-            _context.Entry(updatedChat).Property(ch => ch.IsClosed).IsModified = true; 
+            _context.Entry(updatedChat).Property(ch => ch.IsClosed).IsModified = true;
             _context.Entry(updatedChat).Property(ch => ch.UpdatedAt).IsModified = true;
 
             await _context.AddAsync(activeOfferLog);
