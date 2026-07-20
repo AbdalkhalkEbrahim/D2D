@@ -9,7 +9,9 @@ namespace Domain.Entities.Offers
         public virtual Producer Producer { get; set; }
         [ForeignKey(nameof(Producer))]
         public string ProducerID { get; set; }
-        public virtual ICollection<CustomerCustomOffer>? CustomerCustomOffer { get; set; }
+        public virtual CustomerCustomOffer CustomerCustomOffer { get; set; }
+        [ForeignKey(nameof(CustomerCustomOffer))]
+        public Guid? CustomOfferId { get; set; }
         public virtual CustomerPublishedOffer? CustomerPublishedOffer { get; set; }
         [ForeignKey(nameof(CustomerPublishedOffer))]
         public Guid? CustomerPublishedOfferID { get; set; }
@@ -17,9 +19,6 @@ namespace Domain.Entities.Offers
         public decimal Diposit { get; set; }
         public List<ProducerSteps> Steps { get; set; }
 
-        public ProducerCustomerOffer()
-        {
-            CustomerCustomOffer = new List<CustomerCustomOffer>();
-        }
+        
     }
 }

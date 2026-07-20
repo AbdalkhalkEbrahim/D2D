@@ -4,13 +4,6 @@ using Domain.DTOs.OfferDtos;
 using Domain.Enums.Status;
 using Infrastructure.Data.Context;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Application.Handlers.OffersFeature
 {
     public class GetAllProducerOffersQueryHandler : IRequestHandler<GetAllProducerOffersQuery, Result<List<ProducerOfferResponse>>>

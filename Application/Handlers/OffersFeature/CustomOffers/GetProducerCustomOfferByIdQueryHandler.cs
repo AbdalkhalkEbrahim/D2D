@@ -30,9 +30,9 @@ namespace Application.Handlers.OffersFeature.CustomOffers
                     po.UpdatedAt,
                     po.Diposit,
                     po.Duration,
-                    Name = po.CustomerCustomOffer.Select(cco => cco.Name).FirstOrDefault(),
+                    Name = po.CustomerCustomOffer.Name,
                     po.Steps,
-                    ImagesUrls = po.CustomerCustomOffer.SelectMany(cco => cco.ProducerDesign.DesignImages.Select(im => im.ImageUrl)),
+                    ImagesUrls = po.CustomerCustomOffer.ProducerDesign.DesignImages.Select(im => im.ImageUrl),
                     po.Producer.IsDeleted
                 })
                 .FirstOrDefaultAsync(po => po.ID == request.ProducerOfferId && po.OfferStatus != OfferStatus.Declined && !po.IsDeleted);

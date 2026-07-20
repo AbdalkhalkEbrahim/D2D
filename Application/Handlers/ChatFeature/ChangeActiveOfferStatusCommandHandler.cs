@@ -3,6 +3,7 @@ using Application.Interfaces;
 using Application.Response;
 using Domain.Entities.Offers;
 using Domain.Entities.Shared;
+using Domain.Enums.Status;
 using Domain.Enums.Types;
 using Infrastructure.Data.Context;
 using MediatR;
@@ -25,9 +26,12 @@ namespace Application.Handlers.ChatFeature
         public async Task<Result<string>> Handle(ChangeActiveOfferStatusCommand request, CancellationToken cancellationToken)
         {
             var activeOffer = await _context.ActiveOfferLogs
-                .Select(ao=>new {ao.ID, ao.Chat, ao.PublishedOfferID, ao.CustomOfferID, ao.IsCustomOfferActive,
-                    ao.IsPublishedOfferActive, PublishedName = ao.CustomerPublishedOffer.Name, CustomName = ao.CustomerCustomOffer.Name})
-                .Where(ao => ao.Chat.ID == request.ChatID).FirstOrDefaultAsync();
+                .Select(ao=>new {ao.ID, ao.Chat, ao.PublishedOfferID, ao.CustomOfferID,ao.Chat.CustomerID,CustomTotalAmount= ao.CustomerCustomOffer.ProducerCustomerOffer.Price,
+                    PublishedTotalAmount= ao.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c => c.ProducerID == ao.Chat.ProducerID).Price,
+                    ao.IsCustomOfferActive,ao.Chat.ProducerID,CustomDeposit=ao.CustomerCustomOffer.ProducerCustomerOffer.Diposit,
+                    PublishedDeposit=ao.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c=>c.ProducerID==ao.Chat.ProducerID).Diposit,
+                    ao.IsPublishedOfferActive, PublishedName = ao.CustomerPublishedOffer.Name, CustomName = ao.CustomerCustomOffer.Name ,ao.Step,ao.CreatedAt})
+                .Where(ao => ao.Chat.ID == request.ChatID).OrderByDescending(ao=>ao.CreatedAt).FirstOrDefaultAsync();
             
             if(activeOffer == null) 
                 return Result<string>.Failure(Messages.NotFound.WithTarget("Offer"));
@@ -50,6 +54,46 @@ namespace Application.Handlers.ChatFeature
              _notificationService.ChangeStatus(cNotification, pNotification)
              };
             await Task.WhenAll(task);
+
+            decimal deposit = 0m, total=0m;
+            if (activeOffer.PublishedDeposit == null)
+            {
+                deposit = activeOffer.CustomDeposit;
+                total=activeOffer.CustomTotalAmount-deposit;
+            }
+            else
+            {
+              deposit = activeOffer.PublishedDeposit;
+              total=activeOffer.PublishedDeposit-deposit;
+            }
+
+            if(activeOffer.Step== ActiveOfferStatus.Negotiating.ToString())
+            {
+                await _context.Users
+               .Where(u => u.Id == activeOffer.ProducerID)
+               .ExecuteUpdateAsync(s => s.SetProperty(
+                   u => u.Balance,
+               u => u.Balance + (deposit - (deposit * 0.15m))
+               ), cancellationToken);
+
+               var newCustomerBalance =await _context.Users
+                 .Where(u => u.Id == activeOffer.CustomerID && u.Balance>=total)
+                 .ExecuteUpdateAsync(s => s.SetProperty(
+                     u => u.Balance,
+                 u => u.Balance - total
+                 ), cancellationToken);
+
+                if(newCustomerBalance==0)
+                    return Result<string>.Failure(new Error("BadRequest","The balance is less than price"));
+
+                await _context.Users
+                .Where(u => u.UserType == UserType.Admin)
+                .ExecuteUpdateAsync(s => s.SetProperty(
+                    u => u.Balance,
+                u => u.Balance + total * 0.15m
+                ), cancellationToken);
+            }
+               
 
             var active = new ActiveOfferLogs { ID = activeOffer.ID };
             _context.Attach(active);

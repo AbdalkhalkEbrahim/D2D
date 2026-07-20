@@ -84,7 +84,16 @@ namespace Presentation.Controllers
         [HttpGet("get-producer-custom-offer-by-id")]
         [ProducesResponseType(typeof(ProducerOfferResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetProducerCustomOfferById(GetProducerCustomOfferByIdQuery dto)
+        public async Task<IActionResult> GetProducerCustomOfferById([FromQuery]GetProducerCustomOfferByIdQuery dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpPost("accept-offer")]
+        [ProducesResponseType( StatusCodes.Status200OK)]
+        [ProducesResponseType( StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> AcceptOffer (AcceptCustomOfferCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

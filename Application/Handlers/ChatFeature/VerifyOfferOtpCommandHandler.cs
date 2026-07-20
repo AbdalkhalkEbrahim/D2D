@@ -49,20 +49,23 @@ namespace Application.Handlers.ChatFeature
                     PName = a.Chat.Customer.AnonName,
                     a.Chat.ProducerID,
                     a.Chat.CustomerID,
-                    CustomerOffer = a.CustomerPublishedOffer,
-                    ProducerOfferId = a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(po=>po.OfferStatus == OfferStatus.Accepted).ID,
+                    CustomTotalAmount = a.CustomerCustomOffer.ProducerCustomerOffer.Price,
+                    PublishedTotalAmount = a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c => c.ProducerID == a.Chat.ProducerID).Price,
+                    CustomDeposit = a.CustomerCustomOffer.ProducerCustomerOffer.Diposit,
+                    PublishedDeposit = a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c => c.ProducerID == a.Chat.ProducerID).Diposit,
                     OfferId = a.CustomerPublishedOffer.ID,
                     CEmail = a.Chat.Customer.Email,
-                    PEmail = a.Chat.Producer.Email
+                    PEmail = a.Chat.Producer.Email,
+                    CustomerPublishedOfferId= a.PublishedOfferID,
+                    CustomOfferId=a.CustomOfferID,
+                    ProducerPublishedOfferId=a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(p=>p.OfferStatus== OfferStatus.Accepted).ID,
+                    ProducerCustomOfferId = a.CustomerCustomOffer.ProducerCustomerOfferID
+
                 })
                 .Where(c => c.ProducerID == request.ProducerId && c.CustomerID == request.CustomerId &&
-                c.CustomerOffer.CustomerID == request.CustomerId)
-                .Select(a => new { a.ID, a.OfferId, a.CEmail, a.PEmail,
-                    a.CName ,
-                    a.PName,
-                    a.ProducerOfferId,
-                    CustomerOfferId = a.CustomerOffer.ID
-                })
+                c.CustomerID == request.CustomerId)
+                .Select(a => new { a.ID, a.OfferId, a.CEmail, a.PEmail,a.CustomTotalAmount,a.PublishedTotalAmount,a.CustomDeposit,a.PublishedDeposit,
+                a.ProducerCustomOfferId,a.ProducerPublishedOfferId,a.CustomerPublishedOfferId,a.CustomOfferId})
                 .FirstOrDefaultAsync();
 
             if (newActiveOfferLogIDs == null)
@@ -77,7 +80,30 @@ namespace Application.Handlers.ChatFeature
                 PublishedOfferID = newActiveOfferLogIDs.OfferId
             };
 
-            var cNotification = new Notification
+
+            decimal deposit = 0m, total = 0m;
+            if (newActiveOfferLogIDs.PublishedDeposit == null)
+            {
+                deposit = newActiveOfferLogIDs.CustomDeposit;
+                total = newActiveOfferLogIDs.CustomTotalAmount - deposit;
+            }
+            else
+            {
+                deposit = newActiveOfferLogIDs.PublishedDeposit;
+                total = newActiveOfferLogIDs.PublishedDeposit - deposit;
+            }
+
+            
+            await _context.Users
+            .Where(u => u.Id == request.ProducerId)
+            .ExecuteUpdateAsync(s => s.SetProperty(
+                u => u.Balance,
+            u => u.Balance + (total-(total*0.15m))
+            ), cancellationToken);
+            
+
+
+                var cNotification = new Notification
             {
                 NotificationsType = NotificationsType.ActveOfferStatuesChanged,
                 Title = "Offer completed",
@@ -108,6 +134,29 @@ namespace Application.Handlers.ChatFeature
                     "Offer completed",
                     $"Your offer with {request.ProducerId} has been completed successfully, check your balance here https://design-to-dress.vercel.app/add-review/{request.ProducerId}"
                 ));
+
+
+
+
+
+            if (newActiveOfferLogIDs.CustomOfferId == null)
+            {
+                await _context.ProducerCustomerOffers.Where(o => o.ID == newActiveOfferLogIDs.ProducerPublishedOfferId)
+             .ExecuteUpdateAsync(prop => prop.SetProperty(p => p.OfferStatus, p => OfferStatus.Completed));
+
+                await _context.CustomerPublishedOffers.Where(o => o.ID == newActiveOfferLogIDs.CustomerPublishedOfferId)
+                   .ExecuteUpdateAsync(prop => prop.SetProperty(p => p.CustomerOfferStatus, p => OfferStatus.Completed));
+            }
+            else
+            {
+                await _context.ProducerCustomerOffers.Where(o => o.ID == newActiveOfferLogIDs.ProducerCustomOfferId)
+             .ExecuteUpdateAsync(prop => prop.SetProperty(p => p.OfferStatus, p => OfferStatus.Completed));
+
+                await _context.CustomerCustomOffers.Where(o => o.ID == newActiveOfferLogIDs.CustomOfferId)
+                   .ExecuteUpdateAsync(prop => prop.SetProperty(p => p.CustomerOfferStatus, p => OfferStatus.Completed));
+            }
+
+
             otp.IsUsed = true;
             _context.Attach(otp);
             _context.Entry(otp).State = EntityState.Modified;
