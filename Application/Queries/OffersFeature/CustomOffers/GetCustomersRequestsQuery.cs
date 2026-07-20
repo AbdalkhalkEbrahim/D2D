@@ -12,6 +12,7 @@ namespace Application.Queries.OffersFeature.CustomOffers
     public class GetCustomersRequestsQuery : IRequest<Result<List<CustomerOfferResponse>>>
     {
         public string ProducerId { get; set; }
+        public Guid? DesignId { get; set; }
         public int Gender { get; set; }
         public string? Category { get; set; }
         public int Duration { get; set; }
