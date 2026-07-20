@@ -64,9 +64,9 @@ namespace Application.Handlers.OffersFeature
                     OfferStatus= offer.OfferStatus.ToString(),
                     CreatedAt = offer.CreatedAt,
                     UpdatedAt = offer.UpdatedAt,
-                    Reviews = offer.Review.ToDictionary(u=>u.AnonName, c=> new Tuple<string, int>(c.Content,c.Rate)),
+                    Reviews = offer.Review.ToDictionary(u=>u.AnonName, c=> (c.Content,c.Rate)),
                     Rate = offer.Rate,
-                    Steps = offer.Steps.ToDictionary(s=>s.StepName, d=> new Tuple<int, int>(d.MinDuration,d.MaxDuration)),
+                    Steps = offer.Steps.ToDictionary(s=>s.StepName, d=> (d.MinDuration,d.MaxDuration)),
                     Diposit = offer.Diposit,
                     DeliveryTime = offer.Duration
                 });

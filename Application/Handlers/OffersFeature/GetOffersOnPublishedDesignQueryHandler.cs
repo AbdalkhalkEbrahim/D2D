@@ -88,10 +88,11 @@ namespace Application.Handlers.OffersFeature
                         OfferStatus = item.OfferStatus.ToString(),
                         DeliveryTime = item.Duration,
                         Diposit = item.Diposit,
-                        Steps = item.Steps.ToDictionary(s => s.StepName, s => new Tuple<int, int>(s.MinDuration, s.MaxDuration)),
+                        Steps = item.Steps.ToDictionary(s => s.StepName, s => (s.MinDuration, s.MaxDuration)),
                     }
                     );
             }
+
             return result;
         }
     }
