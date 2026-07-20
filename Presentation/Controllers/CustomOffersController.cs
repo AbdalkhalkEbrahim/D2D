@@ -1,4 +1,6 @@
 ﻿using Application.Commands.OffersFeature.CustomOffer;
+using Application.Handlers.OffersFeature.CustomOffers;
+using Application.Queries.OffersFeature.CustomOffers;
 using Domain.DTOs.OfferDtos;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -48,6 +50,15 @@ namespace Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ProducerCustomOffer(ProducerCustomOfferCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpGet("get-producer-custom-offer-by-id")]
+        [ProducesResponseType(typeof(ProducerOfferResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetProducerCustomOfferById(GetProducerCustomOfferByIdQuery dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);
