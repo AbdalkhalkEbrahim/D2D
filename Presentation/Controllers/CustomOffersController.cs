@@ -1,9 +1,11 @@
 ﻿using Application.Commands.AccountSettingsFeature;
+using Application.Commands.OffersFeature;
 using Application.Commands.OffersFeature.CustomOffer;
 using Application.Handlers.OffersFeature.CustomOffers;
 using Application.Queries.AccountSettings;
 using Application.Queries.OffersFeature.CustomOffers;
 using Domain.DTOs.OfferDtos;
+using Domain.DTOs.Review_RateDtos;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -94,6 +96,44 @@ namespace Presentation.Controllers
         [ProducesResponseType( StatusCodes.Status200OK)]
         [ProducesResponseType( StatusCodes.Status409Conflict)]
         public async Task<IActionResult> AcceptOffer (AcceptCustomOfferCommand dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpGet ("get-customers-requests")]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK)]
+        [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(statusCode: StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetCustomersRequests([FromQuery]GetCustomersRequestsQuery dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpGet("get-customer-requests")]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK)]
+        [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(statusCode: StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetCustomerRequests([FromQuery] GetCustomerRequestsQuery dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpGet("get-custom-requst-by-id")]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK)]
+        [ProducesResponseType(statusCode: StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetRequestById([FromQuery] GetCustomRequestByIdQuery dto)
+        {
+            var result = await _mediator.Send(dto);
+            return HandleResult(result);
+        }
+
+        [HttpDelete("delete-customer-custom-offer")]
+        [ProducesResponseType(typeof(ReviewAndRateResponse), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeleteOffer([FromQuery] DeclineCustomerOfferCommand dto)
         {
             var result = await _mediator.Send(dto);
             return HandleResult(result);

@@ -51,10 +51,11 @@ namespace Application.Handlers.OffersFeature
             _context.Add(trans);
             producerOffer.OfferStatus = OfferStatus.Accepted;
 
-            await _context.CustomerPublishedOffers.Where(o => o.ID == producerOffer.CustomerPublishedOfferID)
-                .ExecuteUpdateAsync(s => s.SetProperty(
-                    u => u.IsActive,
-                    u => true));
+            await _context.CustomerPublishedOffers
+                .Where(o => o.ID == producerOffer.CustomOfferId)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(u => u.IsActive, true)
+                    .SetProperty(u => u.CustomerOfferStatus, OfferStatus.Accepted));
 
 
             await _context.Users
@@ -92,7 +93,7 @@ namespace Application.Handlers.OffersFeature
             };
             await _context.ActiveOfferLogs.AddAsync(activeLog, cancellationToken);
             //_context.Attach(activation);
-
+            producerOffer.OfferStatus = OfferStatus.Accepted;
             //_context.Entry(activation).Property(a=>a.IsActive).IsModified = true;
             await _context.SaveChangesAsync(cancellationToken);
 

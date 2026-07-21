@@ -17,8 +17,17 @@ namespace Application.Handlers.OffersFeature
         public async Task<Result<List<ProducerOfferResponse>>> Handle(GetAllProducerOffersQuery request, CancellationToken cancellationToken)
         {
             var Producer = _context.ProducerCustomerOffers.Select(po =>new {
-                ProducerId = po.Producer.Id, po.ID, po.Producer.AnonName, po.CustomerPublishedOffer.CustomerDesign.Name,
-                DesignImages = po.CustomerPublishedOffer.CustomerDesign.DesignImages.Select(im=>im.ImageUrl), po.Price, po.OfferStatus,
+                ProducerId = po.Producer.Id, po.ID, po.Producer.AnonName,
+                PublishedOfferName= po.CustomerPublishedOffer.Name,
+                CustomOfferName=po.CustomerCustomOffer.Name,
+                ImageUrl = po.CustomerPublishedOffer != null
+                ? po.CustomerPublishedOffer.CustomerDesign.DesignImages
+                    .Select(i => i.ImageUrl)
+                    .ToList()
+                : po.CustomerCustomOffer.ProducerDesign.DesignImages
+                    .Select(i => i.ImageUrl)
+                    .ToList()
+                , po.Price, po.OfferStatus,
                 po.CreatedAt, po.UpdatedAt,po.Producer.IsDeleted,
                 Review = po.Producer.Reviews.Select(r=> new {po.Producer.AnonName, r.Content, r.Rate}), po.Producer.Rate,
                 Steps = po.Steps.Select(s=> new {s.StepName, s.MinDuration, s.MaxDuration}),
@@ -46,13 +55,14 @@ namespace Application.Handlers.OffersFeature
             var response = new List<ProducerOfferResponse>();
             foreach(var offer in Producer)
             {
+                
                 response.Add(new ProducerOfferResponse
                 {
                     ProducerId = offer.ProducerId,
                     ProducerOfferId = offer.ID,
                     ProducerAnnonName = offer.AnonName,
-                    Name = offer.Name,
-                    ImageUrl = offer.DesignImages.ToList(),
+                    Name = offer.PublishedOfferName ?? offer.CustomOfferName,
+                    ImageUrl = offer.ImageUrl,
                     Price = offer.Price,
                     OfferStatus= offer.OfferStatus.ToString(),
                     CreatedAt = offer.CreatedAt,

@@ -48,6 +48,7 @@ namespace Infrastructure.Data.Context
         public DbSet<Tickets> Tickets { get; set; }
         public DbSet<ModelGeneratedDesign> ModelGeneratedDesigns { get; set; }
         public DbSet<UserIdentityFiles> UserIdentityFiles { get; set; }
+        public DbSet<Favourite> Favourites { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
