@@ -2,12 +2,14 @@
 using Application.Response;
 using Domain.Entities.Chats;
 using Domain.Entities.Offers;
+using Domain.Entities.Payment;
 using Domain.Entities.Shared;
 using Domain.Enums.Status;
 using Domain.Enums.Types;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,10 +21,11 @@ namespace Application.Handlers.OffersFeature.CustomOffers
     public class AcceptCustomOfferCommandHandler : IRequestHandler<AcceptCustomOfferCommand, Result<int>>
     {
         private readonly D2DContext _context;
-
-        public AcceptCustomOfferCommandHandler(D2DContext context)
+        private readonly IConfiguration _configuration;
+        public AcceptCustomOfferCommandHandler(D2DContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
         public async Task<Result<int>> Handle(AcceptCustomOfferCommand request, CancellationToken cancellationToken)
         {
@@ -50,6 +53,8 @@ namespace Application.Handlers.OffersFeature.CustomOffers
             customer.Balance -= request.Amount;
 
             producerOffer.OfferStatus = OfferStatus.Accepted;
+            var trans = new Transaction { Amount = request.Amount, CreatedAt = DateTime.UtcNow, Type = TransactionType.Deposit, UserID = producerOffer.ProducerID, Currency = "eg" };
+            _context.Add(trans);
 
             await _context.CustomerCustomOffers
             .Where(o => o.ID == producerOffer.CustomOfferId)
@@ -66,7 +71,8 @@ namespace Application.Handlers.OffersFeature.CustomOffers
                 ), cancellationToken);
 
 
-           
+            trans = new Transaction { Amount = request.Amount * 0.15m, CreatedAt = DateTime.UtcNow, Type = TransactionType.Deposit, UserID = _configuration["AdminId"], Currency = "eg" };
+            _context.Add(trans);
 
             var chat = new Chat
             {

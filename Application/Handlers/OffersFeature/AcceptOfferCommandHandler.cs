@@ -31,7 +31,7 @@ namespace Application.Handlers.OffersFeature
             if (producerOffer == null)
                 return Result<int>.Failure(Messages.NotFound.WithTarget("Offer"));
 
-            if (producerOffer.CustomerPublishedOffer.IsActive)
+            if (producerOffer.OfferStatus == OfferStatus.Accepted)
                 return Result<int>.Failure(Messages.Conflict.WithTarget("Active"));
 
             if (request.Amount != producerOffer.Diposit)
@@ -47,12 +47,12 @@ namespace Application.Handlers.OffersFeature
                 return Result<int>.Failure(Messages.BadRequest.WithTarget("PriceMismatch"));
 
             customer.Balance -= request.Amount;
-            var trans = new Transaction { Amount = request.Amount, CreatedAt = DateTime.UtcNow, Type = TransactionType.Deposit, UserID = producerOffer.ProducerID };
+            var trans = new Transaction { Amount = request.Amount, CreatedAt = DateTime.UtcNow, Type = TransactionType.Deposit, UserID = producerOffer.ProducerID, Currency="eg" };
             _context.Add(trans);
             producerOffer.OfferStatus = OfferStatus.Accepted;
 
             await _context.CustomerPublishedOffers
-                .Where(o => o.ID == producerOffer.CustomOfferId)
+                .Where(o => o.ID == producerOffer.CustomerPublishedOfferID)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(u => u.IsActive, true)
                     .SetProperty(u => u.CustomerOfferStatus, OfferStatus.Accepted));
@@ -66,7 +66,7 @@ namespace Application.Handlers.OffersFeature
                 ), cancellationToken);
 
 
-            trans = new Transaction { Amount = request.Amount*0.15m, CreatedAt = DateTime.UtcNow, Type = TransactionType.Deposit, UserID = _configuration["AdminId"] };
+            trans = new Transaction { Amount = request.Amount*0.15m, CreatedAt = DateTime.UtcNow, Type = TransactionType.Deposit, UserID = _configuration["AdminId"], Currency="eg" };
             _context.Add(trans);
 
 
