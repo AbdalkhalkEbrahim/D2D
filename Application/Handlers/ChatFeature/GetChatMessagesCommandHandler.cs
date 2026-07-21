@@ -28,7 +28,7 @@ namespace Application.Handlers.ChatFeature
                     c.CustomerID,
                     ProducerName = c.Producer.AnonName,
                     CustomerName = c.Customer.AnonName,
-                    Messages = c.Messages.OrderByDescending(m=>m.CreatedAt)
+                    Messages = c.Messages.OrderByDescending(m=>m.CreatedAt).ToList()
                    
                 })
                 .FirstOrDefaultAsync(cancellationToken);
@@ -46,7 +46,7 @@ namespace Application.Handlers.ChatFeature
             //    .FirstOrDefaultAsync (cancellationToken);
             var allStepsWithSelected = await _context.ActiveOfferLogs.Select(al => new { al.ChatID, al.Step, 
                 Steps = al.PublishedOfferID == null? al.CustomerCustomOffer.ProducerCustomerOffer.Steps.Select(s=>s.StepName): al.CustomerPublishedOffer.ProducerCustomerOffers.
-                  Where(p=>p.OfferStatus==OfferStatus.Accepted).Select(pco => pco.Steps.Select(s => s.StepName)).FirstOrDefault(),al.CreatedAt })
+                  Where(p=>p.OfferStatus!=OfferStatus.OnHold ).Select(pco => pco.Steps.Select(s => s.StepName)).FirstOrDefault(),al.CreatedAt })
                 
                 .OrderByDescending(c=>c.CreatedAt)
                 .FirstOrDefaultAsync(ch => ch.ChatID == request.ChatId);
@@ -90,6 +90,7 @@ namespace Application.Handlers.ChatFeature
                 OtherId = request.UserType == UserType.Customer
                     ? chat.ProducerID
                     : chat.CustomerID,
+                
             };
         }
 
