@@ -48,6 +48,8 @@ namespace Application.Handlers.ChatFeature
                     CustomerPublishedOfferId = a.PublishedOfferID,
                     CustomOfferId = a.CustomOfferID,
                     ProducerOfferId = a.CustomOfferID == null? a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(p => p.OfferStatus == OfferStatus.Accepted).ID: a.CustomerCustomOffer.ProducerCustomerOfferID,
+                    CustomerAnonName = a.Chat.Customer.AnonName,
+                    ProducerAnonName = a.Chat.Producer.AnonName
 
                 })
                 .Where(c => c.ProducerID == request.ProducerId && c.CustomerID == request.CustomerId &&
@@ -60,7 +62,9 @@ namespace Application.Handlers.ChatFeature
                     a.Deposit,
                     a.ProducerOfferId,
                     a.CustomerPublishedOfferId,
-                    a.CustomOfferId
+                    a.CustomOfferId,
+                    a.CustomerAnonName,
+                    a.ProducerAnonName
                 })
                 .FirstOrDefaultAsync(al=>al.ID == request.ChatId);
 
@@ -108,14 +112,14 @@ namespace Application.Handlers.ChatFeature
                 emailService.SendEmailAsync(
                     newActiveOfferLogIDs.CEmail,
                     "Offer completed",
-                    $"Your offer with {request.CustomerId} has been completed successfully, check your balance here https://design-to-dress.vercel.app/get-profile/{request.ProducerId}"
+                    $"Your offer with {newActiveOfferLogIDs.ProducerAnonName} has been completed successfully, Add a review here https://design-to-dress.vercel.app/add-review/{request.ProducerId}"
                 ));
 
             BackgroundJob.Enqueue<IEmailService>(emailService =>
                 emailService.SendEmailAsync(
                     newActiveOfferLogIDs.PEmail,
                     "Offer completed",
-                    $"Your offer with {request.ProducerId} has been completed successfully, check your balance here https://design-to-dress.vercel.app/add-review/{request.ProducerId}"
+                    $"Your offer with {newActiveOfferLogIDs.CustomerAnonName} has been completed successfully, check your balance here https://design-to-dress.vercel.app/get-profile/{request.ProducerId}"
                 ));
 
             if (newActiveOfferLogIDs.CustomOfferId == null)

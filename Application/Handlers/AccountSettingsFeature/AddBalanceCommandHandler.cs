@@ -47,7 +47,7 @@ namespace Application.Handlers.AccountSettingsFeature
                 _context.Update(producer);
 
             }
-            var trans = new Transaction { Amount = request.Amount, CreatedAt = DateTime.UtcNow, Type = TransactionType.Deposit, UserID =  request.UserId };
+            var trans = new Transaction { Amount = request.Amount, CreatedAt = DateTime.UtcNow, Type = TransactionType.Deposit, UserID =  request.UserId, Currency = "eg" };
             _context.Add(trans);
             await _context.SaveChangesAsync(cancellationToken);
 
