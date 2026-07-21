@@ -18,14 +18,11 @@ namespace Application.Handlers.OffersFeature
         {
             var Producer = _context.ProducerCustomerOffers.Select(po =>new {
                 ProducerId = po.Producer.Id, po.ID, po.Producer.AnonName,
-                OfferName= po.CustomerPublishedOfferID == null? po.CustomerCustomOffer.Name: po.CustomerPublishedOffer.Name,
-                ImageUrl = po.CustomerPublishedOffer != null
-                ? po.CustomerPublishedOffer.CustomerDesign.DesignImages
+                OfferName= po.CustomerPublishedOffer.Name,
+                ImageUrl =  po.CustomerPublishedOffer.CustomerDesign.DesignImages
                     .Select(i => i.ImageUrl)
                     .ToList()
-                : po.CustomerCustomOffer.ProducerDesign.DesignImages
-                    .Select(i => i.ImageUrl)
-                    .ToList()
+                
                 , po.Price, po.OfferStatus,
                 po.CreatedAt, po.UpdatedAt,po.Producer.IsDeleted,
                 Review = po.Producer.Reviews.Select(r=> new {po.Producer.AnonName, r.Content, r.Rate}), po.Producer.Rate,

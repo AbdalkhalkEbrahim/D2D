@@ -91,6 +91,8 @@ namespace Application.Handlers.OffersFeature
                 IsPublishedOfferActive = true
 
             };
+
+
             await _context.ActiveOfferLogs.AddAsync(activeLog, cancellationToken);
             //_context.Attach(activation);
             producerOffer.OfferStatus = OfferStatus.Accepted;
