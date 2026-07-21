@@ -2,21 +2,25 @@
 using Application.Response;
 using Domain.Entities.Chats;
 using Domain.Entities.Offers;
+using Domain.Entities.Payment;
 using Domain.Enums.Status;
 using Domain.Enums.Types;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Application.Handlers.OffersFeature
 {
     public class AcceptOfferCommandHandler : IRequestHandler<AcceptOfferCommand, Result<int>>
     {
         private readonly D2DContext _context;
-
-        public AcceptOfferCommandHandler(D2DContext context)
+        private readonly IConfiguration _configuration;
+        public AcceptOfferCommandHandler(D2DContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
         public async Task<Result<int>> Handle(AcceptOfferCommand request, CancellationToken cancellationToken)
         {
@@ -43,7 +47,8 @@ namespace Application.Handlers.OffersFeature
                 return Result<int>.Failure(Messages.BadRequest.WithTarget("PriceMismatch"));
 
             customer.Balance -= request.Amount;
-            
+            var trans = new Transaction { Amount = request.Amount, CreatedAt = DateTime.UtcNow, Type = TransactionType.Deposit, UserID = producerOffer.ProducerID };
+            _context.Add(trans);
             producerOffer.OfferStatus = OfferStatus.Accepted;
 
             await _context.CustomerPublishedOffers.Where(o => o.ID == producerOffer.CustomerPublishedOfferID)
@@ -58,6 +63,10 @@ namespace Application.Handlers.OffersFeature
                     u => u.Balance,
                     u => u.Balance + request.Amount*0.15m
                 ), cancellationToken);
+
+
+            trans = new Transaction { Amount = request.Amount*0.15m, CreatedAt = DateTime.UtcNow, Type = TransactionType.Deposit, UserID = _configuration["AdminId"] };
+            _context.Add(trans);
 
 
             await _context.ProducerCustomerOffers.Where(po => po.ID != request.ProducerOfferId && po.CustomerPublishedOfferID == producerOffer.CustomerPublishedOfferID).ExecuteUpdateAsync(s => s.SetProperty(

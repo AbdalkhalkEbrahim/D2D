@@ -13,7 +13,7 @@ namespace Application.Services
         public Result<bool> VerifyOtp(Otp? otp)
         {
 
-            if (otp == null || otp.ExpirationTime < DateTime.UtcNow || otp.IsUsed)
+            if (otp == null || /*otp.ExpirationTime < DateTime.UtcNow */ otp.IsUsed)
                return Result<bool>.Failure(Messages.Expired.WithTarget("otp"));
 
             return Result<bool>.Success(true);

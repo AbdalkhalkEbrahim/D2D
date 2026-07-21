@@ -49,14 +49,10 @@ namespace Application.Handlers.ChatFeature
                      .OrderByDescending(ao => ao.CreatedAt)
                      .Select(ao => ao.Step)
                      .FirstOrDefault(),
-
-                 DesignImageUrl = ch.Customer.Designs
-                     .Where(d => d.Status == DesignStatus.Published && d.CustomerPublishedOffer.IsActive)
-                     .Select(d => d.DesignImages.Select(img => img.ImageUrl).FirstOrDefault()).ToList(),
-
+                 DesignImageUrl = _context.ActiveOfferLogs.Select(al => new {al.ChatID, al.Chat.CustomerID, al.Chat.ProducerID, Image = al.CustomerPublishedOffer.CustomerDesign.DesignImages.Select(im => im.ImageUrl).FirstOrDefault() }).FirstOrDefault(c=>c.ChatID == ch.ID && c.ProducerID == request.UserId || c.CustomerID == request.UserId).Image
+                ,
                      ch.CreatedAt
              });
-
             if (!chats.Any() || chats.All(ch=>ch.OfferStatus == ActiveOfferStatus.Canceled.ToString()))
             {
                 return new List<ChatsResponse> { };

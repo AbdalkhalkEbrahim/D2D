@@ -12,7 +12,7 @@ namespace Domain.DTOs.Chat
     public class ChatsResponse
     {
         public int ChatId { get; set; }
-        public List<string> DesignImageUrl { get; set; }
+        public string DesignImageUrl { get; set; }
         public string AnonName { get; set; }
         public DateTime? LastMessageAgo { get; set; }
         public string? LastMessage { get; set; }

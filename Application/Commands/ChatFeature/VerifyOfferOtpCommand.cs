@@ -1,5 +1,6 @@
 ﻿using Application.Response;
 using MediatR;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace Application.Commands.ChatFeature
     {
         public string ProducerId { get; set; }
         public string CustomerId { get; set; }
+        public int ChatId { get; set; }
         public string Code { get; set; }
     }
 }
