@@ -18,17 +18,17 @@ namespace Application.Handlers.ChatFeature
         {
             _context = context;
         }
-        public async Task<Result<ChatWithMessagesResponse>> Handle( GetChatMessagesCommand request, CancellationToken cancellationToken)
+        public async Task<Result<ChatWithMessagesResponse>> Handle(GetChatMessagesCommand request, CancellationToken cancellationToken)
         {
-            var chat = await _context.Chats.AsNoTracking().Where(c => c.ID == request.ChatId)
+            var chat = await _context.Chats.Where(c => c.ID == request.ChatId)
                 .Select(c => new
                 {
                     c.ID,
                     c.ProducerID,
                     c.CustomerID,
-                    c.IsClosed,
                     ProducerName = c.Producer.AnonName,
                     CustomerName = c.Customer.AnonName,
+                    Messages = c.Messages.OrderByDescending(m=>m.CreatedAt)
                    
                 })
                 .FirstOrDefaultAsync(cancellationToken);
@@ -36,7 +36,6 @@ namespace Application.Handlers.ChatFeature
             if (chat == null)
                 return Result<ChatWithMessagesResponse>.Failure(Messages.NotFound.WithTarget("Chat"));
 
-            var messages = await _context.Messages.Where(m => m.ChatID == request.ChatId).OrderByDescending(m => m.CreatedAt).ToListAsync(cancellationToken);
 
             //var selectedStep = await _context.ActiveOfferLogs.AsNoTracking().Where(al => al.ChatID == request.ChatId).OrderBy(al => al.CreatedAt)
             //    .Select(al => new
@@ -46,29 +45,29 @@ namespace Application.Handlers.ChatFeature
             //    })
             //    .FirstOrDefaultAsync (cancellationToken);
             var allStepsWithSelected = await _context.ActiveOfferLogs.Select(al => new { al.ChatID, al.Step, 
-                Steps = al.CustomerPublishedOffer.ProducerCustomerOffers.
+                Steps = al.PublishedOfferID == null? al.CustomerCustomOffer.ProducerCustomerOffer.Steps.Select(s=>s.StepName): al.CustomerPublishedOffer.ProducerCustomerOffers.
                   Where(p=>p.OfferStatus==OfferStatus.Accepted).Select(pco => pco.Steps.Select(s => s.StepName)).FirstOrDefault(),al.CreatedAt })
                 
                 .OrderByDescending(c=>c.CreatedAt)
                 .FirstOrDefaultAsync(ch => ch.ChatID == request.ChatId);
 
-            var lastMessage = messages.FirstOrDefault();
+            var lastMessage = chat.Messages.FirstOrDefault();
 
             if (lastMessage != null &&
                 lastMessage.Sender.ToString() != request.UserType.ToString())
+            
+            foreach (var message in chat.Messages.Where(m => !m.IsRead))
             {
-                foreach (var message in messages.Where(m => !m.IsRead))
-                {
-                    message.IsRead = true;
-                }
-
-                await _context.SaveChangesAsync(cancellationToken);
+                message.IsRead = true;
             }
+
+            await _context.SaveChangesAsync(cancellationToken);
+            
 
             var currentStep = allStepsWithSelected.Step;
             return new ChatWithMessagesResponse
             {
-                Messages = messages
+                Messages = chat.Messages
                     .Select(m => new MessagesResponse
                     {
                         ID = m.ID,

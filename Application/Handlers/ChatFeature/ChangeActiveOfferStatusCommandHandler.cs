@@ -26,10 +26,10 @@ namespace Application.Handlers.ChatFeature
         public async Task<Result<string>> Handle(ChangeActiveOfferStatusCommand request, CancellationToken cancellationToken)
         {
             var activeOffer = await _context.ActiveOfferLogs
-                .Select(ao=>new {ao.ID, ao.Chat, ao.PublishedOfferID, ao.CustomOfferID,ao.Chat.CustomerID,CustomTotalAmount= ao.CustomerCustomOffer.ProducerCustomerOffer.Price,
-                    PublishedTotalAmount= ao.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c => c.ProducerID == ao.Chat.ProducerID).Price,
-                    ao.IsCustomOfferActive,ao.Chat.ProducerID,CustomDeposit=ao.CustomerCustomOffer.ProducerCustomerOffer.Diposit,
-                    PublishedDeposit=ao.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c=>c.ProducerID==ao.Chat.ProducerID).Diposit,
+                .Select(ao=>new {ao.ID, ao.Chat, ao.PublishedOfferID, ao.CustomOfferID,ao.Chat.CustomerID,
+                    TotalAmount= ao.PublishedOfferID == null ? ao.CustomerCustomOffer.ProducerCustomerOffer.Price: ao.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c => c.ProducerID == ao.Chat.ProducerID).Price,
+                    ao.IsCustomOfferActive,ao.Chat.ProducerID,
+                    Deposit = ao.CustomOfferID == null? ao.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c=>c.ProducerID==ao.Chat.ProducerID).Diposit: ao.CustomerCustomOffer.ProducerCustomerOffer.Diposit,
                     ao.IsPublishedOfferActive, PublishedName = ao.CustomerPublishedOffer.Name, CustomName = ao.CustomerCustomOffer.Name ,ao.Step,ao.CreatedAt})
                 .Where(ao => ao.Chat.ID == request.ChatID).OrderByDescending(ao=>ao.CreatedAt).FirstOrDefaultAsync();
             
@@ -55,17 +55,8 @@ namespace Application.Handlers.ChatFeature
              };
             await Task.WhenAll(task);
 
-            decimal deposit = 0m, total=0m;
-            if (activeOffer.PublishedDeposit == null)
-            {
-                deposit = activeOffer.CustomDeposit;
-                total=activeOffer.CustomTotalAmount-deposit;
-            }
-            else
-            {
-              deposit = activeOffer.PublishedDeposit;
-              total=activeOffer.PublishedDeposit-deposit;
-            }
+            decimal deposit = activeOffer.Deposit, total=activeOffer.TotalAmount-activeOffer.Deposit;
+            
 
             if(activeOffer.Step== ActiveOfferStatus.Negotiating.ToString())
             {

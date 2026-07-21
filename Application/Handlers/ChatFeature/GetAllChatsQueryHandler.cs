@@ -49,7 +49,9 @@ namespace Application.Handlers.ChatFeature
                      .OrderByDescending(ao => ao.CreatedAt)
                      .Select(ao => ao.Step)
                      .FirstOrDefault(),
-                 DesignImageUrl = _context.ActiveOfferLogs.Select(al => new {al.ChatID, al.Chat.CustomerID, al.Chat.ProducerID, Image = al.CustomerPublishedOffer.CustomerDesign.DesignImages.Select(im => im.ImageUrl).FirstOrDefault() }).FirstOrDefault(c=>c.ChatID == ch.ID && c.ProducerID == request.UserId || c.CustomerID == request.UserId).Image
+                 DesignImageUrl = _context.ActiveOfferLogs.Select(al => new {al.ChatID, al.Chat.CustomerID, al.Chat.ProducerID,
+                     Image = al.CustomerPublishedOffer.CustomerDesign.DesignImages
+                     .Select(im => im.ImageUrl).FirstOrDefault() }).FirstOrDefault(c=>c.ChatID == ch.ID).Image
                 ,
                      ch.CreatedAt
              });

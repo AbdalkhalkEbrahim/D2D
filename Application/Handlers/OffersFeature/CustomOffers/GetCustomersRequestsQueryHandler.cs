@@ -53,7 +53,7 @@ namespace Application.Handlers.OffersFeature.CustomOffers
                     cpo.ProducerDesign.ProducerID
                 })
                 .AsNoTracking()
-                .Where(d =>d.ProducerID==request.ProducerId&& d.CustomerOfferStatus == OfferStatus.OnHold && d.IsActive && !d.IsDeleted);
+                .Where(d =>d.ProducerID==request.ProducerId&& d.CustomerOfferStatus == OfferStatus.OnHold && !d.IsActive && !d.IsDeleted);
 
             if (request.DesignId != null)
                 design = design.Where(d => d.ProducerDesignID == request.DesignId);
