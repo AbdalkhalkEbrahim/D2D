@@ -18,8 +18,7 @@ namespace Application.Handlers.OffersFeature
         {
             var Producer = _context.ProducerCustomerOffers.Select(po =>new {
                 ProducerId = po.Producer.Id, po.ID, po.Producer.AnonName,
-                PublishedOfferName= po.CustomerPublishedOffer.Name,
-                CustomOfferName=po.CustomerCustomOffer.Name,
+                OfferName= po.CustomerPublishedOfferID == null? po.CustomerCustomOffer.Name: po.CustomerPublishedOffer.Name,
                 ImageUrl = po.CustomerPublishedOffer != null
                 ? po.CustomerPublishedOffer.CustomerDesign.DesignImages
                     .Select(i => i.ImageUrl)
@@ -61,7 +60,7 @@ namespace Application.Handlers.OffersFeature
                     ProducerId = offer.ProducerId,
                     ProducerOfferId = offer.ID,
                     ProducerAnnonName = offer.AnonName,
-                    Name = offer.PublishedOfferName ?? offer.CustomOfferName,
+                    Name = offer.OfferName,
                     ImageUrl = offer.ImageUrl,
                     Price = offer.Price,
                     OfferStatus= offer.OfferStatus.ToString(),

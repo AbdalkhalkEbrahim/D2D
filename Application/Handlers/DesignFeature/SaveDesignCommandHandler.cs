@@ -38,7 +38,7 @@ namespace Application.Handlers.DesignFeature
                     return Result<List<Guid>>.Failure(new Error("Conflict", $"There is an already design with name {request.Name}, change it then try to save again"));
                 var score = await _modelesService.AnalaysisImageScore(prompt, d);
 
-                if (!score.IsSuccess || score.Value <= 0.75m)
+                if (!score.IsSuccess || score.Value <= 0.60m)
                     return Result<List<Guid>>.Failure(new Error("BadRequest","The content uploaded violates our polices, please try to upload again more suitable content"));
             }
 

@@ -1,6 +1,6 @@
 ﻿namespace Domain.Enums.Status
 {
-    public enum TransactionStatus
+    public enum TransactionTypeTransactionStatus
     {
         /// <summary>
         /// The payment intent has been created in the system, but the user hasn't completed checkout.

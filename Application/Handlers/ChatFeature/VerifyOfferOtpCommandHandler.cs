@@ -10,12 +10,6 @@ using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.WebRequestMethods;
 
 namespace Application.Handlers.ChatFeature
 {
@@ -47,36 +41,28 @@ namespace Application.Handlers.ChatFeature
                     a.Chat.ID,
                     a.Chat.ProducerID,
                     a.Chat.CustomerID,
-                    CustomTotalAmount = a.CustomerCustomOffer.ProducerCustomerOffer.Price,
-                    PublishedTotalAmount = a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c => c.ProducerID == a.Chat.ProducerID).Price,
-                    CustomDeposit = a.CustomerCustomOffer.ProducerCustomerOffer.Diposit,
-                    PublishedDeposit = a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c => c.ProducerID == a.Chat.ProducerID).Diposit,
-                    OfferId = a.CustomerPublishedOffer.ID,
+                    TotalAmount = a.PublishedOfferID == null? a.CustomerCustomOffer.ProducerCustomerOffer.Price : a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c => c.ProducerID == a.Chat.ProducerID).Price,
+                    Deposit = a.PublishedOfferID == null ? a.CustomerCustomOffer.ProducerCustomerOffer.Diposit : a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(c => c.ProducerID == a.Chat.ProducerID).Diposit,
                     CEmail = a.Chat.Customer.Email,
                     PEmail = a.Chat.Producer.Email,
                     CustomerPublishedOfferId = a.PublishedOfferID,
                     CustomOfferId = a.CustomOfferID,
-                    ProducerPublishedOfferId = a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(p => p.OfferStatus == OfferStatus.Accepted).ID,
-                    ProducerCustomOfferId = a.CustomerCustomOffer.ProducerCustomerOfferID
+                    ProducerOfferId = a.CustomOfferID == null? a.CustomerPublishedOffer.ProducerCustomerOffers.FirstOrDefault(p => p.OfferStatus == OfferStatus.Accepted).ID: a.CustomerCustomOffer.ProducerCustomerOfferID,
 
                 })
                 .Where(c => c.ProducerID == request.ProducerId && c.CustomerID == request.CustomerId &&
                 c.CustomerID == request.CustomerId)
                 .Select(a => new {
                     a.ID,
-                    a.OfferId,
                     a.CEmail,
                     a.PEmail,
-                    a.CustomTotalAmount,
-                    a.PublishedTotalAmount,
-                    a.CustomDeposit,
-                    a.PublishedDeposit,
-                    a.ProducerCustomOfferId,
-                    a.ProducerPublishedOfferId,
+                    a.TotalAmount,
+                    a.Deposit,
+                    a.ProducerOfferId,
                     a.CustomerPublishedOfferId,
                     a.CustomOfferId
                 })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(al=>al.ID == request.ChatId);
 
             if (newActiveOfferLogIDs == null)
                 return Result<string>.Failure(Messages.NotFound.WithTarget("ActiveOfferLog"));
@@ -87,22 +73,10 @@ namespace Application.Handlers.ChatFeature
                 Step = ActiveOfferStatus.Completed.ToString(),
                 Notes = "Offer completed successfully",
                 ChatID = newActiveOfferLogIDs.ID,
-                PublishedOfferID = newActiveOfferLogIDs.OfferId
+                PublishedOfferID = newActiveOfferLogIDs.CustomerPublishedOfferId
             };
 
-
-            decimal deposit = 0m, total = 0m;
-            if (newActiveOfferLogIDs.PublishedDeposit == null)
-            {
-                deposit = newActiveOfferLogIDs.CustomDeposit;
-                total = newActiveOfferLogIDs.CustomTotalAmount - deposit;
-            }
-            else
-            {
-                deposit = newActiveOfferLogIDs.PublishedDeposit;
-                total = newActiveOfferLogIDs.PublishedDeposit - deposit;
-            }
-
+            decimal deposit = newActiveOfferLogIDs.Deposit, total = newActiveOfferLogIDs.TotalAmount;
 
             await _context.Users
             .Where(u => u.Id == request.ProducerId)
@@ -110,7 +84,6 @@ namespace Application.Handlers.ChatFeature
                 u => u.Balance,
             u => u.Balance + (total - (total * 0.15m))
             ), cancellationToken);
-
 
 
             var cNotification = new Notification
@@ -145,13 +118,9 @@ namespace Application.Handlers.ChatFeature
                     $"Your offer with {request.ProducerId} has been completed successfully, check your balance here https://design-to-dress.vercel.app/add-review/{request.ProducerId}"
                 ));
 
-
-
-
-
             if (newActiveOfferLogIDs.CustomOfferId == null)
             {
-                await _context.ProducerCustomerOffers.Where(o => o.ID == newActiveOfferLogIDs.ProducerPublishedOfferId)
+                await _context.ProducerCustomerOffers.Where(o => o.ID == newActiveOfferLogIDs.ProducerOfferId)
              .ExecuteUpdateAsync(prop => prop.SetProperty(p => p.OfferStatus, p => OfferStatus.Completed));
 
                 await _context.CustomerPublishedOffers.Where(o => o.ID == newActiveOfferLogIDs.CustomerPublishedOfferId)
@@ -159,7 +128,7 @@ namespace Application.Handlers.ChatFeature
             }
             else
             {
-                await _context.ProducerCustomerOffers.Where(o => o.ID == newActiveOfferLogIDs.ProducerCustomOfferId)
+                await _context.ProducerCustomerOffers.Where(o => o.ID == newActiveOfferLogIDs.ProducerOfferId)
              .ExecuteUpdateAsync(prop => prop.SetProperty(p => p.OfferStatus, p => OfferStatus.Completed));
 
                 await _context.CustomerCustomOffers.Where(o => o.ID == newActiveOfferLogIDs.CustomOfferId)

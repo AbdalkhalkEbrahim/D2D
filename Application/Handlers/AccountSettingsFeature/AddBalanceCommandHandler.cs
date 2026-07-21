@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Domain.Entities.Payment;
+using Domain.Enums.Status;
 
 namespace Application.Handlers.AccountSettingsFeature
 {
@@ -45,6 +47,8 @@ namespace Application.Handlers.AccountSettingsFeature
                 _context.Update(producer);
 
             }
+            var trans = new Transaction { Amount = request.Amount, CreatedAt = DateTime.UtcNow, Type = TransactionType.Deposit, UserID =  request.UserId };
+            _context.Add(trans);
             await _context.SaveChangesAsync(cancellationToken);
 
             return user.Balance;
