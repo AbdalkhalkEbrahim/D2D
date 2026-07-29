@@ -1,12 +1,8 @@
 ﻿using Domain.Entities.Customers;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
-using System;
-using System.Collections.Generic;
+using Domain.Enums.Status;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities.Chats
 {
@@ -16,10 +12,12 @@ namespace Domain.Entities.Chats
         public string Name { get;  set; }
         public virtual Producer Producer { get; set; }
         public virtual Customer Customer { get; set; }
-        public int ProdicerLimit { get; private set; } = 100;
-        public int CustomerLimit { get; private set; } = 50;
+        public int ProducerLimit { get; private set; } = 150;
+        public int CustomerLimit { get; private set; } = 100;
         public int ProducerCount { get; set; }
         public int CustomerCount { get; set; }
+        public ICollection<RequestsLogs> RequestsLogs { get; set; }
+        public bool IsClosed { get; set; } = false;
        
         [ForeignKey(nameof(Customer))]
         public string CustomerID { get; set; }

@@ -1,13 +1,15 @@
-﻿using Domain.DTOs;
+﻿using Application.Interfaces;
+using Application.Response;
+using Domain.DTOs.AuthDtos;
 using Domain.Entities.Shared;
-using Domain.Enums;
-using Domain.Interfaces;
+using Domain.Enums.Types;
 using Domain.Settings;
 using Infrastructure.Data.Context;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics.Metrics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -27,9 +29,9 @@ namespace Application.Services
             _context = context;
         }
         public async Task<TokenDTO> GenerateAccessToken(User user)
-        {
-            var userRoles = await _userManager.GetRolesAsync(user);
-            var expiration = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes);
+        { 
+            var userRoles = await _userManager.GetRolesAsync(user);//
+            var expiration = DateTime.UtcNow.AddDays(_jwtSettings.AccessTokenExpirationMinutes);//add minutes
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
             var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
             var claims = new List<Claim>
@@ -37,11 +39,11 @@ namespace Application.Services
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
                 new Claim(ClaimTypes.Email, user.Email!),
-                new Claim(ClaimTypes.Role,userRoles.FirstOrDefault()??"User")
+                new Claim(ClaimTypes.Role,user.UserType.ToString())
 
             };
 
-            var jwtsecurity= new JwtSecurityToken(
+            var jwtsecurity = new JwtSecurityToken(
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
@@ -49,15 +51,14 @@ namespace Application.Services
                 signingCredentials: signingCredentials
              );
 
-            return new TokenDTO
-            {
+            return new TokenDTO{
                 UserID = user.Id,
                 Token = new JwtSecurityTokenHandler().WriteToken(jwtsecurity),
                 ExpiresAt = expiration
-            };  
+            };
         }
 
-        public async Task<TokenDTO> GenerateRefreshToken(string userId)
+        public async Task<Result<TokenDTO>> GenerateRefreshToken(string userId)
         {
             var randomNumberGenerator = RandomNumberGenerator.Create();
             var randomBytes = new byte[64];
@@ -78,48 +79,65 @@ namespace Application.Services
                 UserID = userId
             };
 
-            var user = _context.Users.Include(u=>u.RefreshTokens).FirstOrDefault(u => u.Id == userId) ?? throw new ArgumentNullException(nameof(userId));
-            user.RefreshTokens?.Add(generatedRefreshTokenEntity);
-            await _userManager.UpdateAsync(user);
+            var user = await _context.Users.AnyAsync(u => u.Id == userId) ;
+            if(!user)
+                return Result<TokenDTO>.Failure(Messages.NotFound.WithTarget("User"));
+            generatedRefreshTokenEntity.UserID = userId;
+            _context.RefreshTokens.Add(generatedRefreshTokenEntity);
+            await _context.SaveChangesAsync();
 
-            return refreshToken;
+            return Result<TokenDTO>.Success(refreshToken);
         }
 
-        public async Task<JwtToken> JwtGenratedToken(string refreshToken)
+        public async Task<Result<JwtToken>> JwtGenratedToken(string refreshToken)
         {
-            var user = await _context.Users.Include(u=> u.RefreshTokens)
-               .SingleOrDefaultAsync(u => u.RefreshTokens!.Any(r => r.Token == refreshToken))
-               ?? throw new SecurityTokenException("Invalid or expired refresh token");
-
-            var existingRefreshToken = user.RefreshTokens!.Single(x => x.Token == refreshToken);
-
-            if (existingRefreshToken.IsRevoked||existingRefreshToken.ExpiresAt<DateTime.UtcNow)
-                throw new SecurityTokenException("Invalid or expired refresh token");
+            var existingRefreshToken = await _context.RefreshTokens.Include(t => t.User).FirstOrDefaultAsync(t=>t.Token == refreshToken);
+            
+            if (existingRefreshToken is null || existingRefreshToken.IsRevoked || existingRefreshToken.ExpiresAt < DateTime.UtcNow)
+                return Result<JwtToken>.Failure(Messages.Expired.WithTarget("Token"));
 
             existingRefreshToken.IsRevoked = true;
 
-            var newRefreshToken = await GenerateRefreshToken(user.Id);
+            var newRefreshToken = (await GenerateRefreshToken(existingRefreshToken.UserID)).Value;
 
-            var jwt = await GenerateAccessToken(user);
-            return new JwtToken
+            var jwt = await GenerateAccessToken(existingRefreshToken.User);
+            await _context.SaveChangesAsync(); 
+            return Result<JwtToken>.Success(new JwtToken   
             {
-                UserID = user.Id,
+                UserID = existingRefreshToken.UserID,
                 AccessToken = jwt.Token,
                 RefreshToken = newRefreshToken.Token,
                 AccessTokenExpiresAt = jwt.ExpiresAt,
                 RefreshTokenExpiresAt = newRefreshToken.ExpiresAt
-            };
+            });
         }
 
-        public async Task RevokeRefreshToken(string token)
+        public async Task<Result> RevokeRefreshToken(string token)
         {
-            var existingtoken = _context.RefreshTokens.FirstOrDefault(t => t.Token == token);
-            if (existingtoken != null)
+            int updatedRows = await _context.RefreshTokens
+                .Where(x => x.Token == token
+                         && !x.IsRevoked
+                         && x.ExpiresAt > DateTime.UtcNow)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.IsRevoked, true));
+            if(updatedRows == 0)
+                return Result.Failure(Messages.Expired.WithTarget("Token"));
+            return Result.Success();
+
+        }
+        public async Task<string> AnonymousName(UserType userType)
+        {
+            var counters = await _context.SystemCounters.FirstOrDefaultAsync();
+            int AnonCounter = (userType) switch
             {
-                existingtoken.IsRevoked = true;
-                _context.Update(existingtoken);
-                await _context.SaveChangesAsync();
-            }
+                UserType.Customer => counters.CustomerCounter = counters.CustomerCounter + 1,
+                UserType.Producer => counters.ProducerCounter = counters.ProducerCounter + 1,
+                UserType.Designer => counters.DesignerCounter = counters.DesignerCounter + 1,
+                _ => 0
+            };
+            _context.Update(counters);
+            await _context.SaveChangesAsync();
+            string leadingZeros = new string('0', 6 - AnonCounter.ToString().Length);
+            return $"Anon{leadingZeros}{AnonCounter}_{userType.ToString()}";
         }
     }
 }

@@ -1,10 +1,6 @@
-﻿using Domain.Entities.Offers;
-using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.Customers;
+using Domain.Entities.Offers;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities.Designs
 {
@@ -14,6 +10,11 @@ namespace Domain.Entities.Designs
         public virtual CustomerPublishedOffer? CustomerPublishedOffer { get; set; }
         [ForeignKey(nameof(CustomerPublishedOffer))]
         public Guid? CustomerPublishedOfferID { get; set; }
+
+        public Customer Customer { get; set; }
+        [ForeignKey(nameof(Customer))]
+        public string CustomerId { get; set; }
+
         public CustomerDesign():base()
         {
         }

@@ -1,65 +1,66 @@
 ﻿using Application.Commands;
+using Application.Interfaces;
+using Application.Response;
+using Domain.DTOs;
 using Domain.Entities.Shared;
-using Domain.Interfaces;
+using Hangfire;
 using Infrastructure.Data.Context;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
-using System;
-using static System.Net.WebRequestMethods;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
-public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, string>
+public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Result<OtpResponse>>
 {
-    private readonly UserManager<User> _userManager;
     private readonly IOtpService _otpService;
-    private readonly IEmailService _emailService;
     private readonly D2DContext _context;
 
-    public SendOtpCommandHandler(UserManager<User> userManager, IOtpService otpService, IEmailService emailService, D2DContext context)
+    public SendOtpCommandHandler(IOtpService otpService, D2DContext context)
     {
-        _userManager = userManager;
         _otpService = otpService;
-        _emailService = emailService;
         _context = context;
     }
 
-    public async Task<string> Handle(SendOtpCommand request, CancellationToken cancellationToken)
+    public async Task<Result<OtpResponse>> Handle(SendOtpCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user == null)
-            throw new Exception("User not found");
+        
+        var user = await _context.Users
+            .AsNoTracking()
+            .Select(u => new { u.Id, u.Email, u.UserType, u.OtpLockoutEnd, u.OtpLockoutCount })
+            .FirstOrDefaultAsync(u => u.Id == request.ID, cancellationToken);
 
-        #region Exponential Backoff
+       
+        if (user == null)
+            return Result<OtpResponse>.Failure(Messages.NotFound.WithTarget("User"));
+
+        if (!request.flag)
+        {
+            var email = await _context.Users.Select(u => u.Email).FirstOrDefaultAsync(e => e == request.Email);
+            if(email != null)
+               return Result<OtpResponse>.Failure(Messages.Conflict.WithTarget("Email"));
+
+        }
+
         if (user.OtpLockoutEnd.HasValue && user.OtpLockoutEnd.Value > DateTimeOffset.UtcNow)
         {
-            var timeLeft = user.OtpLockoutEnd.Value - DateTimeOffset.UtcNow;
-            throw new Exception($"Please wait {Math.Ceiling(timeLeft.TotalMinutes)} minutes before requesting a new OTP.");
+            var timeLeft = user.OtpLockoutEnd.Value.UtcDateTime - DateTime.UtcNow;
+            return Result<OtpResponse>.Failure(Messages.OtpBackoff(timeLeft.Minutes, timeLeft.Seconds));
         }
 
-        int nextLockoutMinutes = 1;
+        var currentCount = user.OtpLockoutCount ?? 1;
+        var newLockoutEnd = DateTimeOffset.UtcNow.AddMinutes((double)currentCount);
 
-        if (user.OtpLockoutEnd.HasValue)
-        {
-            var timeSinceLockoutEnded = DateTimeOffset.UtcNow - user.OtpLockoutEnd.Value;
+        await _context.Users
+            .Where(u => u.Id == user.Id)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.OtpLockoutEnd, newLockoutEnd)
+                .SetProperty(u => u.OtpLockoutCount, currentCount),
+                cancellationToken);
 
-            if (timeSinceLockoutEnded.TotalMinutes > 60)
-            {
-                nextLockoutMinutes = 1;
-                user.OtpLockoutEnd = null;
-            }
-            else
-            {
-                var previousDuration = user.OtpLockoutEnd.Value - DateTimeOffset.UtcNow;
-                int previousMinutes = (int)Math.Abs(Math.Ceiling(previousDuration.TotalMinutes));
-                nextLockoutMinutes = previousMinutes * 2;
-            }
-        }
+/*        _context.Attach(user);
+        _context.Entry(user).Property(u=>u.OtpLockoutCount).IsModified = true;*/
 
-        user.OtpLockoutEnd = DateTimeOffset.UtcNow.AddMinutes(nextLockoutMinutes);
-        _context.Users.Update(user);
-        #endregion
 
         var code = _otpService.GenerateOtp();
-
         var otp = new Otp
         {
             Code = code,
@@ -68,12 +69,13 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, string>
             IsUsed = false
         };
 
+       
         await _context.Otps.AddAsync(otp, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
-
-        await _emailService.SendEmailAsync(request.Email, "OTP Verification", $"Your OTP is: {code}");
-
-        return "OTP sent successfully"; //userID, UserType
+       
+        BackgroundJob.Enqueue<IEmailService>(emailService =>
+            emailService.SendEmailAsync(request.Email, "Your OTP Code", $"Your code is {code}, and it's expired at {otp.ExpirationTime}"));
+        
+        return Result<OtpResponse>.Success(new OtpResponse { UserId = user.Id, UserType = user.UserType,Code = code, ExpirationTime = otp.ExpirationTime});
     }
-
 }

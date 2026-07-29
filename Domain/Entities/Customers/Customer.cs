@@ -1,16 +1,10 @@
 ﻿using Domain.Entities.Chats;
 using Domain.Entities.Chats.AiModel;
+using Domain.Entities.Designers;
 using Domain.Entities.Designs;
 using Domain.Entities.Offers;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities.Customers
 {
@@ -23,8 +17,10 @@ namespace Domain.Entities.Customers
     {        
         public virtual HashSet<Address> Addresses { get; set; }
         public virtual ICollection<CustomerOffer> Offers { get; set; }
+        public virtual ICollection<CustomerDesign> Designs { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }
         public virtual ICollection<Chat> Chats { get; set; }
+        public virtual ICollection<Report>? Reports { get; set; }
         public virtual ModelChat? ModelChat { get; set; }
 
 
@@ -34,9 +30,10 @@ namespace Domain.Entities.Customers
             Reviews = new List<Review>();
             Chats = new List<Chat>();
             Offers = new List<CustomerOffer>();
+            Reports = new List<Report>();
 
         }
-        public void SelectSpecificAddress(Address address)
+        public void SelectSpecificAddress( Address address)
         {
             foreach (var addr in Addresses)
             {

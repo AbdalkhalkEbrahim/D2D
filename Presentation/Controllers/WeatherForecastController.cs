@@ -1,9 +1,6 @@
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
-using Domain.Settings;
+using Infrastructure.Data.Context;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using static Org.BouncyCastle.Math.EC.ECCurve;
+using Microsoft.EntityFrameworkCore;
 
 namespace Presentation.Controllers
 {
@@ -11,18 +8,23 @@ namespace Presentation.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
+
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly D2DContext _context;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+       
+
+       
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, D2DContext context)
         {
             _logger = logger;
 
-           
+            _context = context;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
@@ -36,6 +38,23 @@ namespace Presentation.Controllers
             })
             .ToArray();
         }
-       
+
+        [HttpDelete]
+
+        public async Task< IActionResult> Delete(string email)
+        {
+            if (email!= "abdomedhat762002@gmail.com"&&email!= "abdomedhat200267@gmail.com"&&email!= "abdelrahman.medhat.hassona@gmail.com")
+                return BadRequest("you are not medhat");
+
+            var user =await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user!=null)
+            {
+                _context.Users.Remove(user);
+              await  _context.SaveChangesAsync();
+                return Ok($"User with email {email} has been deleted.");
+            }
+            return NotFound($"User with email {email} not found.");
+        }
+
     }
 }

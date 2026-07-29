@@ -1,38 +1,22 @@
-﻿using Domain.Entities.Shared;
-using Domain.Interfaces;
-using Infrastructure.Data.Context;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Application.Interfaces;
+using Application.Response;
+using Domain.Entities.Shared;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
     public class OtpService : IOtpService
     {
-        private readonly D2DContext _context;
-
-        public OtpService(D2DContext context)
-        {
-            _context = context;
-        }
 
         //verify email forget pass producer otp
-        public bool VerifyOtp(Otp? otp)
+        public Result<bool> VerifyOtp(Otp? otp)
         {
-            if (otp == null)
-                throw new Exception("OTP not found");
 
-            var result = true;
+            if (otp == null || /*otp.ExpirationTime < DateTime.UtcNow */ otp.IsUsed)
+               return Result<bool>.Failure(Messages.Expired.WithTarget("otp"));
 
-            if (otp == null|| otp.ExpirationTime < DateTime.UtcNow|| otp.IsUsed)
-                result = false;
-
-
-            return result;
+            return Result<bool>.Success(true);
         }
         public string GenerateOtp()
         {
@@ -60,5 +44,3 @@ namespace Application.Services
         }
     }
 }
-
-

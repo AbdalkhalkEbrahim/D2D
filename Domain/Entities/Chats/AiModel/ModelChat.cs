@@ -1,24 +1,21 @@
 ﻿using Domain.Entities.Customers;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities.Chats.AiModel
 {
     public class ModelChat
     {
         public int ID { get; set; }
-        public  string Title { get; set; }
-        public virtual  Customer Customer { get; set; }
-        public virtual ICollection<ModelChatMessage> Message { get; set; }
+        public int MaxChatTokens { get; set; } = 3;
+
         [ForeignKey(nameof(Customer))]
-        public  string CustomerID { get; set; }
+        public string CustomerId { get; set; }
+        public Customer Customer { get; set; }
+        public virtual ICollection<ModelGeneratedDesign> Designs { get; set; }
+        
         public ModelChat()
         {
-            Message = new List<ModelChatMessage>();
+            Designs = new List<ModelGeneratedDesign>();
         }
     }
 }

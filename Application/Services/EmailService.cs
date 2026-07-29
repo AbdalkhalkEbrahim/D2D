@@ -1,10 +1,9 @@
-﻿using Domain.Entities.Shared;
-using Domain.Interfaces;
+﻿using Application.Interfaces;
+using Application.Response;
 using Domain.Settings;
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
+
 using Microsoft.Extensions.Options;
 using MimeKit;
 
@@ -18,7 +17,7 @@ namespace Application.Services
             _emailSettings = options.Value;
         }
 
-        public async Task SendEmailAsync(string to, string subject, string body)
+        public async Task<Result> SendEmailAsync(string to, string subject, string body)
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(
@@ -41,16 +40,22 @@ namespace Application.Services
                     var port = _emailSettings.Port;
 
                     var secureOption = port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls;
+                    try
+                    {
+                        await smtpClient.ConnectAsync(host, port, secureOption);
 
-                    await smtpClient.ConnectAsync(host, port, secureOption);
+                        await smtpClient.AuthenticateAsync(
+                            _emailSettings.Email,
+                           _emailSettings.Password
+                        );
 
-                    await smtpClient.AuthenticateAsync(
-                        _emailSettings.Email,
-                       _emailSettings.Password
-                    );
-
-                    await smtpClient.SendAsync(message);
-                    await smtpClient.DisconnectAsync(true);
+                        await smtpClient.SendAsync(message);
+                        await smtpClient.DisconnectAsync(true);
+                    }
+                    catch (Exception ex) {
+                        throw new Exception(ex.Message);
+                    }
+                return Result.Success();
                 }
            
         }

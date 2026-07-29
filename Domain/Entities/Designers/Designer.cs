@@ -14,7 +14,6 @@ namespace Domain.Entities.Designers
             DesignerDesigns = new List<DesignerDesign>();
             Reports = new List<Report>();
             DesignVerifications = new List<DesignVerification>();
-
         }
     }
 }

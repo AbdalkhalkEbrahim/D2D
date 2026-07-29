@@ -1,19 +1,18 @@
 ﻿using Domain.Entities.Designers;
 using Domain.Entities.Offers;
 using Domain.Entities.Producers;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities.Designs
 {
     public class DesignerDesign:Design
     {
+
         public string ? Description { get; set; }
         public decimal? Price { get; set; }
+        public DesignVerification DesignVerification { get; set; }
+        [ForeignKey("DesignVerification")]
+        public int DesignId { get; set; }
         public virtual Designer Designer { get; set; }
         [ForeignKey("Designer")]
         public string DesignerID { get; set; }

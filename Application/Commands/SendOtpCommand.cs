@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Application.Response;
+using Domain.DTOs;
 using MediatR;
 namespace Application.Commands
 {
-    public class SendOtpCommand:IRequest<string>
+    public class SendOtpCommand : IRequest<Result<OtpResponse>>
     {
+        public required string ID { get; set; }
         public string Email { get; set; }
+        public bool flag { get; set; } = true;
     }
 }

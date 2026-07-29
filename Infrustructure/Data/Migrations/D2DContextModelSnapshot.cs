@@ -45,53 +45,48 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
-                    b.Property<string>("CustomerID")
+                    b.Property<string>("CustomerId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("MaxChatTokens")
+                        .HasColumnType("int");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("CustomerID")
+                    b.HasIndex("CustomerId")
                         .IsUnique();
 
                     b.ToTable("ModelChats");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Chats.AiModel.ModelChatMessage", b =>
+            modelBuilder.Entity("Domain.Entities.Chats.AiModel.ModelGeneratedDesign", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("ImgUrl")
+                    b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Limit")
+                    b.Property<int>("ModelChatId")
                         .HasColumnType("int");
 
-                    b.Property<int>("LimitCounter")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ModelChatID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Sender")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Text")
+                    b.Property<string>("PromptUsed")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ID");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.HasIndex("ModelChatID");
+                    b.HasKey("Id");
 
-                    b.ToTable("ModelChatMessages");
+                    b.HasIndex("ModelChatId");
+
+                    b.ToTable("ModelGeneratedDesigns");
                 });
 
             modelBuilder.Entity("Domain.Entities.Chats.Chat", b =>
@@ -115,12 +110,12 @@ namespace Infrastructure.Migrations
                     b.Property<int>("CustomerLimit")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProdicerLimit")
-                        .HasColumnType("int");
 
                     b.Property<int>("ProducerCount")
                         .HasColumnType("int");
@@ -128,6 +123,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("ProducerID")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ProducerLimit")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -153,10 +151,14 @@ namespace Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
 
                     b.Property<int>("Sender")
                         .HasColumnType("int");
@@ -171,19 +173,66 @@ namespace Infrastructure.Migrations
                     b.ToTable("Messages");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Chats.RequestsLogs", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChatId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("request")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RequestsLogs");
+                });
+
             modelBuilder.Entity("Domain.Entities.Designers.DesignVerification", b =>
                 {
-                    b.Property<string>("StepUrl")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DesignId")
+                        .HasColumnType("int");
 
                     b.Property<string>("DesignerID")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("FinalDesign")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("StepUrl");
+                    b.Property<string>("StepUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("DesignerID");
 
@@ -205,21 +254,25 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DesignerID")
-                        .IsRequired()
+                    b.Property<string>("CustomerID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<bool>("IsProducer")
-                        .HasColumnType("bit");
+                    b.Property<string>("DesignerID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProducerID")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("Reporter")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("CustomerID");
 
                     b.HasIndex("DesignerID");
 
@@ -234,16 +287,26 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("ID");
 
-                    b.ToTable((string)null);
+                    b.ToTable("Design");
 
                     b.UseTpcMappingStrategy();
                 });
@@ -286,27 +349,41 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("EndDate")
+                    b.Property<int>("ChatID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsOfferActive")
+                    b.Property<Guid?>("CustomOfferID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool?>("IsCustomOfferActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsPublishedOfferActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("OfferID")
+                    b.Property<Guid?>("PublishedOfferID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Step")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("OfferID", "IsOfferActive");
+                    b.HasIndex("ChatID");
+
+                    b.HasIndex("CustomOfferID", "IsCustomOfferActive");
+
+                    b.HasIndex("PublishedOfferID", "IsPublishedOfferActive");
 
                     b.ToTable("ActiveOfferLogs");
                 });
@@ -326,20 +403,42 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("ProducerID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("ProducerID");
-
                     b.ToTable((string)null);
 
                     b.UseTpcMappingStrategy();
+                });
+
+            modelBuilder.Entity("Domain.Entities.Offers.ProducerSteps", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MaxDuration")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinDuration")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ProducerCustomerOfferId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("StepName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProducerCustomerOfferId");
+
+                    b.ToTable("ProducerSteps");
                 });
 
             modelBuilder.Entity("Domain.Entities.Payment.Escrow", b =>
@@ -397,7 +496,7 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("EscrowID")
+                    b.Property<Guid?>("EscrowID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("TransactionStatus")
@@ -430,11 +529,18 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
+                    b.Property<string>("Confidence")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("LicenseStatus")
                         .HasColumnType("int");
 
                     b.Property<string>("LicenseUrl")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Observations")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProducerID")
@@ -446,6 +552,33 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ProducerID");
 
                     b.ToTable("LicenseVerifications");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Producers.ProducerGallery", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProducerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProducerId");
+
+                    b.ToTable("ProducersGallery");
                 });
 
             modelBuilder.Entity("Domain.Entities.Producers.Review", b =>
@@ -471,6 +604,9 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("Rate")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -481,6 +617,58 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ProducerID");
 
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Shared.Favourite", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid?>("DesignerDesignId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ProducerDesignId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DesignerDesignId");
+
+                    b.HasIndex("ProducerDesignId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Favourites");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Shared.MagicToken", b =>
+                {
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Expiration")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Token");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("MagicTokens");
                 });
 
             modelBuilder.Entity("Domain.Entities.Shared.Notification", b =>
@@ -516,7 +704,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserID")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("ID");
@@ -535,21 +722,52 @@ namespace Infrastructure.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("int");
 
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Colors")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Duration")
                         .HasColumnType("int");
+
+                    b.Property<bool>("Gender")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Material")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("MaxPrice")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PrintingType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Sizes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SizesFile")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TargetAudience")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -619,6 +837,63 @@ namespace Infrastructure.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Shared.SystemCounter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CustomerCounter")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DesignerCounter")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProducerCounter")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemCounters");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Shared.Tickets", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("IssueType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Tickets");
+                });
+
             modelBuilder.Entity("Domain.Entities.Shared.User", b =>
                 {
                     b.Property<string>("Id")
@@ -636,6 +911,9 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("BackImageID")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Balance")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -657,6 +935,12 @@ namespace Infrastructure.Migrations
                     b.Property<int>("IdentityStatus")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("JoinDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
@@ -666,6 +950,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("NationalId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -673,6 +960,15 @@ namespace Infrastructure.Migrations
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("NumOfCollaborations")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NumOfReports")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OtpLockoutCount")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("OtpLockoutEnd")
                         .HasColumnType("datetimeoffset");
@@ -689,8 +985,8 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<int>("ReportsCounter")
-                        .HasColumnType("int");
+                    b.Property<string>("ProfileImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -718,6 +1014,60 @@ namespace Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
 
                     b.UseTptMappingStrategy();
+                });
+
+            modelBuilder.Entity("Domain.Entities.Shared.UserIdentityFiles", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BackImageID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Confidence")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("FaceSimilarity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("FrontImageID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsSamePerson")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSuccess")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NationalId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Observations")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PersonalImage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserIdentityFiles");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -857,8 +1207,14 @@ namespace Infrastructure.Migrations
                 {
                     b.HasBaseType("Domain.Entities.Designs.Design");
 
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<Guid?>("CustomerPublishedOfferID")
                         .HasColumnType("uniqueidentifier");
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("CustomerPublishedOfferID");
 
@@ -872,12 +1228,17 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("DesignId")
+                        .HasColumnType("int");
+
                     b.Property<string>("DesignerID")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal(18,2)");
+
+                    b.HasIndex("DesignId");
 
                     b.HasIndex("DesignerID");
 
@@ -888,14 +1249,23 @@ namespace Infrastructure.Migrations
                 {
                     b.HasBaseType("Domain.Entities.Designs.Design");
 
-                    b.Property<Guid?>("CustomerCustomOfferID")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DesignType")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProducerID")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.HasIndex("CustomerCustomOfferID");
 
                     b.HasIndex("ProducerID");
 
@@ -906,15 +1276,29 @@ namespace Infrastructure.Migrations
                 {
                     b.HasBaseType("Domain.Entities.Offers.ProducerOffer");
 
-                    b.Property<Guid?>("CustomerCustomOfferID")
+                    b.Property<Guid?>("CustomOfferId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CustomerPublishedOfferID")
+                    b.Property<Guid?>("CustomerPublishedOfferID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasIndex("CustomerCustomOfferID");
+                    b.Property<decimal>("Diposit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProducerID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasIndex("CustomOfferId")
+                        .IsUnique()
+                        .HasFilter("[CustomOfferId] IS NOT NULL");
 
                     b.HasIndex("CustomerPublishedOfferID");
+
+                    b.HasIndex("ProducerID");
 
                     b.ToTable("ProducerCustomerOffers");
                 });
@@ -968,6 +1352,9 @@ namespace Infrastructure.Migrations
                     b.Property<double>("Rate")
                         .HasColumnType("float");
 
+                    b.Property<int>("RateCount")
+                        .HasColumnType("int");
+
                     b.ToTable("Producers");
                 });
 
@@ -981,15 +1368,20 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("ProducerDesignID")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ProducerDesignID1")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasIndex("ProducerCustomerOfferID");
 
                     b.HasIndex("ProducerDesignID");
+
+                    b.HasIndex("ProducerDesignID1");
 
                     b.HasIndex("ID", "IsActive")
                         .IsUnique()
                         .HasFilter("[IsActive] = 1");
 
-                    b.ToTable("CustomerCustomOffer");
+                    b.ToTable("CustomerCustomOffers");
                 });
 
             modelBuilder.Entity("Domain.Entities.Offers.CustomerPublishedOffer", b =>
@@ -1027,18 +1419,18 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entities.Customers.Customer", "Customer")
                         .WithOne("ModelChat")
-                        .HasForeignKey("Domain.Entities.Chats.AiModel.ModelChat", "CustomerID")
+                        .HasForeignKey("Domain.Entities.Chats.AiModel.ModelChat", "CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Customer");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Chats.AiModel.ModelChatMessage", b =>
+            modelBuilder.Entity("Domain.Entities.Chats.AiModel.ModelGeneratedDesign", b =>
                 {
                     b.HasOne("Domain.Entities.Chats.AiModel.ModelChat", "ModelChat")
-                        .WithMany("Message")
-                        .HasForeignKey("ModelChatID")
+                        .WithMany("Designs")
+                        .HasForeignKey("ModelChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1075,6 +1467,25 @@ namespace Infrastructure.Migrations
                     b.Navigation("Chat");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Chats.RequestsLogs", b =>
+                {
+                    b.HasOne("Domain.Entities.Chats.Chat", "Chat")
+                        .WithMany("RequestsLogs")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Shared.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.Designers.DesignVerification", b =>
                 {
                     b.HasOne("Domain.Entities.Designers.Designer", "Designer")
@@ -1088,17 +1499,22 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Designers.Report", b =>
                 {
+                    b.HasOne("Domain.Entities.Customers.Customer", "Customer")
+                        .WithMany("Reports")
+                        .HasForeignKey("CustomerID");
+
                     b.HasOne("Domain.Entities.Designers.Designer", "Designer")
                         .WithMany("Reports")
                         .HasForeignKey("DesignerID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Domain.Entities.Producers.Producer", "Producer")
                         .WithMany("Reports")
                         .HasForeignKey("ProducerID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Customer");
 
                     b.Navigation("Designer");
 
@@ -1131,30 +1547,48 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Offers.ActiveOfferLogs", b =>
                 {
+                    b.HasOne("Domain.Entities.Chats.Chat", "Chat")
+                        .WithMany()
+                        .HasForeignKey("ChatID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Offers.CustomerCustomOffer", "CustomerCustomOffer")
+                        .WithMany()
+                        .HasForeignKey("CustomOfferID");
+
+                    b.HasOne("Domain.Entities.Offers.CustomerPublishedOffer", "CustomerPublishedOffer")
+                        .WithMany("ActiveOfferLogs")
+                        .HasForeignKey("PublishedOfferID");
+
                     b.HasOne("Domain.Entities.Offers.CustomerCustomOffer", null)
                         .WithMany()
-                        .HasForeignKey("OfferID", "IsOfferActive")
+                        .HasForeignKey("CustomOfferID", "IsCustomOfferActive")
                         .HasPrincipalKey("ID", "IsActive")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Domain.Entities.Offers.CustomerPublishedOffer", null)
                         .WithMany()
-                        .HasForeignKey("OfferID", "IsOfferActive")
+                        .HasForeignKey("PublishedOfferID", "IsPublishedOfferActive")
                         .HasPrincipalKey("ID", "IsActive")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("CustomerCustomOffer");
+
+                    b.Navigation("CustomerPublishedOffer");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Offers.ProducerOffer", b =>
+            modelBuilder.Entity("Domain.Entities.Offers.ProducerSteps", b =>
                 {
-                    b.HasOne("Domain.Entities.Producers.Producer", "Producer")
-                        .WithMany("ProducerOffers")
-                        .HasForeignKey("ProducerID")
-                        .OnDelete(DeleteBehavior.NoAction)
+                    b.HasOne("Domain.Entities.Offers.ProducerCustomerOffer", "ProducerCustomerOffer")
+                        .WithMany("Steps")
+                        .HasForeignKey("ProducerCustomerOfferId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Producer");
+                    b.Navigation("ProducerCustomerOffer");
                 });
 
             modelBuilder.Entity("Domain.Entities.Payment.Escrow", b =>
@@ -1184,9 +1618,7 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entities.Payment.Escrow", "Escrow")
                         .WithMany("Transactions")
-                        .HasForeignKey("EscrowID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("EscrowID");
 
                     b.HasOne("Domain.Entities.Shared.User", "User")
                         .WithMany()
@@ -1204,6 +1636,17 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Entities.Producers.Producer", "Producer")
                         .WithMany("LicenseVerifications")
                         .HasForeignKey("ProducerID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Producer");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Producers.ProducerGallery", b =>
+                {
+                    b.HasOne("Domain.Entities.Producers.Producer", "Producer")
+                        .WithMany("Gallery")
+                        .HasForeignKey("ProducerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1229,13 +1672,45 @@ namespace Infrastructure.Migrations
                     b.Navigation("Producer");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Shared.Favourite", b =>
+                {
+                    b.HasOne("Domain.Entities.Designs.DesignerDesign", "DesignerDesign")
+                        .WithMany()
+                        .HasForeignKey("DesignerDesignId");
+
+                    b.HasOne("Domain.Entities.Designs.ProducerDesign", "ProducerDesign")
+                        .WithMany()
+                        .HasForeignKey("ProducerDesignId");
+
+                    b.HasOne("Domain.Entities.Shared.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DesignerDesign");
+
+                    b.Navigation("ProducerDesign");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Shared.MagicToken", b =>
+                {
+                    b.HasOne("Domain.Entities.Shared.User", "User")
+                        .WithOne("MagicToken")
+                        .HasForeignKey("Domain.Entities.Shared.MagicToken", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.Shared.Notification", b =>
                 {
                     b.HasOne("Domain.Entities.Shared.User", "User")
                         .WithMany("Notifications")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserID");
 
                     b.Navigation("User");
                 });
@@ -1256,6 +1731,28 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Entities.Shared.User", "User")
                         .WithMany("RefreshTokens")
                         .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Shared.Tickets", b =>
+                {
+                    b.HasOne("Domain.Entities.Shared.User", "User")
+                        .WithMany("Tickets")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Shared.UserIdentityFiles", b =>
+                {
+                    b.HasOne("Domain.Entities.Shared.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1315,37 +1812,47 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Designs.CustomerDesign", b =>
                 {
+                    b.HasOne("Domain.Entities.Customers.Customer", "Customer")
+                        .WithMany("Designs")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entities.Offers.CustomerPublishedOffer", "CustomerPublishedOffer")
                         .WithMany()
                         .HasForeignKey("CustomerPublishedOfferID");
+
+                    b.Navigation("Customer");
 
                     b.Navigation("CustomerPublishedOffer");
                 });
 
             modelBuilder.Entity("Domain.Entities.Designs.DesignerDesign", b =>
                 {
+                    b.HasOne("Domain.Entities.Designers.DesignVerification", "DesignVerification")
+                        .WithMany()
+                        .HasForeignKey("DesignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entities.Designers.Designer", "Designer")
                         .WithMany("DesignerDesigns")
                         .HasForeignKey("DesignerID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("DesignVerification");
+
                     b.Navigation("Designer");
                 });
 
             modelBuilder.Entity("Domain.Entities.Designs.ProducerDesign", b =>
                 {
-                    b.HasOne("Domain.Entities.Offers.CustomerCustomOffer", "CustomerCustomOffer")
-                        .WithMany()
-                        .HasForeignKey("CustomerCustomOfferID");
-
                     b.HasOne("Domain.Entities.Producers.Producer", "Producer")
                         .WithMany("ProducerDesigns")
                         .HasForeignKey("ProducerID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CustomerCustomOffer");
 
                     b.Navigation("Producer");
                 });
@@ -1353,18 +1860,25 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Offers.ProducerCustomerOffer", b =>
                 {
                     b.HasOne("Domain.Entities.Offers.CustomerCustomOffer", "CustomerCustomOffer")
-                        .WithMany()
-                        .HasForeignKey("CustomerCustomOfferID");
+                        .WithOne()
+                        .HasForeignKey("Domain.Entities.Offers.ProducerCustomerOffer", "CustomOfferId");
 
                     b.HasOne("Domain.Entities.Offers.CustomerPublishedOffer", "CustomerPublishedOffer")
                         .WithMany("ProducerCustomerOffers")
                         .HasForeignKey("CustomerPublishedOfferID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Domain.Entities.Producers.Producer", "Producer")
+                        .WithMany("ProducerCustomerOffers")
+                        .HasForeignKey("ProducerID")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("CustomerCustomOffer");
 
                     b.Navigation("CustomerPublishedOffer");
+
+                    b.Navigation("Producer");
                 });
 
             modelBuilder.Entity("Domain.Entities.Offers.ProducerDesignerOffer", b =>
@@ -1409,6 +1923,9 @@ namespace Infrastructure.Migrations
                                 .IsRequired()
                                 .HasColumnType("nvarchar(max)");
 
+                            b1.Property<int?>("BuildingNumber")
+                                .HasColumnType("int");
+
                             b1.Property<string>("City")
                                 .IsRequired()
                                 .HasColumnType("nvarchar(max)");
@@ -1416,6 +1933,9 @@ namespace Infrastructure.Migrations
                             b1.Property<string>("CustomerID")
                                 .IsRequired()
                                 .HasColumnType("nvarchar(450)");
+
+                            b1.Property<string>("District")
+                                .HasColumnType("nvarchar(max)");
 
                             b1.Property<string>("Goverate")
                                 .IsRequired()
@@ -1473,6 +1993,10 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Designs.ProducerDesign", null)
+                        .WithMany("CustomerCustomOffers")
+                        .HasForeignKey("ProducerDesignID1");
+
                     b.Navigation("ProducerCustomerOffer");
 
                     b.Navigation("ProducerDesign");
@@ -1491,12 +2015,14 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Chats.AiModel.ModelChat", b =>
                 {
-                    b.Navigation("Message");
+                    b.Navigation("Designs");
                 });
 
             modelBuilder.Entity("Domain.Entities.Chats.Chat", b =>
                 {
                     b.Navigation("Messages");
+
+                    b.Navigation("RequestsLogs");
                 });
 
             modelBuilder.Entity("Domain.Entities.Payment.Escrow", b =>
@@ -1506,9 +2032,13 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Shared.User", b =>
                 {
+                    b.Navigation("MagicToken");
+
                     b.Navigation("Notifications");
 
                     b.Navigation("RefreshTokens");
+
+                    b.Navigation("Tickets");
                 });
 
             modelBuilder.Entity("Domain.Entities.Designs.CustomerDesign", b =>
@@ -1525,16 +2055,27 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Designs.ProducerDesign", b =>
                 {
+                    b.Navigation("CustomerCustomOffers");
+
                     b.Navigation("DesignImages");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Offers.ProducerCustomerOffer", b =>
+                {
+                    b.Navigation("Steps");
                 });
 
             modelBuilder.Entity("Domain.Entities.Customers.Customer", b =>
                 {
                     b.Navigation("Chats");
 
+                    b.Navigation("Designs");
+
                     b.Navigation("ModelChat");
 
                     b.Navigation("Offers");
+
+                    b.Navigation("Reports");
 
                     b.Navigation("Reviews");
                 });
@@ -1552,11 +2093,13 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("Chats");
 
+                    b.Navigation("Gallery");
+
                     b.Navigation("LicenseVerifications");
 
-                    b.Navigation("ProducerDesigns");
+                    b.Navigation("ProducerCustomerOffers");
 
-                    b.Navigation("ProducerOffers");
+                    b.Navigation("ProducerDesigns");
 
                     b.Navigation("Reports");
 
@@ -1565,6 +2108,8 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Offers.CustomerPublishedOffer", b =>
                 {
+                    b.Navigation("ActiveOfferLogs");
+
                     b.Navigation("ProducerCustomerOffers");
                 });
 #pragma warning restore 612, 618

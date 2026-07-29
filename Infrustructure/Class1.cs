@@ -1,4 +1,4 @@
-﻿namespace Infrustructure
+﻿namespace Infrastructure
 {
     public class Class1
     {

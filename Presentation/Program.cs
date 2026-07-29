@@ -1,7 +1,11 @@
+
+using Application.Hubs;
+using Application.Interfaces;
 using Application.Services;
 using Domain.Entities.Shared;
-using Domain.Interfaces;
 using Domain.Settings;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Infrastructure.Background_services;
 using Infrastructure.Data.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -9,30 +13,29 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Scalar.AspNetCore;
+using System.Reflection;
 using System.Text;
+
 namespace Presentation
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            string openAI_APIKey = builder.Configuration["OpenAI:ApiKey"];
+            string dbConn = builder.Configuration.GetConnectionString("Test");
 
-            // custom services
             #region Swagger Settings
             builder.Services.AddSwaggerGen(swagger =>
             {
-                //This is to generate the Default UI of Swagger Documentation    
                 swagger.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
-                    Title = "ASP.NET 8 Web API",
+                    Title = "ASP.NET 8 Web API",
                     Description = " ITI Projrcy"
                 });
-                // To Enable authorization using Swagger (JWT)    
                 swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
@@ -40,7 +43,7 @@ namespace Presentation
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "Enter 'Bearer' [space] and then your valid token in the text input below.\r\n\r\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\"",
+                    Description = "Enter 'Bearer' [space] and then your valid token in the text input below.\r\n\r\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\"",
                 });
                 swagger.AddSecurityRequirement(new OpenApiSecurityRequirement{
                     {
@@ -55,39 +58,51 @@ namespace Presentation
                 });
             });
             #endregion
-            builder.Services.AddDbContext<D2DContext>(options =>
+
+            builder.Services.AddDbContextPool<D2DContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("Test"));
+                options.UseSqlServer(dbConn, sqlOption => sqlOption.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null));
+            });
+            builder.Services.AddHttpClient();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                options.IncludeXmlComments(xmlPath);
             });
 
-            builder.Services.AddSwaggerGen();
-
-            builder.Services.AddHostedService<OtpCleanupBackgroundWorker>();
-            builder.Services.AddHostedService<RefreshTokenCleanupBackgroundWorker>();
-
+            builder.Services.AddHostedService<D2DBackgroundServices>();
+            builder.Services.AddHttpClient();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IOtpService, OtpService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUploadService, UploadService>();
-            builder.Services.AddScoped<IIdentityValidationService, IdentityValidationService>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<IChatService, ChatService>();
+
+           builder.Services.AddScoped<IModelesService,ModelsService>();
+
+
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 6;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-
-                options.Lockout.AllowedForNewUsers = true;   
-                options.Lockout.MaxFailedAccessAttempts = 3; 
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.MaxFailedAccessAttempts = 4;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
             })
              .AddEntityFrameworkStores<D2DContext>()
              .AddDefaultTokenProviders();
+
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("jwt"));
             builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
-
 
             builder.Services.AddAuthentication(options =>
             {
@@ -97,53 +112,99 @@ namespace Presentation
             })
             .AddJwtBearer(options =>
             {
-                // Bind your JWT options
                 var jwtSettings = builder.Configuration.GetSection("jwt").Get<JwtSettings>();
-
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSettings.Issuer,       // Adjust properties based on your JwtSettings class
+                    ValidIssuer = jwtSettings.Issuer,
                     ValidAudience = jwtSettings.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            (path.StartsWithSegments("/chathub") || path.StartsWithSegments("/notificationhub")))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
-
 
             builder.Services.AddMediatR(cfg =>
             {
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
                 cfg.RegisterServicesFromAssemblies(assemblies);
             });
-            builder.Services.AddControllers();
 
+            builder.Services.AddSignalR();
+            builder.Services.AddControllers().AddNewtonsoftJson();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("https://design-to-dress.vercel.app").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                    policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                });
+            });
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+
+            builder.Services.AddHangfire(config => config
+             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+             .UseSimpleAssemblyNameTypeSerializer()
+             .UseRecommendedSerializerSettings()
+             .UseMemoryStorage());
+
+            builder.Services.AddHangfireServer();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "D2D API V1");
+                c.RoutePrefix = "swagger";
+            });
 
-                app.MapSwagger();
-            }
-
+            app.MapSwagger();
             app.UseHttpsRedirection();
+            app.UseRouting();
+            app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseAuthorization();
 
-
+            app.MapHub<NotificationHub>("/notificationhub");
+            app.MapHub<ChatHub>("/chathub");
+            app.UseHangfireDashboard("/hangfire");
             app.MapControllers();
 
-            app.Run();
+          /*  using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<D2DContext>();
+                    var userManager = services.GetRequiredService<UserManager<User>>();
+                    await SeedData.SeedAsync(context, userManager);
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred during database seeding.");
+                }
+            }*/
+
+            await app.RunAsync();
         }
     }
 }
+

@@ -7,7 +7,6 @@ using Domain.Entities.Offers;
 using Domain.Entities.Payment;
 using Domain.Entities.Producers;
 using Domain.Entities.Shared;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -16,7 +15,7 @@ namespace Infrastructure.Data.Context
 {
     public class D2DContext : IdentityDbContext<User>
     {
-        public D2DContext(DbContextOptions<D2DContext> options) : base(options) { }
+        public D2DContext(DbContextOptions<D2DContext> options) : base(options) { this.ChangeTracker.LazyLoadingEnabled = false; }
 
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<ActiveOfferLogs> ActiveOfferLogs { get; set; }
@@ -30,20 +29,26 @@ namespace Infrastructure.Data.Context
         public DbSet<DesignerDesign> DesignerDesigns { get; set; }
         public DbSet<DesignImage> DesignImages { get; set; }
         public DbSet<Producer> Producers { get; set; }
+        public DbSet<ProducerGallery>ProducersGallery { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<LicenseVerification> LicenseVerifications { get; set; }
         public DbSet<Escrow> Escrows { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<ProducerCustomerOffer> ProducerCustomerOffers { get; set; }
         public DbSet<CustomerPublishedOffer> CustomerPublishedOffers { get; set; }
+        public DbSet<CustomerCustomOffer> CustomerCustomOffers { get; set; }
         public DbSet<ProducerDesignerOffer> ProducerDesignerOffers { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<ModelChat> ModelChats { get; set; }
-        public DbSet<ModelChatMessage> ModelChatMessages { get; set; }
         public DbSet<Otp> Otps { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
-
+        public DbSet<MagicToken> MagicTokens { get; set; }
+        public DbSet<SystemCounter> SystemCounters { get; set; }
+        public DbSet<Tickets> Tickets { get; set; }
+        public DbSet<ModelGeneratedDesign> ModelGeneratedDesigns { get; set; }
+        public DbSet<UserIdentityFiles> UserIdentityFiles { get; set; }
+        public DbSet<Favourite> Favourites { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -52,7 +57,7 @@ namespace Infrastructure.Data.Context
             modelBuilder.Entity<ProducerOffer>().UseTpcMappingStrategy();
             modelBuilder.Entity<Design>().UseTpcMappingStrategy();
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-            
+
         }
     }
 }
